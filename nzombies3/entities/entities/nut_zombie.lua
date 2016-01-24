@@ -27,9 +27,13 @@ function ENT:Initialize()
 	self.breathing:Play()
 	self.breathing:ChangePitch(60, 0)
 	self.breathing:ChangeVolume(0.1, 0)
-	self.loco:SetDeathDropHeight(700)
 	if SERVER then
+		self.loco:SetDeathDropHeight(700)
 		self:SetHealth(nz.Curves.Data.Health[nz.Rounds.Data.CurrentRound])
+		self:SetCollisionBounds( Vector(-9,-9,0), Vector(9,9,70) )
+		self.loco:SetStepHeight(22)
+		self.Jumped = CurTime() + 5 -- prevent jumping for the first 5 seconds since the spawn is crowded
+		self.IsJumping = false
 	end
 	self:SetCollisionBounds(Vector(-12,-12, 0), Vector(12, 12, 64))
 	self:SetSkin(math.random(0, self:SkinCount() - 1))
@@ -40,7 +44,7 @@ function ENT:Initialize()
 			self.breathing = nil
 		end
 	end)
-	
+
 end
 
 function ENT:TimedEvent(time, callback)
@@ -73,7 +77,7 @@ function ENT:RunBehaviour()
 	while (true) do
 		local target = self.target
 
-		if (IsValid(target) and target:Alive()) then
+		if self:HasTarget() then
 			local data = {}
 				data.start = self:GetPos()
 				data.endpos = self:GetPos() + self:GetForward()*128
@@ -100,7 +104,7 @@ function ENT:RunBehaviour()
 			end
 		end
 
-		if (IsValid(target) and target:Alive()  ) then --and self:GetRangeTo(target) <= 1500
+		if ( self:HasTarget() ) then --and self:GetRangeTo(target) <= 1500
 			self.loco:FaceTowards(target:GetPos())
 
 			if (self:GetRangeTo(target) <= 50) then
@@ -197,10 +201,10 @@ function ENT:ChaseEnemy( options )
 
 	local options = options or {}
 
-	local path = Path( "Chase" )
+	local path = Path( "Follow" ) --DONT use Chase Its buggy and laggy use Follow instead!
 	path:SetMinLookAheadDistance( options.lookahead or 300 )
 	path:SetGoalTolerance( options.tolerance or 50 )
-	
+
 	//Custom path computer, the same as default but not pathing through locked nav areas.
 	path:Compute( self, options.enemy:GetPos() or self:GetEnemy():GetPos(), function( area, fromArea, ladder, elevator, length )
 		--print("Pathing!")
@@ -215,7 +219,7 @@ function ENT:ChaseEnemy( options )
 				--print("Area not traversable!")
 				return -1
 			end
-				
+
 			//Prevent movement through either locked navareas or areas with closed doors
 			if (nz.Nav.Data[area:GetID()]) then
 				--print("Has area")
@@ -225,8 +229,8 @@ function ENT:ChaseEnemy( options )
 						--print("Door link is not opened")
 						return -1
 					end
-				elseif nz.Nav.Data[area:GetID()].locked then 
-					--print("Area is locked") 
+				elseif nz.Nav.Data[area:GetID()].locked then
+					--print("Area is locked")
 				return -1 end
 			end
 			// compute distance traveled along path so far
@@ -271,6 +275,19 @@ function ENT:ChaseEnemy( options )
 
 		if ( options.draw ) then path:Draw() end
 		-- If we're stuck, then call the HandleStuck function and abandon
+
+		--the jumping part simple and buggy
+		--local scanDist = (self.loco:GetVelocity():Length()^2)/(2*900) + 15
+		local scanDist
+		--this will probaly need asjustments to fit the zombies speed
+		if self:GetVelocity():Length2D() > 150 then scanDist = 30 else scanDist = 20 end
+
+		--debugoverlay.Line( self:GetPos(),  path:GetClosestPosition(self:EyePos() + self:EyeAngles():Forward() * scanDist), 0.1, Color(255,0,0,0), true )
+		--debugoverlay.Line( self:GetPos(),  path:GetPositionOnPath(path:GetCursorPosition() + scanDist), 0.1, Color(0,255,0,0), true )
+		if path:IsValid() and ((self:GetPos().z - path:GetClosestPosition(self:EyePos() + self:EyeAngles():Forward() * scanDist).z < 0 and (math.abs(path:GetClosestPosition(self:EyePos() + self:EyeAngles():Forward() * scanDist).z - self:GetPos().z) > 22))) then
+			self:Jump(path:GetClosestPosition(self:EyePos() + self:EyeAngles():Forward() * scanDist), scanDist)
+		end
+
 		if ( self.loco:IsStuck() ) then
 			self:HandleStuck()
 			return "stuck"
@@ -285,9 +302,25 @@ function ENT:ChaseEnemy( options )
 end
 
 function ENT:Think()
-	//Retarget closest players. Don't put this in the function above or else mass lag due to constant rethinking of target
-	self.target = self:GetPriorityEnemy()
+
+	if SERVER then --think is shared since last update but all the stuff in here should be serverside
+		//Retarget closest players. Don't put this in the function above or else mass lag due to constant rethinking of target
+		self.target = self:GetPriorityEnemy()
+
+		if !self.IsJumping && self:GetSolidMask() == MASK_NPCSOLID_BRUSHONLY then
+			local occupied = false
+			for _,ent in pairs(ents.FindInBox(self:GetPos() + Vector( -16, -16, 0 ), self:GetPos() + Vector( 16, 16, 70 ))) do
+				if ent:GetClass() == "nut_zombie" && ent != self then occupied = true end
+			end
+			if !occupied then self:SetSolidMask(MASK_NPCSOLID) end
+		end
+	end
+
 	self:NextThink(4)
+end
+
+function ENT:HasTarget()
+	return IsValid(self.target) and self.target:Alive()
 end
 
 function ENT:OnStuck()
@@ -323,8 +356,66 @@ function ENT:AlertNearby(target, range, noNoise)
 	end
 end
 
+--we do our own jump since the loco one is a bit weird.
+function ENT:Jump(goal, scanDist)
+    if CurTime() < self.Jumped + 1 or navmesh.GetNavArea(self:GetPos(), 50):HasAttributes( NAV_MESH_NO_JUMP ) then return end
+    if !self:IsOnGround() then return end
+    local tr = util.TraceLine( {
+        start = self:EyePos() + Vector(0,0,30),
+        endpos = self:EyePos() + Vector(0,0,94),
+        filter = self
+    } )
+    local tr2 = util.TraceLine( {
+        start = self:EyePos() + Vector(0,0,30) + self:EyeAngles():Forward() * scanDist,
+        endpos = self:EyePos() + self:EyeAngles():Forward() * scanDist + Vector(0,0,94),
+        filter = self
+    } )
+    --debugoverlay.Line(self:EyePos() + Vector(0,0,30), self:EyePos() + Vector(0,0,94), 5, Color(255,255,0), true)
+    --debugoverlay.Line(self:EyePos() + Vector(0,0,30) + self:EyeAngles():Forward() * scanDist, self:EyePos() + self:EyeAngles():Forward() * scanDist + Vector(0,0,94), 5, Color(255,255,0), true)
+    local jmpHeight
+    if tr.Hit then jmpHeight = tr.StartPos:Distance(tr.HitPos) else jmpHeight = 64 end
+    if tr2.Hit and !tr.Hit then jmpHeight = tr2.StartPos:Distance(tr2.HitPos) end
+    self.loco:SetJumpHeight(jmpHeight)
+    self.loco:SetDesiredSpeed( 450 )
+    self.loco:SetAcceleration( 5000 )
+    self.Jumped = CurTime()
+    self.IsJumping = true
+    self:SetSolidMask( MASK_NPCSOLID_BRUSHONLY )
+    self.loco:Jump()
+    --Boost them
+    self.loco:Approach(goal, 1000)
+end
+
 function ENT:OnLandOnGround()
 	self:EmitSound("physics/flesh/flesh_impact_hard"..math.random(1, 6)..".wav")
+	self.IsJumping = false
+	if self:HasTarget() then
+		self.loco:SetDesiredSpeed(nz.Curves.Data.Speed[nz.Rounds.Data.CurrentRound])
+	else
+		self.loco:SetDesiredSpeed(40)
+	end
+	self.loco:SetAcceleration(400)
+end
+
+function ENT:OnLeaveGround( ent )
+    self.IsJumping = true
+end
+
+function ENT:OnContact( ent )
+    if ent:GetClass() == self:GetClass() then
+		--this is a poor approuch to unstuck them when walking into each other
+        self.loco:Approach( self:GetPos() + Vector( math.Rand( -1, 1 ), math.Rand( -1, 1 ), 0 ) * 2000,1000)
+		--importatn if the get stuck on top of each other!
+        if math.abs(self:GetPos().z - ent:GetPos().z) > 30 then self:SetSolidMask( MASK_NPCSOLID_BRUSHONLY ) end
+    end
+	--buggy prop push away thing ucomment if you dont want this :)
+    if  ( ent:GetClass() == "prop_physics_multiplayer" or ent:GetClass() == "prop_physics" ) and ent:IsOnGround() then
+        --self.loco:Approach( self:GetPos() + Vector( math.Rand( -1, 1 ), math.Rand( -1, 1 ), 0 ) * 2000,1000)
+        local phys = ent:GetPhysicsObject()
+        if !IsValid(phys) then return end
+        phys:ApplyForceCenter( self:GetPos() - ent:GetPos() * 1.2 )
+        DropEntityIfHeld( ent )
+    end
 end
 
 local deathSounds = {
@@ -372,10 +463,10 @@ function ENT:OnInjured(damageInfo)
 	local attacker = damageInfo:GetAttacker()
 	--local hitgroup = util.QuickTrace( damageInfo:GetDamagePosition( ), damageInfo:GetDamagePosition( ) ).HitGroup
 	--local range = self:GetRangeTo(attacker)
-	//Deal an double damage if headshot 
-	
+	//Deal an double damage if headshot
+
 							//NOW HANDLED IN CONFIG FOR ONHIT AND ONKILLED
-	
+
 	--[[if hitgroup == HITGROUP_HEAD then
 		if self:IsValid() and damageInfo:GetDamageType() != DMG_BLAST_SURFACE then
 			local headshot = DamageInfo()
