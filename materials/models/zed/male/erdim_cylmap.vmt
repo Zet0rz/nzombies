@@ -1,0 +1,7 @@
+"VertexLitGeneric"
+{
+	// Original shader: VertexLitTexture
+	"$basetexture" "models\Zombie_Classic/erdim_cylmap"
+	"$Bumpmap"	"models\Zombie_Classic/erdim_cylmap_normal"
+	"$halflambert" 1
+}
