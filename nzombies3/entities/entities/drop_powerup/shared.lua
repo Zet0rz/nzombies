@@ -19,17 +19,25 @@ function ENT:Initialize()
 	//self:SetPowerUp("dp")
 	self:SetModelScale(nz.PowerUps.Functions.Get(self:GetPowerUp()).scale, 0)
 	
-	self:PhysicsInit(SOLID_VPHYSICS)
+	--self:PhysicsInit(SOLID_VPHYSICS)
+	self:PhysicsInitSphere(50, "default_silent")
 	self:SetMoveType(MOVETYPE_NONE)
-	self:SetSolid(SOLID_VPHYSICS)
+	self:SetSolid(SOLID_NONE)
+	if SERVER then
+		self:SetTrigger(true)
+	end
+	self:UseTriggerBounds(true, 0)
+	self:SetMaterial("models/shiny.vtf")
+	self:SetColor( Color(255,200,0) )
+	--self:SetTrigger(true)
 	self.DeathTimer = 30
 	if SERVER then
 		self:SetUseType(SIMPLE_USE)
-		local phys = self:GetPhysicsObject()
+		--[[local phys = self:GetPhysicsObject()
 		if (phys:IsValid()) then
 			phys:Wake()
 			--phys:EnableCollisions(false)
-		end
+		end]]
 	end
 	timer.Create( self:EntIndex().."_deathtimer", 0.1, 300, function()
 		if self:IsValid() then
@@ -71,8 +79,8 @@ if CLIENT then
 	end
 	local num = 0
 	function ENT:Think()
-		local var = math.sin( CurTime() * 3 )
-		self:SetPos(Vector(self:GetPos().X, self:GetPos().Y, self:GetPos().Z +1*var))
+		if !self:GetRenderAngles() then self:SetRenderAngles(self:GetAngles()) end
+		self:SetRenderAngles(self:GetRenderAngles()+(Angle(0,50,0)*FrameTime()))
 	end
 	hook.Add( "PreDrawHalos", "drop_powerups_halos", function()
 		halo.Add( ents.FindByClass( "drop_powerup" ), Color( 0, 255, 0 ), 2, 2, 2 )

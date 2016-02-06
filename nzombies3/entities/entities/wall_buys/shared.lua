@@ -49,6 +49,7 @@ if SERVER then
 				activator:TakePoints(price)
 				activator:Give(self.WeaponGive)
 				nz.Weps.Functions.GiveMaxAmmoWep(activator, self.WeaponGive)
+				--activator:EmitSound("nz/effects/buy.wav")
 			else
 				print("Can't afford!")
 			end
@@ -57,6 +58,7 @@ if SERVER then
 				if give_ammo != 0 then
 					activator:TakePoints(ammo_price)
 					nz.Weps.Functions.GiveMaxAmmoWep(activator, self.WeaponGive)
+					--activator:EmitSound("nz/effects/buy.wav")
 				else
 					print("Max Clip!")
 				end

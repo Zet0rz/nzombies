@@ -14,8 +14,13 @@ function nz.Doors.Functions.ParseFlagString( flagsStr )
 	for k,v in pairs(ex) do
 		local ex2 = string.Explode( "=", v )
 		tbl[ex2[1]] = ex2[2]
+		//If buyable is not set on a door, we default to on
+		if !tbl["buyable"] and k == #ex then
+			tbl["buyable"] = "1"
+		end
 	end
 	
+	PrintTable(tbl)
 	return tbl
 	
 end
@@ -23,7 +28,7 @@ end
 function nz.Doors.Functions.CreateLink( ent, flagsStr )
 	//First remove all links
 	nz.Doors.Functions.RemoveLink( ent )
-	if ent:IsDoor() then
+	if ent:IsDoor() or ent:IsButton() then
 		nz.Doors.Functions.CreateMapDoorLink( ent:doorIndex(), flagsStr )
 	elseif ent:IsBuyableProp() then
 		nz.Doors.Functions.CreatePropDoorLink( ent, flagsStr )
@@ -31,7 +36,7 @@ function nz.Doors.Functions.CreateLink( ent, flagsStr )
 end
 
 function nz.Doors.Functions.RemoveLink( ent )
-	if ent:IsDoor() then
+	if ent:IsDoor() or ent:IsButton() then
 		nz.Doors.Functions.RemoveMapDoorLink( ent:doorIndex(), flagsStr )
 	elseif ent:IsBuyableProp() then
 		nz.Doors.Functions.RemovePropDoorLink( ent )
@@ -41,12 +46,17 @@ end
 function nz.Doors.Functions.CreateMapDoorLink( doorID, flagsStr )
 
 	local door = nz.Doors.Functions.doorIndexToEnt(doorID)
+	if !flagsStr then ErrorNoHalt("Door "..doorID.." doesn't have a flagsStr saved!") return end
 	local flagsTbl = nz.Doors.Functions.ParseFlagString( flagsStr )
 	
-	if door:IsValid() and door:IsDoor() then
+	if door:IsValid() and (door:IsDoor() or door:IsButton()) then
 		//Assign the flags to the door
 		for k,v in pairs(flagsTbl) do
-			door[k] = tonumber(v)
+			if !string.find(k, "navgroup") then
+				door[k] = tonumber(v)
+			else
+				door[k] = v
+			end
 		end
 		//Save the data into a convenient table for lua refresh
 		door.Data = flagsStr
@@ -68,7 +78,7 @@ function nz.Doors.Functions.RemoveMapDoorLink( doorID )
 	local door = nz.Doors.Functions.doorIndexToEnt(doorID)
 	
 	if door.Data != nil then
-		if door:IsValid() and door:IsDoor() then
+		if door:IsValid() and (door:IsDoor() or door:IsButton()) then
 			local flagsTbl = nz.Doors.Functions.ParseFlagString( door.Data )
 			
 			//Remove the flags to the door
@@ -98,7 +108,11 @@ function nz.Doors.Functions.CreatePropDoorLink( ent, flagsStr )
 	if ent:IsValid() and ent:IsBuyableProp() then
 		//Assign the flags to the door
 		for k,v in pairs(flagsTbl) do
-			ent[k] = tonumber(v)
+			if !string.find(k, "navgroup") then
+				ent[k] = tonumber(v)
+			else
+				ent[k] = v
+			end
 		end
 		//Save the data into a convenient table for lua refresh
 		ent.Data = flagsStr

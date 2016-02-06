@@ -15,21 +15,29 @@ function ENT:Initialize()
 	self:SetMoveType( MOVETYPE_NONE )
 	self:SetSolid( SOLID_VPHYSICS )
 
-	self:SetHealth(0)
+	--self:SetHealth(0)
 	self:SetCustomCollisionCheck(true)
 	self.NextPlank = CurTime()
 
 	self.Planks = {}
 
 	if SERVER then
-		self:ResetPlanks()
+		self:ResetPlanks(true)
 	end
 end
 
-function ENT:AddPlank()
+function ENT:SetupDataTables()
+
+	self:NetworkVar( "Int", 0, "NumPlanks" )
+
+end
+
+function ENT:AddPlank(nosound)
 	self:SpawnPlank()
-	self:SetHealth(self:Health()+10)
-	print("Health: " .. self:Health())
+	self:SetNumPlanks( (self:GetNumPlanks() or 0) + 1 )
+	if !nosound then
+		self:EmitSound("nz/effects/board_slam_0"..math.random(0,5)..".wav")
+	end
 end
 
 function ENT:RemovePlank()
@@ -37,7 +45,8 @@ function ENT:RemovePlank()
 	local plank = table.Random(self.Planks)
 	if plank != nil then
 		table.RemoveByValue(self.Planks, plank)
-		self:SetHealth(self:Health()-10)
+		self:SetNumPlanks( self:GetNumPlanks() - 1 )
+		--self:SetHealth(self:Health()-10)
 
 		//Drop off
 		plank:SetParent(nil)
@@ -53,20 +62,21 @@ function ENT:RemovePlank()
 	end
 end
 
-function ENT:ResetPlanks()
+function ENT:ResetPlanks(nosoundoverride)
 	for i=1, nz.Config.MaxPlanks do
 		self:RemovePlank()
 	end
 	for i=1, nz.Config.MaxPlanks do
-		self:AddPlank()
+		self:AddPlank(!nosoundoverride)
 	end
 end
 
 function ENT:Use( activator, caller )
 	if CurTime() > self.NextPlank then
-		if self:Health() < nz.Config.MaxPlanks * 10 then
+		if self:GetNumPlanks() < nz.Config.MaxPlanks then
 			self:AddPlank()
                   activator:GivePoints(10)
+				  activator:EmitSound("nz/effects/repair_ching.wav")
 			self.NextPlank = CurTime() + 1
 		end
 	end
@@ -85,15 +95,15 @@ function ENT:SpawnPlank()
 end
 
 hook.Add("ShouldCollide", "zCollisionHook", function(ent1, ent2)
-	if ent1:GetClass() == "breakable_entry" and  ent2:GetClass() == "nut_zombie" then
-		if ent1:IsValid() and ent1:Health() == 0 then
+	if ent1:GetClass() == "breakable_entry" and (nz.Config.ValidEnemies[ent2:GetClass()]) then
+		if ent1:IsValid() and ent1:GetNumPlanks() == 0 then
 			ent1:SetSolid(SOLID_NONE)
 			timer.Simple(0.1, function() if ent1:IsValid() then ent1:SetSolid(SOLID_VPHYSICS) end end)
 		end
 		return false
 	end
-	if ent2:GetClass() == "breakable_entry" and ent1:GetClass() == "nut_zombie" then
-		if ent2:IsValid() and ent2:Health() == 0 then
+	if ent2:GetClass() == "breakable_entry" and (nz.Config.ValidEnemies[ent1:GetClass()]) then
+		if ent2:IsValid() and ent2:GetNumPlanks() == 0 then
 			ent2:SetSolid(SOLID_NONE)
 			timer.Simple(0.1, function() if ent2:IsValid() then ent2:SetSolid(SOLID_VPHYSICS) end end)
 		end

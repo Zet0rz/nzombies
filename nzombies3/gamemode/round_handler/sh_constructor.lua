@@ -7,6 +7,8 @@ nz.Rounds.Data = {}
 nz.Rounds.Data.CurrentState = ROUND_INIT
 nz.Rounds.Data.CurrentRound = 0
 
+nz.Rounds.CurrentRoundData = {}
+
 //Misc
 nz.Rounds.Data.CurrentPlayers = {} //No reason to be shared, but maybe in the future we will show the players clientside for scoreboard or smth
 nz.Rounds.Elec = false

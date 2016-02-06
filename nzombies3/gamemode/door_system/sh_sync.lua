@@ -21,7 +21,7 @@ if CLIENT then
 	function nz.Doors.Functions.ReceiveSync( length )
 		print("Received Doors Sync")
 		nz.Doors.Data = net.ReadTable()
-		PrintTable(nz.Doors.Data)
+		--PrintTable(nz.Doors.Data)
 	end
 	
 	//Receivers 

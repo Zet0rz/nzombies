@@ -42,7 +42,13 @@ function ENT:BlockLock()
 		self:SetCollisionBounds( self.Boundone, self.Boundtwo )
 	end
 	self:SetSolid( SOLID_VPHYSICS )
-	self:SetLocked(true)
+	self:SetLocked(true) 
+end
+
+function ENT:OnRemove()
+	if SERVER then
+		nz.Doors.Functions.RemoveLink( self )
+	end
 end
 
 if CLIENT then

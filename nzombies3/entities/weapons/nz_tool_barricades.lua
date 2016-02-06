@@ -6,7 +6,7 @@ SWEP.Base 		= "nz_tool_base"
 
 if SERVER then
 	function SWEP:OnPrimaryAttack( trace )
-		nz.Mapping.Functions.BreakEntry(trace.HitPos,Angle(0,0,0))
+		nz.Mapping.Functions.BreakEntry(trace.HitPos,Angle(0,(trace.HitPos - self.Owner:GetPos()):Angle()[2],0), self.Owner )
 	end
 
 	function SWEP:OnSecondaryAttack( trace )

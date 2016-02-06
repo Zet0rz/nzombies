@@ -19,7 +19,7 @@ function nz.PropsMenu.Functions.Create( )
 	tabs.Scrolls = {}
 	tabs.Lists = {}
 
-	for k,v in pairs(nz.PropsMenu.Data.Categorys) do
+	for k,v in pairs(nz.PropsMenu.Data.Categories) do
 		tabs.Scrolls[k] = vgui.Create( "DScrollPanel", nz.PropsMenu.Data.MainFrame )
 		tabs.Scrolls[k]:SetSize( 355, 200 )
 		tabs.Scrolls[k]:SetPos( 10, 30 )
@@ -32,6 +32,18 @@ function nz.PropsMenu.Functions.Create( )
 		if v == true then v = nil end
 		PropertySheet:AddSheet( k, tabs.Scrolls[k], nil, false, false, v )
 	end
+	
+	tabs.Scrolls["Entities"] = vgui.Create( "DScrollPanel", nz.PropsMenu.Data.MainFrame )
+	tabs.Scrolls["Entities"]:SetSize( 355, 200 )
+	tabs.Scrolls["Entities"]:SetPos( 10, 30 )
+
+	tabs.Lists["Entities"]	= vgui.Create( "DIconLayout", tabs.Scrolls["Entities"] )
+	tabs.Lists["Entities"]:SetSize( 340, 200 )
+	tabs.Lists["Entities"]:SetPos( 0, 0 )
+	tabs.Lists["Entities"]:SetSpaceY( 5 )
+	tabs.Lists["Entities"]:SetSpaceX( 5 )
+	if v == true then v = nil end
+	PropertySheet:AddSheet( "Entities", tabs.Scrolls["Entities"], nil, false, false, v )
 
 
 
@@ -42,6 +54,19 @@ function nz.PropsMenu.Functions.Create( )
 		ListItem.Model = v[2]
 		ListItem.DoClick = function( item )
 			nz.PropsMenu.Functions.Request(item.Model)
+			surface.PlaySound( "ui/buttonclickrelease.wav" )
+		end
+		//You don't need to set the position, that is done automatically.
+
+	end
+	
+	for k,v in pairs(nz.PropsMenu.Data.Entities) do //Make a loop to create a bunch of panels inside of the DIconLayout
+		local ListItem = tabs.Lists["Entities"]:Add( "DImageButton" ) //Add DPanel to the DIconLayout
+		ListItem:SetSize( 40, 40 ) //Set the size of it
+		ListItem:SetImage(v[2])
+		ListItem.Entity = v[1]
+		ListItem.DoClick = function( item )
+			nz.PropsMenu.Functions.Request(item.Entity, true)
 			surface.PlaySound( "ui/buttonclickrelease.wav" )
 		end
 		//You don't need to set the position, that is done automatically.

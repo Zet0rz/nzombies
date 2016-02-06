@@ -34,6 +34,7 @@ function nz.Rounds.Functions.DropOut(ply)
 	if table.HasValue(nz.Rounds.Data.CurrentPlayers, ply) then
 		PrintMessage( HUD_PRINTTALK, ply:Nick().." has dropped out of the game!" )
 		nz.Rounds.Functions.RemovePlayer(ply)
+		ply:RevivePlayer() 
 		ply:KillSilent()
 	end
 end

@@ -48,10 +48,31 @@ end)
 
 NewChatCommand("/generate", function(ply, text)
 	if ply:IsSuperAdmin() then
-		if #ents.FindByClass("info_player_start") > 0 then
-			navmesh.BeginGeneration( )
+		if navmesh.IsLoaded() then
+			ply:PrintMessage( HUD_PRINTTALK, "[NZ] Navmesh already exists, couldn't generate." )
 		else
-			ply:PrintMessage( HUD_PRINTTALK, "[NZ] There were no walkable seeds found. Please stand on the ground, and use /forcegenerate." )
+			ply:PrintMessage( HUD_PRINTTALK, "[NZ] Starting Navmesh Generation, this may take a while." )
+			navmesh.BeginGeneration()
+			--force generate
+			if !navmesh.IsGenerating() then
+				ply:PrintMessage( HUD_PRINTTALK, "[NZ] No walkable seeds found, forcing generation..." )
+				local sPoint = GAMEMODE.SpawnPoints[ math.random( #GAMEMODE.SpawnPoints ) ]
+				local tr = util.TraceLine( {
+					start = sPoint:GetPos(),
+					endpos = sPoint:GetPos() - Vector( 0, 0, 100),
+					filter = sPoint
+				} )
+
+				local ent = ents.Create("info_player_start")
+				ent:SetPos( tr.HitPos )
+				ent:Spawn()
+				navmesh.BeginGeneration()
+			end
+
+			if !navmesh.IsGenerating() then
+				--Will not happen but jsut in case
+				ply:PrintMessage( HUD_PRINTTALK, "[NZ] Navmesh Generation failed! Please try this command again or generate the navmesh manually." )
+			end
 		end
 	end
 end)
@@ -66,6 +87,7 @@ NewChatCommand("/save", function(ply, text)
 	end
 end)
 
+--decrepit
 NewChatCommand("/forcegenerate", function(ply, text)
 	if ply:IsSuperAdmin() then
 		local ent = ents.Create("info_player_start")

@@ -1,5 +1,7 @@
 //
 
+local CurRoundOverSpawned = false
+
 function nz.Rounds.Functions.CheckPrerequisites()
 
 	//If there is there is less than one player
@@ -50,16 +52,26 @@ function nz.Rounds.Functions.PrepareRound()
 	nz.Rounds.Functions.SendSync()
 	nz.Rounds.Data.CurrentRound = nz.Rounds.Data.CurrentRound + 1
 
-	nz.Rounds.Data.MaxZombies = nz.Curves.Data.SpawnRate[nz.Rounds.Data.CurrentRound]
+	if nz.Config.EnemyTypes[nz.Rounds.Data.CurrentRound] and nz.Config.EnemyTypes[nz.Rounds.Data.CurrentRound].count then
+		nz.Rounds.Data.MaxZombies = nz.Config.EnemyTypes[nz.Rounds.Data.CurrentRound].count
+		print("Round "..nz.Rounds.Data.CurrentRound.." has a special count: "..nz.Rounds.Data.MaxZombies)
+	else
+		nz.Rounds.Data.MaxZombies = nz.Curves.Data.SpawnRate[nz.Rounds.Data.CurrentRound]
+	end
 	nz.Rounds.Data.KilledZombies = 0
 	nz.Rounds.Data.ZombiesSpawned = 0
+	
+	if nz.Config.EnemyTypes[nz.Rounds.Data.CurrentRound] then
+		nz.Rounds.CurrentRoundData = nz.Config.EnemyTypes[nz.Rounds.Data.CurrentRound]
+	end
 
 	//Notify
 	PrintMessage( HUD_PRINTTALK, "ROUND: "..nz.Rounds.Data.CurrentRound.." preparing" )
 	hook.Run("nz.Round.Prep", nz.Rounds.Data.CurrentRound)
 	//Play the sound
 	if nz.Rounds.Data.CurrentRound == 1 then
-		nz.Notifications.Functions.PlaySound("nz/round/round_start.mp3", 1)
+		--nz.Mapping.Functions.CleanUpMap()
+		--nz.Notifications.Functions.PlaySound("nz/round/round_start.mp3", 1)
 	else
 		nz.Notifications.Functions.PlaySound("nz/round/round_end.mp3", 1)
 	end
@@ -75,6 +87,9 @@ function nz.Rounds.Functions.PrepareRound()
 	for k,v in pairs(nz.Rounds.Data.CurrentPlayers) do
 		v:SetHealth(v:GetMaxHealth())
 	end
+	
+	//Set this to reset the overspawn debug message status
+	CurRoundOverSpawned = false
 
 	//Start the next round
 	timer.Simple(nz.Config.PrepareTime, function() nz.Rounds.Functions.StartRound() end)
@@ -90,12 +105,14 @@ function nz.Rounds.Functions.StartRound()
 		//Notify
 		PrintMessage( HUD_PRINTTALK, "ROUND: "..nz.Rounds.Data.CurrentRound.." started" )
 		hook.Run("nz.Round.Start", nz.Rounds.Data.CurrentRound)
+		nz.Notifications.Functions.PlaySound("nz/round/round_start.mp3", 1)
 	end
 
 end
 
 function nz.Rounds.Functions.ResetGame()
 	//Main Behaviour
+	nz.Doors.Functions.LockAllDoors()
 	nz.Rounds.Data.CurrentState = ROUND_INIT
 	nz.Rounds.Functions.SendSync()
 	//Notify
@@ -111,9 +128,14 @@ function nz.Rounds.Functions.ResetGame()
 	for k,v in pairs(player.GetAll()) do
 		nz.Rounds.Functions.UnReady(v)
 	end
+	//Reset all downed players' downed status
+	for k,v in pairs(nz.Revive.Data.Players) do
+		k:KillDownedPlayer(true, true) 	//We set nosync on because we only need to sync once.
+	end
+	nz.Revive.Functions.SendSync()
 	//Remove all enemies
 	for k,v in pairs(nz.Config.ValidEnemies) do
-		for k2,v2 in pairs(ents.FindByClass(v)) do
+		for k2,v2 in pairs(ents.FindByClass(k)) do
 			v2:Remove()
 		end
 	end
@@ -136,6 +158,12 @@ function nz.Rounds.Functions.ResetGame()
 
 	//Clean up powerups
 	nz.PowerUps.Functions.CleanUp()
+	
+	//Reset easter eggs
+	nz.EE.Functions.Reset()
+	
+	//Reset merged navigation groups
+	nz.Nav.ResetNavGroupMerges()
 
 end
 
@@ -167,13 +195,31 @@ function nz.Rounds.Functions.CreateMode()
 				nz.Rounds.Functions.Create(v)
 			end
 		end
-		nz.Doors.Functions.LockAllDoors()
+		
+		//Re-enable navmesh visualization
+		for k,v in pairs(nz.Nav.Data) do
+			local navarea = navmesh.GetNavAreaByID(k)
+			if v.link then
+				navarea:SetAttributes(NAV_MESH_STOP)
+			else 
+				navarea:SetAttributes(NAV_MESH_AVOID) 
+			end
+		end
+		
 	elseif nz.Rounds.Data.CurrentState == ROUND_CREATE then
 		PrintMessage( HUD_PRINTTALK, "The mode has been set to play mode!" )
 		nz.Rounds.Data.CurrentState = ROUND_INIT
 		//We are in play mode
 		for k,v in pairs(player.GetAll()) do
 			v:SetAsSpec()
+		end
+		
+		//Set them to not solid to make Traces go through (gunshots)
+		for k,v in pairs(ents.FindByClass("nav_gate")) do
+			v:SetNotSolid(true)
+		end
+		for k,v in pairs(ents.FindByClass("nav_room_controller")) do
+			v:SetNotSolid(true)
 		end
 	end
 	nz.Rounds.Functions.SendSync()
@@ -190,7 +236,13 @@ function nz.Rounds.Functions.SetupGame()
 		v:SetFrags(0) //Reset all player kills
 	end
 
+	nz.Mapping.Functions.CleanUpMap()
 	nz.Doors.Functions.LockAllDoors()
+	
+	//Reset navigation attributes so they don't save into the actual .nav file.
+	for k,v in pairs(nz.Nav.Data) do
+		navmesh.GetNavAreaByID(k):SetAttributes(v.prev)
+	end
 
 	//Open all doors with no price and electricity requirement
 	for k,v in pairs(ents.GetAll()) do
@@ -234,7 +286,7 @@ function nz.Rounds.Functions.RoundHandler()
 			//Reset the start timer
 			nz.Rounds.Data.StartTime = nil
 			// notify why, just print for now
-			print(pre)
+			--if pre != nil then print(pre) end
 			return //Don't process any further than here
 		end
 
@@ -247,13 +299,30 @@ function nz.Rounds.Functions.RoundHandler()
 	end
 
 	//If all players are dead, then end the game.
-	if !nz.Rounds.Functions.CheckAlive() and (nz.Rounds.Data.CurrentState == ROUND_PROG or nz.Rounds.Data.CurrentState == ROUND_PREP) then
+	if !nz.Rounds.Functions.CheckAlive() and nz.Rounds.Functions.IsInGame() then
 		nz.Rounds.Functions.EndRound()
 	end
 
+	local numzombies = nz.Enemies.Functions.TotalCurrentEnemies()
+	
 	//If we've killed all the zombies, then progress to the next level.
-	if (nz.Rounds.Data.KilledZombies == nz.Rounds.Data.MaxZombies) and nz.Rounds.Data.CurrentState == ROUND_PROG then
-		nz.Rounds.Functions.PrepareRound()
+	if (nz.Rounds.Data.KilledZombies >= nz.Rounds.Data.MaxZombies) and nz.Rounds.Data.CurrentState == ROUND_PROG then
+		if numzombies <= 0 then
+			nz.Rounds.Functions.PrepareRound()
+		elseif !CurRoundOverSpawned then //To not spam it every second upon overspawning - only once per round (reset on Prepare)
+			print("The wave was overspawning by "..numzombies.."! Kill the remaining zombies to progress.")
+			CurRoundOverSpawned = true
+		end
+	end
+	
+	//Uh-oh! Looks like all zombies have spawned, yet they aren't enough to satisfy the round limit!
+	if (nz.Rounds.Data.ZombiesSpawned >= nz.Rounds.Data.MaxZombies) and numzombies < (nz.Rounds.Data.MaxZombies - nz.Rounds.Data.KilledZombies) and nz.Rounds.Data.CurrentState == ROUND_PROG then
+		local diff = (nz.Rounds.Data.MaxZombies - nz.Rounds.Data.KilledZombies) - numzombies
+		//Apparently not?
+		if diff <= 0 then return end
+		
+		nz.Rounds.Data.ZombiesSpawned = nz.Rounds.Data.ZombiesSpawned - diff
+		print("The wave was underspawning by "..diff.."! Spawning more zombies ...")
 	end
 
 end

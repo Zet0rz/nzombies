@@ -1,0 +1,7 @@
+"VertexlitGeneric"
+{
+	"$basetexture" "Models/CoDWaW/Beat the Zombie/Perk A Cola Machines/Power_On"
+	"$surfaceprop" "Metal"
+	"$nocull" 1
+                "$selfillum" 1
+}

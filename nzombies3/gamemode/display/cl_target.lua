@@ -1,11 +1,24 @@
 //
 
+local traceents = {
+	["wall_buys"] = true,
+	["nut_zombie"] = true,
+	["breakable_entry"] = true,
+	["random_box"] = true,
+	["random_box_windup"] = true,
+	["perk_machine"] = true,
+	["player_spawns"] = true,
+	["zed_spawns"] = true,
+	["pap_weapon_fly"] = true,
+}
+
 function nz.Display.Functions.GetTarget()
 	local tr = util.GetPlayerTrace( LocalPlayer() )
 	local trace = util.TraceLine( tr )
 	if (!trace.Hit) then return end
 	if (!trace.HitNonWorld) then return end
 	
+	--print(trace.Entity:GetClass())
 	return trace.Entity
 end
 
@@ -15,7 +28,15 @@ function nz.Display.Functions.GetText( ent )
 	local text = ""
 	
 	if ent:IsPlayer() then
-		text = ent:Nick() .. " - " .. ent:Health() .. " HP"
+		if ent:GetNotDowned() then
+			text = ent:Nick() .. " - " .. ent:Health() .. " HP"
+		else
+			text = "Hold E to revive "..ent:Nick()
+		end
+	end
+	
+	if class == "whoswho_downed_clone" then
+		text = "Hold E to revive "..ent:GetPerkOwner():Nick()
 	end
 	
 	if class == "wall_buys" then
@@ -31,24 +52,20 @@ function nz.Display.Functions.GetText( ent )
 		end
 	end
 	
-	if class == "nut_zombie" then
-		text = "Health: " .. ent:Health()
-	end
-	
 	if class == "breakable_entry" then
-		if ent:Health() < nz.Config.MaxPlanks * 10 then
+		if ent:GetNumPlanks() < nz.Config.MaxPlanks then
 			text = "Hold E to rebuild the barricade."
 		end
 	end
 	
 	if class == "random_box" then
 		if !ent:GetOpen() then
-			text = "Press E to buy a random weapon for 950 points."
+			text = nz.PowerUps.Functions.IsPowerupActive("firesale") and "Press E to buy a random weapon for 10 points." or "Press E to buy a random weapon for 950 points."
 		end
 	end
 	
 	if class == "random_box_windup" then
-		if !ent:GetWinding() then
+		if !ent:GetWinding() and ent:GetWepClass() != "nz_box_teddy" then
 			local wepclass = ent:GetWepClass()
 			local wep = weapons.Get(wepclass)
 			local name = "UNKNOWN" 
@@ -60,9 +77,22 @@ function nz.Display.Functions.GetText( ent )
 		end
 	end
 	
+	if class == "pap_weapon_trigger" then
+		local wepclass = ent:GetWepClass()
+		local wep = weapons.Get(wepclass)
+		local name = "UNKNOWN" 
+		if wep != nil then 
+			name = wep.PrintName 
+		end
+		if name == nil then name = wepclass end
+		text = "Press E to take " .. name .. " from the machine."
+	end
+	
 	if class == "perk_machine" then
 		if !ent:IsOn() then
 			text = "No Power."
+		elseif ent:GetBeingUsed() then
+			text = "Currently in use."
 		else
 			local perkData = nz.Perks.Functions.Get(ent:GetPerkID())
 			//Its on
@@ -76,7 +106,7 @@ function nz.Display.Functions.GetText( ent )
 	
 	local door_data = nil
 	
-	if ent:IsDoor() then
+	if ent:IsDoor() or ent:IsButton() or ent:GetClass() == "class C_BaseEntity" then
 		//Normal Doors
 		door_data = nz.Doors.Data.LinkFlags[ent:doorIndex()]
 	end
@@ -86,26 +116,38 @@ function nz.Display.Functions.GetText( ent )
 		door_data = nz.Doors.Data.BuyableProps[ent:EntIndex()]
 	end
 	
-	//If we have door data
-	if door_data != nil then
+	//If we have door data - Don't draw target ID if the door can't even be bought
+	if door_data != nil and tonumber(door_data.buyable) == 1 then
 		local price = door_data.price
 		local req_elec = door_data.elec
 		local link = door_data.link
 		if req_elec == "1" and !IsElec() then
 			text = "You must turn on the electricity first!"
 		else
-			if !nz.Doors.Data.OpenedLinks[link] == true then
+			if !nz.Doors.Data.OpenedLinks[tonumber(link)] == true then
 				if price != "0" then
+					--print("Still here", nz.Doors.Data.OpenedLinks[tonumber(link)])
 					text = "Press E to open for " .. price .. " points."
 				end
 			end
 		end
+	elseif door_data != nil and tonumber(door_data.buyable) != 1 and nz.Rounds.Data.CurrentState == ROUND_CREATE then
+		text = "This door is locked and cannot be bought in-game."
+		--PrintTable(door_data)
 	end
 	
 	//Create Only
 	if nz.Rounds.Data.CurrentState == ROUND_CREATE then
 		if class == "player_spawns" then
 			text = "Player Spawn"
+		end
+		
+		if class == "player_handler" then
+			text = "Player Handler"
+		end
+		
+		if class == "random_box_handler" then
+			text = "Random Box Weapons Handler"
 		end
 		
 		if class == "zed_spawns" then
