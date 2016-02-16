@@ -24,7 +24,7 @@ function ENT:Initialize()
 end
 
 function ENT:Use( activator, caller )
-	if !self.Used and nz.Rounds.Functions.IsInGame() then
+	if !self.Used and Round:InProgress() then
 		nz.EE.Functions.ActivateEgg( self )
 	end
 end

@@ -1,5 +1,5 @@
-EasterEggData = {}
-EasterEggData.AudioChannel = nil
+EasterEggData = EasterEggData or {}
+EasterEggData.AudioChannel = EasterEggData.AudioChannel or nil
 
 net.Receive("EasterEggSong", function()
 	EasterEggData.PlaySong()
@@ -49,10 +49,12 @@ function EasterEggData.PlaySong(url)
 	//We have a preloaded channel
 	if IsValid(EasterEggData.AudioChannel) then
 		EasterEggData.AudioChannel:Play()
+		print("Playing easter egg song!")
 	//We need to instantly play the given link
 	elseif url then
 		--print("Playing!")
 		sound.PlayURL( url, "", function(channel) EasterEggData.AudioChannel = channel end)
+		print("Easter egg song was not preloaded, will play through streaming.")
 	//No link and no preload, parse the link and loopback to above
 	else
 		EasterEggData.ParseSong(true)
@@ -67,4 +69,5 @@ end
 	
 function EasterEggData.PreloadSong(song)
 	sound.PlayURL( song, "noplay noblock", function(channel) EasterEggData.AudioChannel = channel end)
+	print("Successfully preloaded easter egg song")
 end

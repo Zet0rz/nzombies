@@ -81,7 +81,7 @@ function MenuToolBar:Init()
 
 	local ready = self:AddEntry( "READY", "large", "say", "/ready" )
 	function ready:Think()
-		if nz.Rounds.Data.CurrentState == ROUND_PROG or nz.Rounds.Data.CurrentState == ROUND_PREP then
+		if Round:InProgress() then
 			if LocalPlayer():Alive()  then
 				self:SetText( "DROPOUT" )
 				self:SetConsoleCommand( "say", "/dropout" )
@@ -90,13 +90,13 @@ function MenuToolBar:Init()
 				self:SetConsoleCommand( "say", "/dropin" )
 			end
 		else
-			if nz.Rounds.ReadyPlayers[LocalPlayer():EntIndex()] then 
+			if LocalPlayer():IsReady() then
 				self:SetText( "UNREADY" )
 			else
 				self:SetText( "READY" )
 			end
 			self.DoClick = function()
-				if nz.Rounds.ReadyPlayers[LocalPlayer():EntIndex()] then
+				if LocalPlayer():IsReady() then
 					RunConsoleCommand( "say", "/unready" )
 				else
 					RunConsoleCommand( "say", "/ready" )
@@ -208,7 +208,7 @@ vgui.Register( "NZMainMenuToolBar", MenuToolBar, "DPanel")
 local MenuToolBarEntry = {}
 
 function MenuToolBarEntry:Init()
-	self:SetSize( 300, 60 )
+	self:SetSize( 260, 60 )
 	self:SetFont( "pier_large" )
 	self:SetContentAlignment( 5 )
 	self:SetTextColor( Color( 255, 255, 255 ) )
@@ -350,9 +350,9 @@ end
 local bloodline_points = Material("bloodline_score.png", "unlitgeneric smooth")
 function PlayerList:Paint()
 	local c = 0
-	local n = #nz.Rounds.ReadyPlayers
+	local n = #player.GetAllReady()
 	local w, h = self:GetSize()
-	for k,v in pairs(nz.Rounds.ReadyPlayers) do
+	for k,v in pairs( player.GetAllReady() ) do
 		local ply = Entity(k)
 		local text = ""
 		surface.SetMaterial(bloodline_points)

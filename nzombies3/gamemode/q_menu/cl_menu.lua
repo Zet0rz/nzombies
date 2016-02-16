@@ -233,7 +233,7 @@ end
 
 function nz.QMenu.Functions.Open()
 	//Check if we're in create mode
-	if nz.Rounds.Data.CurrentState == ROUND_CREATE and LocalPlayer():IsSuperAdmin() then
+	if Round:InState( ROUND_CREATE ) and LocalPlayer():IsSuperAdmin() then
 		if !IsValid(nz.QMenu.Data.MainFrame) then
 			if LocalPlayer():GetActiveWeapon():GetClass() == "nz_multi_tool" then
 				nz.QMenu.Functions.CreateToolsMenu()

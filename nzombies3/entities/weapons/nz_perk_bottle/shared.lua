@@ -113,7 +113,7 @@ function SWEP:Deploy()
 		if IsValid(self) and IsValid(self.Owner) then
 			if self.Owner:Alive() then
 				self:EmitSound("nz/perks/burp.wav")
-				timer.Simple(0.1,function() self:Remove() end)
+				timer.Simple(0.1,function() self.Owner.UsingSpecialWep = nil self:Remove() end)
 			end
 		end
 	end)
@@ -166,4 +166,9 @@ end
 
 function SWEP:ShouldDropOnDie()
 	return false
+end
+
+-- So it counts as special weapon in the gamemode
+function SWEP:IsSpecial()
+	return true
 end

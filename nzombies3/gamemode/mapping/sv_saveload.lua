@@ -71,11 +71,23 @@ function nz.Mapping.Functions.SaveConfig(name)
 	
 	local buyableprop_spawns = {}
 	for k,v in pairs(ents.FindByClass("prop_buys")) do
+		
+		-- Convert the table to a flag string - if it even has any
+		local data = v:GetDoorData()
+		local flagstr
+		if data then
+			flagstr = ""
+			for k2, v2 in pairs(data) do
+				flagstr = flagstr..k2.."="..v2..","
+			end
+			flagstr = string.Trim(flagstr, ",")
+		end
+		
 		table.insert(buyableprop_spawns, {
 		pos = v:GetPos(),
 		angle = v:GetAngles(),
 		model = v:GetModel(),
-		flags = v.Data,
+		flags = flagstr,
 		})
 	end
 	
@@ -103,9 +115,6 @@ function nz.Mapping.Functions.SaveConfig(name)
 		pos = v:GetPos(),
 		angle = v:GetAngles(),
 		model = v:GetModel(),
-		modelX = v.CurModelX and v.CurModelX or 2,
-		modelY = v.CurModelY and v.CurModelY or 2,
-		modelZ = v.CurModelZ and v.CurModelZ or 0,
 		})
 	end
 		
@@ -128,18 +137,18 @@ function nz.Mapping.Functions.SaveConfig(name)
 	
 	//Normal Map doors
 	local door_setup = {}
-	for k,v in pairs(nz.Doors.Data.LinkFlags) do
+	for k,v in pairs(Doors.MapDoors) do
 		local flags = ""
 		for k2, v2 in pairs(v) do
 			flags = flags..k2.."="..v2..","
 		end
 		flags = string.Trim(flags, ",")
-		v = nz.Doors.Functions.doorIndexToEnt(k)
-		if v:IsDoor() then
+		door = Doors:DoorIndexToEnt(k)
+		if door:IsDoor() then
 			door_setup[k] = {
 			flags = flags,
 			}
-			--print(v.Data)
+			--print(door.Data)
 		end
 	end
 	--PrintTable(door_setup)
@@ -253,8 +262,8 @@ function nz.Mapping.Functions.ClearConfig()
 	end
 	
 	//Normal Map doors
-	for k,v in pairs(nz.Doors.Data.LinkFlags) do
-		nz.Doors.Functions.RemoveMapDoorLink( k )
+	for k,v in pairs(Doors.MapDoors) do
+		Doors:RemoveMapDoorLink( k )
 	end
 	
 	for k,v in pairs(ents.FindByClass("breakable_entry")) do
@@ -273,13 +282,22 @@ function nz.Mapping.Functions.ClearConfig()
 			v:Remove()
 		end
 	end
+	
+	nz.Mapping.Functions.CleanUpMap()
+	
 	nz.QMenu.Data.SpawnedEntities = {}
 	
 	nz.Mapping.MapSettings = {}
 	
+	Doors.MapDoors = {}
+	Doors.PropDoors = {}
+	
 	//Sync
-	nz.Rounds.Functions.SendSync()
-	nz.Doors.Functions.SendSync()
+	FullSyncModules["Round"]()
+	
+	-- Clear all door data
+	net.Start("nzClearDoorData")
+	net.Broadcast()
 end
 
 function nz.Mapping.Functions.LoadConfig( name )
@@ -350,12 +368,7 @@ function nz.Mapping.Functions.LoadConfig( name )
 		
 		if data.BlockSpawns then
 			for k,v in pairs(data.BlockSpawns) do
-				//If X,Y,Z has been set on it, use those values
-				if v.modelX and v.modelY and v.modelZ then
-					nz.Mapping.Functions.BlockSpawn(v.pos, v.angle, v.model, nil, v.modelX, v.modelY, v.modelZ)
-				else
-					nz.Mapping.Functions.BlockSpawn(v.pos, v.angle, v.model)
-				end
+				nz.Mapping.Functions.BlockSpawn(v.pos, v.angle, v.model)
 			end
 		end
 		
@@ -377,12 +390,6 @@ function nz.Mapping.Functions.LoadConfig( name )
 			end
 		end
 		
-		if data.PlayerHandler then
-			for k,v in pairs(data.PlayerHandler) do
-				nz.Mapping.Functions.PlayerHandler(v.pos, v.angle, v.startwep, v.startpoints, v.numweps, v.eeurl)
-			end
-		end
-		
 		if data.EasterEggs then
 			for k,v in pairs(data.EasterEggs) do
 				nz.Mapping.Functions.EasterEgg(v.pos, v.angle, v.model)
@@ -392,8 +399,8 @@ function nz.Mapping.Functions.LoadConfig( name )
 		//Normal Map doors
 		if data.DoorSetup then
 			for k,v in pairs(data.DoorSetup) do
-				print(v.flags)
-				nz.Doors.Functions.CreateMapDoorLink(k, v.flags)
+				--print(v.flags)
+				Doors:CreateMapDoorLink(k, v.flags)
 			end
 		end
 		
@@ -459,6 +466,7 @@ function nz.Mapping.Functions.LoadConfig( name )
 	
 end
 
+util.AddNetworkString("nzCleanUp")
 function nz.Mapping.Functions.CleanUpMap()
 	game.CleanUpMap(true, {
 		"breakable_entry",
@@ -476,20 +484,17 @@ function nz.Mapping.Functions.CleanUpMap()
 		"easter_egg"
 	})
 	//Gotta reset the doors and other entites' values!
-	for k,v in pairs(nz.Doors.Data.LinkFlags) do
-		local door = nz.Doors.Functions.doorIndexToEnt(k)
-		door.elec = tonumber(v.elec)
-		door.price = tonumber(v.price)
-		door.link = tonumber(v.link)
-		door.buyable = tonumber(v.buyable)
-		door.rebuyable = tonumber(v.rebuyable)
-		door.Locked = true
+	for k,v in pairs(Doors.MapDoors) do
+		local door = Doors:DoorIndexToEnt(k)
+		door:SetLocked(true)
 		if door:IsDoor() then
-			door:DoorLock()
+			door:LockDoor()
 		elseif door:IsButton() then
-			door:ButtonLock()
+			door:LockButton()
 		end
 	end
+	net.Start("nzCleanUp")
+	net.Broadcast()
 end
 
 hook.Add("Initialize", "nz_Loadmaps", function()

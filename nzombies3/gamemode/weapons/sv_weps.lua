@@ -1,16 +1,6 @@
-//
-
-function nz.Weps.Functions.IsFAS2( wep )
-	if wep.Category == "FA:S 2 Weapons" then
-		return true
-	end
-
-	return false
-end
-
 function nz.Weps.Functions.ApplySpeed( ply, wep )
-	print(ply, wep, wep.speed)
-	if nz.Weps.Functions.IsFAS2( wep ) and wep.speed != true then
+	--print(ply, wep, wep.speed)
+	if wep:IsFAS2() and wep.speed != true then
 		print("Applying Speed to: " .. wep.ClassName)
 		local data = {}
 		//Normal
@@ -51,7 +41,7 @@ function nz.Weps.Functions.ApplySpeed( ply, wep )
 end
 
 function nz.Weps.Functions.ApplyDTap( ply, wep )
-	if nz.Weps.Functions.IsFAS2( wep ) and wep.dtap != true then
+	if wep:IsFAS2() and wep.dtap != true then
 		print("Applying Dtap to: " .. wep.ClassName)
 		local data = {}
 		//Normal
@@ -81,7 +71,7 @@ function nz.Weps.Functions.ApplyDTap( ply, wep )
 end
 
 function nz.Weps.Functions.RemoveSpeed( ply, wep )
-	if nz.Weps.Functions.IsFAS2( wep ) and wep.speed then
+	if wep:IsFAS2() and wep.speed then
 		print("Removing Speed from: " .. wep.ClassName)
 		local data = {}
 		//Normal
@@ -111,7 +101,7 @@ function nz.Weps.Functions.RemoveSpeed( ply, wep )
 end
 
 function nz.Weps.Functions.RemoveDTap( ply, wep )
-	if nz.Weps.Functions.IsFAS2( wep ) and wep.dtap then
+	if wep:IsFAS2() and wep.dtap then
 		print("Removing Dtap from: " .. wep.ClassName)
 		local data = {}
 		//Normal
@@ -136,10 +126,10 @@ function nz.Weps.Functions.ApplyPaP( ply, wep )
 	if wep.pap != true then
 		print("Applying PaP to: " .. wep.ClassName)
 		--wep:SetMaterial("models/XQM/LightLineRed_tool.vtf")
-		
+
 		//Call OnPaP function for specially coded weapons
 		if wep.OnPaP then wep:OnPaP() end
-		
+
 		local data = {}
 		//Attach the weapon to the data
 		data["wep"] = wep
@@ -164,37 +154,88 @@ end
 end]]
 
 --hook.Add("OnEntityCreated", "nz.Weps.OnEntityCreated", nz.Weps.Functions.OnWepCreated)
-
-//We use a seperate function for this, as this for some reason works
-function nz.Weps.Functions.OnWeaponAdded( weapon )
-
-	if weapon:GetClass() == "nz_perk_bottle" then return end
-
-	//0 seconds timer for the next tick, where the weapon's owner will be valid
-	timer.Simple(0, function()
-		local ply = weapon:GetOwner()
-		if nz.Rounds.Data.CurrentState != ROUND_CREATE then
-				
-			if ply:HasPerk("mulekick") then
-				if #ply:GetWeapons() > 3 then
-					ply:StripWeapon( ply:GetActiveWeapon():GetClass() )
-				elseif #ply:GetWeapons() == 3 then
-					ply.ThirdWeapon = weapon
-				end
-			else
-				if #ply:GetWeapons() > 2 then
-					ply:StripWeapon( ply:GetActiveWeapon():GetClass() )
+function GetPriorityWeaponSlot(ply)
+	if ply:HasPerk("mulekick") then
+		for i = 1, 3 do
+			local exists = false
+			for k,v in pairs(ply:GetWeapons()) do
+				if !exists and v:GetNWInt("SwitchSlot") == i then
+					exists = true
 				end
 			end
-			ply:SelectWeapon( weapon:GetClass() )
-			
+			if !exists then return i end
 		end
-	end)
+	else
+		for i = 1, 2 do
+			local exists = false
+			for k,v in pairs(ply:GetWeapons()) do
+				if !exists and v:GetNWInt("SwitchSlot") == i then
+					exists = true
+				end
+			end
+			if !exists then return i end
+		end
+	end
+	return ply:GetActiveWeapon():GetNWInt("SwitchSlot", 1), true
+end
+
+local function OnWeaponAdded( weapon )
+
+	if !weapon:IsSpecial() then
+		-- 0 seconds timer for the next tick, where the weapon's owner will be valid
+		timer.Simple(0, function()
+			local ply = weapon:GetOwner()
+			if !Round:InState( ROUND_CREATE ) then
+
+				--[[if ply:HasPerk("mulekick") then
+					if GetNumberNonSpecialWeapons(ply) > 3 then
+						weapon:SetNWInt( "SwitchSlot", ply:GetActiveWeapon():GetNWInt( "SwitchSlot", 1) )
+						print(weapon, 1, "Stage 2")
+						ply:StripWeapon( ply:GetActiveWeapon():GetClass() )
+					else
+						weapon:SetNWInt( "SwitchSlot", GetPriorityWeaponSlot(ply) )
+						print(weapon, 1, "Stage 3")
+					end
+				else
+					if GetNumberNonSpecialWeapons(ply) > 2 then
+						weapon:SetNWInt( "SwitchSlot", ply:GetActiveWeapon():GetNWInt( "SwitchSlot", 1) )
+						print(weapon, 1, "Stage 4")
+						ply:StripWeapon( ply:GetActiveWeapon():GetClass() )
+					elseif GetNumberNonSpecialWeapons(ply) == 1 then
+						weapon:SetNWInt( "SwitchSlot", 1 )
+						print(weapon, 1, "Stage 5")
+					else
+						weapon:SetNWInt( "SwitchSlot", 2 )
+						print(weapon, 2, "Stage 6", GetNumberNonSpecialWeapons(ply))
+					end
+				end]]
+				
+				local slot, exists = GetPriorityWeaponSlot(ply)
+				if exists then ply:StripWeapon( ply:GetActiveWeapon():GetClass() ) end
+				weapon:SetNWInt( "SwitchSlot", slot )
+				
+				weapon.Weight = 10000
+				ply:SelectWeapon(weapon:GetClass())
+				timer.Simple(0, function()
+					if IsValid(ply) then
+						if ply:HasPerk("speed") then
+							nz.Weps.Functions.ApplySpeed( ply, weapon )
+						end
+						if ply:HasPerk("dtap") or ply:HasPerk("dtap2") then
+							nz.Weps.Functions.ApplyDTap( ply, weapon )
+						end
+						ply:SelectWeapon(weapon:GetClass())
+					end
+					weapon.Weight = 0
+				end)
+			end
+		end)
+	end
 	
 end
 
-//Hooks
-hook.Add("WeaponEquip", "OnWeaponAdded", nz.Weps.Functions.OnWeaponAdded)
+--Hooks
+hook.Add("WeaponEquip", "nzOnWeaponAdded", OnWeaponAdded)
 
 hook.Add("PlayerCanPickupWeapon", "PreventWhosWhoWeapons", function(ply, wep)
 	if IsValid(wep:GetOwner()) and wep:GetOwner():GetClass() == "whoswho_downed_clone" then return false end

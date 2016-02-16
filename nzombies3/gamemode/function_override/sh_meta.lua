@@ -5,8 +5,9 @@ if SERVER then
 	
 	function ReplaceReloadFunction(wep)
 		//Either not a weapon, doesn't have a reload function, or is FAS2
-		if nz.Weps.Functions.IsFAS2(wep) then return end
+		if wep:IsFAS2() then return end
 		local oldreload = wep.Reload
+		if !oldreload then return end
 		
 		--print("Weapon reload modified")
 		
@@ -50,6 +51,7 @@ if SERVER then
 	
 	function ReplacePrimaryFireCooldown(wep)
 		local oldfire = wep.PrimaryAttack
+		if !oldfire then return end
 		
 		--print("Weapon fire modified")
 		
@@ -57,7 +59,7 @@ if SERVER then
 			oldfire(wep)
 			
 			//FAS2 weapons have built-in DTap functionality
-			if nz.Weps.Functions.IsFAS2(wep) then return end
+			if wep:IsFAS2() then return end
 			//With double tap, reduce the delay for next primary fire to 2/3
 			if wep.Owner:HasPerk("dtap") or wep.Owner:HasPerk("dtap2") then
 				local delay = (wep:GetNextPrimaryFire() - CurTime())*0.66
@@ -67,8 +69,9 @@ if SERVER then
 	end
 	hook.Add("WeaponEquip", "ModifyWeaponNextFires", ReplacePrimaryFireCooldown)
 	
-	function ReplacePrimaryFireCooldown(wep)
+	function ReplaceAimDownSight(wep)
 		local oldfire = wep.SecondaryAttack
+		if !oldfire then return end
 		
 		--print("Weapon fire modified")
 		
@@ -86,7 +89,7 @@ if SERVER then
 			end
 		end
 	end
-	hook.Add("WeaponEquip", "ModifyWeaponNextFires", ReplacePrimaryFireCooldown)
+	hook.Add("WeaponEquip", "ModifyAimDownSights", ReplaceAimDownSight)
 	
 	hook.Add("DoAnimationEvent", "ReloadCherry", function(ply, event, data)
 		--print(ply, event, data)
@@ -96,18 +99,16 @@ if SERVER then
 				if IsValid(wep) and wep:Clip1() < wep:GetMaxClip1() then
 					local pct = 1 - (wep:Clip1()/wep:GetMaxClip1())
 					local pos, ang = ply:GetPos() + ply:GetAimVector()*10 + Vector(0,0,50), ply:GetAimVector()
-					timer.Create("Cherry"..ply:EntIndex(), 0.1, 5, function()
-						if IsValid(ply) then
-							--print("effect here")
-							local effectdata = EffectData()
-							effectdata:SetOrigin( pos )
-							effectdata:SetNormal( ang )
-							effectdata:SetMagnitude( 8 )
-							effectdata:SetScale( 1 )
-							effectdata:SetRadius( 16 )
-							util.Effect( "TeslaHitBoxes", effectdata )
-						end
-					end)
+					nz.Effects.Functions.Tesla( {
+						pos = ply:GetPos() + Vector(0,0,50),
+						ent = ply,
+						turnOn = true,
+						dieTime = 1,
+						lifetimeMin = 0.05*pct,
+						lifetimeMax = 0.1*pct,
+						intervalMin = 0.01,
+						intervalMax = 0.02,
+					})
 					--print(pct)
 					local zombies = ents.FindInSphere(ply:GetPos(), 200*pct)
 					for k,v in pairs(zombies) do
@@ -155,19 +156,25 @@ if SERVER then
 	
 else
 	
-	-- Manual speedup of the reload function on FAS2 weapons - seemed like the original solution broke along the way
+	--[[ Manual speedup of the reload function on FAS2 weapons - seemed like the original solution broke along the way
 	function ReplaceReloadFunction(wep)
-		if wep.Category == "FA:S 2 Weapons" then
+		print(wep, "HUKDAHD1")
+		if wep:IsFAS2() then
+			print(wep, "HUKDAHD2")
 			local oldreload = wep.Reload
+			if !oldreload then return end
+			print(wep, "HUKDAHD3")
 			wep.Reload = function()
+				print(wep, "HUKDAHD4")
 				oldreload(wep)
 				if LocalPlayer():HasPerk("speed") then
 					wep.Wep:SetPlaybackRate(2)
 				end
 			end
+			print(wep, "HUKDAHD5")
 		end
 	end
-	hook.Add("HUDWeaponPickedUp", "ModifyFAS2WeaponReloads", ReplaceReloadFunction)
+	hook.Add("HUDWeaponPickedUp", "ModifyFAS2WeaponReloads", ReplaceReloadFunction)]]
 	
 end
 
@@ -202,20 +209,12 @@ function GM:EntityFireBullets(ent, data)
 	
 	//If we hit anything, move the source of the bullets up to that point
 	if tr.Hit and tr.HitPos then
-		data.Src = tr.HitPos - data.Dir
-		if ent:HasPerk("dtap2") and !ent.dtap2 then
-			local data2 = table.Copy(data)
-			data2.Spread = Vector(0.2, 0.2, 0)
-			ent.dtap2 = true
-			ent:FireBullets(data2)
-			ent.dtap2 = nil
+		data.Src = tr.HitPos - data.Dir*5
+		if ent:HasPerk("dtap2") then
+			data.Num = data.Num * 2
 		end
 		return true
-	elseif ent:HasPerk("dtap2") and !ent.dtap2 then
-		local data2 = table.Copy(data)
-		data2.Spread = Vector(0.2, 0.2, 0)
-		ent.dtap2 = true
-		ent:FireBullets(data2)
-		ent.dtap2 = nil
+	elseif ent:HasPerk("dtap2") then
+		data.Num = data.Num * 2
 	end
 end

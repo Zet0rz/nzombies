@@ -201,12 +201,6 @@ function nz.Revive.Functions.DrawDamagedOverlay()
 	end
 end
 
-hook.Add( "HUDShouldDraw", "HideHUD", function( name )
-	if name == "CHudHealth" then return !GetConVar("nz_bloodoverlay"):GetBool() end
-	if name == "CHudAmmo" then return false end
-	if name == "CHudBattery" then return false end
-end )
-
 function nz.Revive.Functions.DrawTombstoneNotify()
 	local font = "nz.display.hud.small"
 	

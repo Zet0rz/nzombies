@@ -10,8 +10,13 @@ ENT.Models = { "models/zed/malezed_04.mdl", "models/zed/malezed_06.mdl", "models
 function ENT:SpecialInit()
     self:SetSkin(math.random(0, self:SkinCount() - 1))
     if SERVER then
-        self:SetRunSpeed( nz.Curves.Data.Speed[nz.Rounds.Data.CurrentRound] )
-        self:SetHealth( nz.Curves.Data.Health[nz.Rounds.Data.CurrentRound] )
+        local speeds = Round:GetZombieData().nz_zombie_special_burning.speeds
+		if speeds then
+			self:SetRunSpeed( nz.Misc.Functions.WeightedRandom(speeds) )
+		else
+			self:SetRunSpeed( nz.Curves.Data.Speed[ Round:GetNumber() ] )
+		end
+        self:SetHealth( Round:GetZombieHealth() or 75 )
         self:Flames( true )
     end
 end

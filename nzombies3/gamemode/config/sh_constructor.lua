@@ -7,52 +7,6 @@ nz.Config = {}
 
 //Zombie table - Moved to shared area for client collision prediction (barricades)
 nz.Config.ValidEnemies = {
-	["nut_zombie"] = {
-		//Set to false to disable the spawning of this zombie
-		Valid = true,
-		//Allow you to scale damage on a per-hitgroup basis
-		ScaleDMG = function(zombie, hitgroup, dmginfo)
-			//Headshots for double damage
-			if hitgroup == HITGROUP_HEAD then dmginfo:ScaleDamage(2) end
-		end,
-		//Function runs whenever the zombie is damaged (NOT when killed)
-		OnHit = function(zombie, attacker, hitgroup)
-			//If player is playing and is not downed, give points
-			if attacker:IsPlayer() and attacker:GetNotDowned() then
-				attacker:GivePoints(10)
-			end
-		end,
-		//Function is run whenever the zombie is killed
-		OnKilled = function(zombie, attacker, hitgroup)
-			if attacker:IsPlayer() and attacker:GetNotDowned() then
-				if hitgroup == HITGROUP_HEAD then
-					attacker:GivePoints(100)
-				else
-					attacker:GivePoints(50)
-				end
-			end
-		end
-	},
-	["nut_zombie_ex"] = {
-		Valid = true,
-		ScaleDMG = function(zombie, hitgroup, dmginfo)
-			if hitgroup == HITGROUP_HEAD then dmginfo:ScaleDamage(2) end
-		end,
-		OnHit = function(zombie, attacker, hitgroup)
-			if attacker:IsPlayer() and attacker:GetNotDowned() then
-				attacker:GivePoints(10)
-			end
-		end,
-		OnKilled = function(zombie, attacker, hitgroup)
-			if attacker:IsPlayer() and attacker:GetNotDowned() then
-				if hitgroup == HITGROUP_HEAD then
-					attacker:GivePoints(100)
-				else
-					attacker:GivePoints(50)
-				end
-			end
-		end
-	},
 	["nz_zombie_walker"] = {
 		//Set to false to disable the spawning of this zombie
 		Valid = true,
@@ -62,16 +16,20 @@ nz.Config.ValidEnemies = {
 			if hitgroup == HITGROUP_HEAD then dmginfo:ScaleDamage(2) end
 		end,
 		//Function runs whenever the zombie is damaged (NOT when killed)
-		OnHit = function(zombie, attacker, hitgroup)
+		OnHit = function(zombie, dmginfo, hitgroup)
+			local attacker = dmginfo:GetAttacker()
 			//If player is playing and is not downed, give points
 			if attacker:IsPlayer() and attacker:GetNotDowned() then
 				attacker:GivePoints(10)
 			end
 		end,
 		//Function is run whenever the zombie is killed
-		OnKilled = function(zombie, attacker, hitgroup)
+		OnKilled = function(zombie, dmginfo, hitgroup)
+			local attacker = dmginfo:GetAttacker()
 			if attacker:IsPlayer() and attacker:GetNotDowned() then
-				if hitgroup == HITGROUP_HEAD then
+				if dmginfo:GetDamageType() == DMG_CLUB then
+					attacker:GivePoints(130)
+				elseif hitgroup == HITGROUP_HEAD then
 					attacker:GivePoints(100)
 				else
 					attacker:GivePoints(50)
@@ -84,14 +42,18 @@ nz.Config.ValidEnemies = {
 		ScaleDMG = function(zombie, hitgroup, dmginfo)
 			if hitgroup == HITGROUP_HEAD then dmginfo:ScaleDamage(2) end
 		end,
-		OnHit = function(zombie, attacker, hitgroup)
+		OnHit = function(zombie, dmginfo, hitgroup)
+			local attacker = dmginfo:GetAttacker()
 			if attacker:IsPlayer() and attacker:GetNotDowned() then
 				attacker:GivePoints(10)
 			end
 		end,
-		OnKilled = function(zombie, attacker, hitgroup)
+		OnKilled = function(zombie, dmginfo, hitgroup)
+			local attacker = dmginfo:GetAttacker()
 			if attacker:IsPlayer() and attacker:GetNotDowned() then
-				if hitgroup == HITGROUP_HEAD then
+				if dmginfo:GetDamageType() == DMG_CLUB then
+					attacker:GivePoints(130)
+				elseif hitgroup == HITGROUP_HEAD then
 					attacker:GivePoints(100)
 				else
 					attacker:GivePoints(50)
@@ -135,7 +97,7 @@ if SERVER then
 	nz.Config.DifficultySpawnRateCurve = 1.01
 	//Health Curve
 	nz.Config.BaseDifficultyHealthCurve = 75
-	nz.Config.DifficultyHealthCurve = 0.2
+	nz.Config.DifficultyHealthCurve = 0.3
 	//Speed curve
 	nz.Config.BaseDifficultySpeedCurve = 60
 	nz.Config.DifficultySpeedCurve = 0.5
@@ -155,7 +117,8 @@ if SERVER then
 		speeds = {
 			[40] = 80,
 			[50] = 20
-		}
+		},
+		special = true
 	}}
 	nz.Config.EnemyTypes[2] = {["nz_zombie_walker"] = {
 		chance = 100,

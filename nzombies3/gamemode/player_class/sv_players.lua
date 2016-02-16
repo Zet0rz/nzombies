@@ -1,31 +1,40 @@
 //
 
 function nz.Players.Functions.PlayerNoClip( ply, desiredState )
-	if ply:Alive() and nz.Rounds.Data.CurrentState == ROUND_CREATE then
+	-- We hardcode the "knife" special weapons category to be called from noclip
+	local wep = ply:GetSpecialWeaponFromCategory( "knife" )
+	if IsValid(wep) and !ply.UsingSpecialWep then
+		SpecialWeapons.Weapons[wep:GetClass()].use(ply, wep)
+	end
+	
+	if ply:Alive() and Round:InState( ROUND_CREATE ) then
 		return ply:IsSuperAdmin()
 	end
 end
 
 function nz.Players.Functions.FullSync( ply )
-	//Electric
+	--Electric
 	nz.Elec.Functions.SendSync()
-	//PowerUps
+	--PowerUps
 	nz.PowerUps.Functions.SendSync()
-	//Doors
-	nz.Doors.Functions.SendSync()
-	//Perks
+	--Doors
+	--Doors.SendSync( ply )
+	--Perks
 	nz.Perks.Functions.SendSync()
-	//Rounds
-	nz.Rounds.Functions.SendSync()
-	//Revival System
+	--Rounds
+	--Round:SendSync( ply ) --handled differently since feb 2016
+	--Revival System
 	nz.Revive.Functions.SendSync()
-	//Fog
+	--Fog
 	nz.Fog.Functions.SendSync()
+	
+	-- A full sync module using the new rewrites
+	ply:SendFullSync()
 end
 
 function nz.Players.Functions.PlayerInitialSpawn( ply )
 	timer.Simple(1, function()
-		//Fully Sync
+		--Fully Sync
 		nz.Players.Functions.FullSync( ply )
 	end)
 end

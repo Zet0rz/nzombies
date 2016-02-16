@@ -37,6 +37,7 @@ function PLAYER:Loadout()
 			self.Player:FAS2_PickUpAttachment(v.key)
 		end
 	end
+	self.Player:Give("nz_quickknife_crowbar")
 	
 end
 function PLAYER:Spawn()

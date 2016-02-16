@@ -6,7 +6,7 @@ function nz.Mapping.Functions.ZedSpawn(pos, link, respawnable, ply)
 	pos.z = pos.z - ent:OBBMaxs().z
 	ent:SetPos( pos )
 	ent:Spawn()
-	ent.link = link
+	ent.link = tonumber(link)
 	//For the link displayer
 	if link != nil then
 		ent:SetLink(link)	
@@ -188,7 +188,7 @@ function nz.Mapping.Functions.PropBuy(pos,ang,model,flags,ply)
 	
 	//REMINDER APPY FLAGS
 	if flags != nil then
-		nz.Doors.Functions.CreateLink( prop, flags )
+		Doors:CreateLink( prop, flags )
 	end
 	
 	local phys = prop:GetPhysicsObject()
@@ -232,7 +232,7 @@ function nz.Mapping.Functions.Electric(pos,ang,model,ply)
 	return ent
 end
 
-function nz.Mapping.Functions.BlockSpawn(pos,ang,model,ply,x,y,z)
+function nz.Mapping.Functions.BlockSpawn(pos,ang,model,ply)
 	local block = ents.Create( "wall_block" )
 	block:SetModel( model )
 	block:SetPos( pos )
@@ -243,13 +243,6 @@ function nz.Mapping.Functions.BlockSpawn(pos,ang,model,ply,x,y,z)
 	local phys = block:GetPhysicsObject()
 	if phys:IsValid() then
 		phys:EnableMotion(false)
-	end
-	
-	if x and y and z then
-		block.CurModelX = x
-		block.CurModelY = y
-		block.CurModelZ = z
-		block:ReloadModel()
 	end
 	
 	if ply then

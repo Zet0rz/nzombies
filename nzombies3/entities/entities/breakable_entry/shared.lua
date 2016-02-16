@@ -113,7 +113,7 @@ end)
 
 if CLIENT then
 	function ENT:Draw()
-		if nz.Rounds.Data.CurrentState == ROUND_CREATE then
+		if Round:InState( ROUND_CREATE ) then
 			self:DrawModel()
 		end
 	end

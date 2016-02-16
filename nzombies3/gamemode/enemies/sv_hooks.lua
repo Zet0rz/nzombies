@@ -17,21 +17,22 @@ function nz.Enemies.Functions.OnEnemyKilled(enemy, attacker, dmginfo, hitgroup)
 		end
 	end
 	
-	//Run special on-killed function if it has any
-	nz.Config.ValidEnemies[enemy:GetClass()].OnKilled(enemy, dmginfo:GetAttacker(), hitgroup)
+	-- Run special on-killed function if it has any
+	nz.Config.ValidEnemies[enemy:GetClass()].OnKilled(enemy, dmginfo, hitgroup)
+	
+	if Round:InProgress() then
+		Round:SetZombiesKilled( Round:GetZombiesKilled() + 1 )
 
-	nz.Rounds.Data.KilledZombies = nz.Rounds.Data.KilledZombies + 1
-	//nz.Rounds.Data.ZombiesSpawned = nz.Rounds.Data.ZombiesSpawned - 1
-
-	//Chance a powerup spawning
-	if nz.PowerUps.Functions.IsPowerupActive("insta") == false and enemy:IsValid() then //Don't spawn powerups during instakill
-		if math.random(1, nz.Config.PowerUpChance) == 1 then // 1 in 100 chance - you can change this in config
-			nz.PowerUps.Functions.SpawnPowerUp(enemy:GetPos())
+		-- Chance a powerup spawning
+		if nz.PowerUps.Functions.IsPowerupActive("insta") == false and enemy:IsValid() then -- Don't spawn powerups during instakill
+			if math.random(1, nz.Config.PowerUpChance) == 1 then -- 1 in 100 chance - you can change this in config
+				nz.PowerUps.Functions.SpawnPowerUp(enemy:GetPos())
+			end
 		end
-	end
 
-	print("Killed Enemy: " .. nz.Rounds.Data.KilledZombies .. "/" .. nz.Rounds.Data.MaxZombies )
-	//Prevent this function from running on this zombie again
+		print("Killed Enemy: " .. Round:GetZombiesKilled() .. "/" .. Round:GetZombiesMax() )
+	end
+	-- Prevent this function from running on this zombie again
 	enemy.MarkedForDeath = true
 end
 
@@ -57,7 +58,7 @@ function GM:EntityTakeDamage(zombie, dmginfo)
 		
 		if zombie:Health() > dmginfo:GetDamage() then
 			if zombie.HasTakenDamageThisTick then return end
-			nz.Config.ValidEnemies[zombie:GetClass()].OnHit(zombie, dmginfo:GetAttacker(), hitgroup)
+			nz.Config.ValidEnemies[zombie:GetClass()].OnHit(zombie, dmginfo, hitgroup)
 			zombie.HasTakenDamageThisTick = true
 			//Prevent multiple damages in one tick (FA:S 2 Bullet penetration makes them hit 1 zombie 2-3 times per bullet)
 			timer.Simple(0, function() if IsValid(zombie) then zombie.HasTakenDamageThisTick = false end end)

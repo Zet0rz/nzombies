@@ -66,7 +66,7 @@ end
 
 function ENT:Draw()
 
-	if nz.Rounds.Data.CurrentState != ROUND_CREATE then return end
+	if !Round:InState( ROUND_CREATE ) then return end
 
 	-- Don't draw the grip if there's no chance of us picking it up
 	local ply = LocalPlayer()

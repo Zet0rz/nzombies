@@ -25,23 +25,24 @@ hook.Add( "PlayerSpawn", "PlayerSprintSpawn", function( ply )
 
 	ply:SetLastStaminaLoss( 0 )
 	ply:SetLastStaminaRecover( 0 )
-
-	ply:SetMaxRunSpeed( ply:GetRunSpeed() )
+	
+	-- Delay this a bit - it seems like it takes the old sprint speed from last round state (Creative speed)
+	timer.Simple(0.1, function() if IsValid(ply) then ply:SetMaxRunSpeed( ply:GetRunSpeed() ) end end)
 	--print(player_manager.GetPlayerClass(ply))
 
 end )
 
 
 hook.Add( "Think", "PlayerSprint", function()
-	if nz.Rounds.Data.CurrentState != ROUND_CREATE then
+	if !Round:InState( ROUND_CREATE ) then
 		for _, ply in pairs( player.GetAll() ) do
 			if ply:Alive() and ply:GetNotDowned() and ply:IsSprinting() and ply:GetStamina() >= 0 and ply:GetLastStaminaLoss() + 0.05 <= CurTime() then
 				ply:SetStamina( math.Clamp( ply:GetStamina() - ply:GetStaminaLossAmount(), 0, ply:GetMaxStamina() ) )
 				ply:SetLastStaminaLoss( CurTime() )
-				
+
 				-- Delay the recovery a bit, you can't sprint instantly after
 				ply:SetLastStaminaRecover( CurTime() + 0.75 )
-				
+
 				if ply:GetStamina() == 0 then
 					ply:SetRunSpeed( ply:GetWalkSpeed() )
 					ply:SetSprinting( false )
@@ -56,13 +57,13 @@ hook.Add( "Think", "PlayerSprint", function()
 end )
 
 hook.Add( "KeyPress", "OnSprintKeyPressed", function( ply, key )
-	if nz.Rounds.Data.CurrentState != ROUND_CREATE and ( key == IN_SPEED ) then
+	if !Round:InState( ROUND_CREATE ) and ( key == IN_SPEED ) then
 		ply:SetSprinting( true )
 	end
 end )
 
 hook.Add( "KeyRelease", "OnSprintKeyReleased", function( ply, key )
-	if nz.Rounds.Data.CurrentState != ROUND_CREATE and ( key == IN_SPEED ) then
+	if !Round:InState( ROUND_CREATE ) and ( key == IN_SPEED ) then
 		ply:SetSprinting( false )
 		ply:SetRunSpeed( ply:GetMaxRunSpeed() )
 	end

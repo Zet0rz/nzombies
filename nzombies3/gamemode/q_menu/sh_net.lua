@@ -21,7 +21,7 @@ if SERVER then
 	function nz.QMenu.Functions.HandleRequest( len, ply )
 		local model = net.ReadString()
 		local entity = net.ReadBool()
-		if nz.Rounds.Data.CurrentState == ROUND_CREATE then
+		if Round:InState( ROUND_CREATE ) then
 			print(ply:Nick() .. " requested prop " .. model)
 			if ply:IsSuperAdmin() then
 				local tr = util.GetPlayerTrace( ply )

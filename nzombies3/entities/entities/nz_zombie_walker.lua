@@ -11,12 +11,12 @@ function ENT:SpecialInit()
     self:SetSkin(math.random(0, self:SkinCount() - 1))
     if SERVER then
         --self:SetRunSpeed( nz.Curves.Data.Speed[nz.Rounds.Data.CurrentRound] )
-		local speeds = nz.Rounds.CurrentRoundData.nz_zombie_walker.speeds
+		local speeds = Round:GetZombieData().nz_zombie_walker.speeds
 		if speeds then
 			self:SetRunSpeed( nz.Misc.Functions.WeightedRandom(speeds) )
 		else
-			self:SetRunSpeed( nz.Curves.Data.Speed[nz.Rounds.Data.CurrentRound] )
+			self:SetRunSpeed( nz.Curves.Data.Speed[ Round:GetNumber() ] )
 		end
-        self:SetHealth( nz.Curves.Data.Health[nz.Rounds.Data.CurrentRound] )
+        self:SetHealth( Round:GetZombieHealth() )
     end
 end

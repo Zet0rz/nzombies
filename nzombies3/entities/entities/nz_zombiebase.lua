@@ -197,7 +197,7 @@ end
 
 function ENT:OnNoTarget()
 	-- Game over! Walk around randomly and wave
-	if nz.Rounds.Data.CurrentState == ROUND_GO then
+	if Round:InState( ROUND_GO ) then
 		self:StartActivity(ACT_WALK)
 		self.loco:SetDesiredSpeed(40)
 		self:MoveToPos(self:GetPos() + Vector(math.random(-256, 256), math.random(-256, 256), 0), {
@@ -275,15 +275,18 @@ function ENT:OnContact( ent )
 		--this is a poor approach to unstuck them when walking into each other
 		self.loco:Approach( self:GetPos() + Vector( math.Rand( -1, 1 ), math.Rand( -1, 1 ), 0 ) * 2000,1000)
 		--important if the get stuck on top of each other!
-		if math.abs(self:GetPos().z - ent:GetPos().z) > 30 then self:SetSolidMask( MASK_NPCSOLID_BRUSHONLY ) end
+		--if math.abs(self:GetPos().z - ent:GetPos().z) > 30 then self:SetSolidMask( MASK_NPCSOLID_BRUSHONLY ) end
 	end
 	--buggy prop push away thing comment if you dont want this :)
-	if  ( ent:GetClass() == "prop_physics_multiplayer" or ent:GetClass() == "prop_physics" ) and ent:IsOnGround() then
+	if  ( ent:GetClass() == "prop_physics_multiplayer" or ent:GetClass() == "prop_physics" ) then
 		--self.loco:Approach( self:GetPos() + Vector( math.Rand( -1, 1 ), math.Rand( -1, 1 ), 0 ) * 2000,1000)
 		local phys = ent:GetPhysicsObject()
-		if !IsValid(phys) then return end
-		phys:ApplyForceCenter( self:GetPos() - ent:GetPos() * 1.2 )
-		DropEntityIfHeld( ent )
+		if IsValid(phys) then
+			local force = -physenv.GetGravity().z * phys:GetMass()/12 * ent:GetFriction()
+			local dir = ent:GetPos() - self:GetPos()
+			dir:Normalize()
+			phys:ApplyForceCenter( dir * force )
+		end
 	end
 
 	if self:IsTarget( ent ) then
@@ -314,7 +317,7 @@ end
 function ENT:OnStuck()
 	self.loco:SetVelocity( self.loco:GetVelocity() + VectorRand() * 100 )
 	--self.loco:Approach( self:GetPos() + Vector( math.Rand( -1, 1 ), math.Rand( -1, 1 ), 0 ) * 2000, 1000 )
-	print("Now I'm stuck", self)
+	--print("Now I'm stuck", self)
 end
 
 --Target and pathfidning
@@ -447,7 +450,7 @@ function ENT:ChaseTarget( options )
 			self:HandleStuck()
 			return "stuck"
 		end
-		
+
 		if self.loco:GetVelocity():Length() < 10 then
 			self:OnStuck()
 		end
@@ -796,7 +799,7 @@ end
 --Helper function
 function ENT:TimedEvent(time, callback)
 	timer.Simple(time, function()
-		if (IsValid(self)) then
+		if (IsValid(self) and self:Health() > 0) then
 			callback()
 		end
 	end)

@@ -9,7 +9,7 @@ function nz.Misc.Functions.NewChatCommand(text, func)
 end
 
 //Hooks
-hook.Add( "PlayerSay", "chatCommand", function( ply, text, public )
+hook.Add( "PlayerSay", "nzChatCommand", function( ply, text, public )
 	local text = string.lower(text)
 	for k,v in pairs(nz.Misc.Data.ChatCommands) do
 		if (string.sub(text, 1, string.len(v[1])) == v[1]) then
@@ -25,24 +25,24 @@ NewChatCommand = nz.Misc.Functions.NewChatCommand
 // Actual Chat Commands
 
 NewChatCommand("/ready", function(ply, text)
-	nz.Rounds.Functions.ReadyUp(ply)
+	ply:ReadyUp()
 end)
 
 NewChatCommand("/unready", function(ply, text)
-	nz.Rounds.Functions.UnReady(ply)
+	ply:UnReady()
 end)
 
 NewChatCommand("/dropin", function(ply, text)
-	nz.Rounds.Functions.DropIn(ply)
+	ply:DropIn()
 end)
 
 NewChatCommand("/dropout", function(ply, text)
-	nz.Rounds.Functions.DropOut(ply)
+	ply:DropOut()
 end)
 
 NewChatCommand("/create", function(ply, text)
 	if ply:IsSuperAdmin() then
-		nz.Rounds.Functions.CreateMode()
+		Round:Create()
 	end
 end)
 
@@ -80,7 +80,7 @@ end)
 util.AddNetworkString("nz_SaveConfig")
 NewChatCommand("/save", function(ply, text)
 	if ply:IsSuperAdmin() then
-		if nz.Rounds.Data.CurrentState == ROUND_CREATE then
+		if Round:InState( ROUND_CREATE ) then
 			--nz.Mapping.Functions.SaveConfig()
 			net.Start("nz_SaveConfig")
 			net.Send(ply)
@@ -101,7 +101,7 @@ end)
 
 NewChatCommand("/load", function(ply, text)
 	if ply:IsSuperAdmin() then
-		if nz.Rounds.Data.CurrentState == ROUND_CREATE or nz.Rounds.Data.CurrentState == ROUND_INIT then
+		if Round:InState( ROUND_CREATE) or Round:InState( ROUND_WAITING ) then
 			nz.Interfaces.Functions.SendInterface(ply, "ConfigLoader", {configs = file.Find( "nz/nz_*", "DATA" )})
 		else
 			ply:PrintMessage( HUD_PRINTTALK, "[NZ] You can't load while playing!" )

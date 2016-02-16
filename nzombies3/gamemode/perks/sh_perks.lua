@@ -47,7 +47,7 @@ nz.Perks.Functions.NewPerk("dtap", {
 	func = function(self, ply, machine)
 		local tbl = {}
 		for k,v in pairs(ply:GetWeapons()) do
-			if nz.Weps.Functions.IsFAS2( v ) then
+			if v:IsFAS2() then
 				table.insert(tbl, v)
 			end
 		end
@@ -62,7 +62,7 @@ nz.Perks.Functions.NewPerk("dtap", {
 		if !ply:HasPerk("dtap2") then
 			local tbl = {}
 			for k,v in pairs(ply:GetWeapons()) do
-				if nz.Weps.Functions.IsFAS2( v ) then
+				if v:IsFAS2() then
 					table.insert(tbl, v)
 				end
 			end
@@ -92,13 +92,13 @@ nz.Perks.Functions.NewPerk("revive", {
 
 nz.Perks.Functions.NewPerk("speed", {
 	name = "Speed Cola",
-	off_model = "models/alig96/perks/sleight/sleight_off.mdl",
-	on_model = "models/alig96/perks/sleight/sleight_on.mdl",
+	off_model = "models/alig96/perks/speed/speed_off.mdl",
+	on_model = "models/alig96/perks/speed/speed_on.mdl",
 	price = 3000,
 	func = function(self, ply, machine)
 		local tbl = {}
 		for k,v in pairs(ply:GetWeapons()) do
-			if nz.Weps.Functions.IsFAS2( v ) then
+			if v:IsFAS2() then
 				table.insert(tbl, v)
 			end
 		end
@@ -118,7 +118,7 @@ nz.Perks.Functions.NewPerk("speed", {
 	lostfunc = function(self, ply)
 		local tbl = {}
 		for k,v in pairs(ply:GetWeapons()) do
-			if nz.Weps.Functions.IsFAS2( v ) then
+			if v:IsFAS2() then
 				table.insert(tbl, v)
 			end
 		end
@@ -223,7 +223,7 @@ nz.Perks.Functions.NewPerk("dtap2", {
 	func = function(self, ply, machine)
 		local tbl = {}
 		for k,v in pairs(ply:GetWeapons()) do
-			if nz.Weps.Functions.IsFAS2( v ) then
+			if v:IsFAS2() then
 				table.insert(tbl, v)
 			end
 		end
@@ -238,7 +238,7 @@ nz.Perks.Functions.NewPerk("dtap2", {
 		if !ply:HasPerk("dtap") then
 			local tbl = {}
 			for k,v in pairs(ply:GetWeapons()) do
-				if nz.Weps.Functions.IsFAS2( v ) then
+				if v:IsFAS2() then
 					table.insert(tbl, v)
 				end
 			end

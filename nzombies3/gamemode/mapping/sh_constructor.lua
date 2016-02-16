@@ -1,10 +1,10 @@
 //Main Tables
-nz.Mapping = {}
+nz.Mapping = nz.Mapping or {}
 nz.Mapping.Functions = {}
-nz.Mapping.Data = {}
+nz.Mapping.Data = nz.Mapping.Data or {}
 
 //_ Variables
-nz.Mapping.MapSettings = {}
+nz.Mapping.MapSettings = nz.Mapping.MapSettings or {}
 
 if SERVER then
 	//Server to client (Server)

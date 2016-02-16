@@ -32,10 +32,10 @@ function ENT:Use( activator, caller )
 		nz.Weps.Functions.GiveMaxAmmoWep(activator, class)
 		timer.Simple(0, function()
 			if IsValid(weapon) and IsValid(activator) then
-				if activator:HasPerk("speed") and nz.Weps.Functions.IsFAS2(weapon) then
+				if activator:HasPerk("speed") and weapon:IsFAS2() then
 					nz.Weps.Functions.ApplySpeed( activator, weapon )
 				end
-				if activator:HasPerk("dtap") and nz.Weps.Functions.IsFAS2(weapon) then
+				if activator:HasPerk("dtap") and weapon:IsFAS2()  then
 					nz.Weps.Functions.ApplyDTap( activator, weapon )
 				end
 				nz.Weps.Functions.ApplyPaP(activator, weapon)

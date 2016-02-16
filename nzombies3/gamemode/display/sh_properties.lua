@@ -4,7 +4,7 @@ properties.Add( "nz_remove", {
 	MenuIcon = "icon16/delete.png",
 
 	Filter = function( self, ent, ply ) -- A function that determines whether an entity is valid for this property
-		if nz.Rounds.Data.CurrentState != ROUND_CREATE then return false end
+		if !Round:InState( ROUND_CREATE ) then return false end
 		if ( ent:IsPlayer() ) then return false end
 		if ( !ply:IsAdmin() ) then return false end
 
@@ -23,7 +23,7 @@ properties.Add( "nz_remove", {
 		
 		if ( !IsValid( ent ) ) then return false end
 		if ( !IsValid( player ) ) then return false end
-		if nz.Rounds.Data.CurrentState != ROUND_CREATE then return false end
+		if !Round:InState( ROUND_CREATE ) then return false end
 		if ( !player:IsAdmin() ) then return false end
 		if ( ent:IsPlayer() ) then return false end
 		if ( !self:Filter( ent, player ) ) then return false end
@@ -56,7 +56,7 @@ properties.Add( "nz_editentity", {
 
 		if ( !IsValid( ent ) ) then return false end
 		if ( !ent.Editable ) then return false end
-		if nz.Rounds.Data.CurrentState != ROUND_CREATE then return false end
+		if !Round:InState( ROUND_CREATE ) then return false end
 		if ( ent:IsPlayer() ) then return false end
 		if ( !ply:IsAdmin() ) then return false end
 
@@ -94,7 +94,7 @@ properties.Add( "nz_lock", {
 
 		if ( !IsValid( ent ) ) then return false end
 		if !( ent:IsDoor() or ent:IsButton() or ent:IsBuyableProp() ) then return false end
-		if nz.Rounds.Data.CurrentState != ROUND_CREATE then return false end
+		if !Round:InState( ROUND_CREATE ) then return false end
 		if ( ent:IsPlayer() ) then return false end
 		if ( !ply:IsAdmin() ) then return false end
 
@@ -117,13 +117,13 @@ properties.Add( "nz_unlock", {
 
 		if ( !IsValid( ent ) ) then return false end
 		if !( ent:IsDoor() or ent:IsButton() or ent:IsBuyableProp() ) then return false end
-		if nz.Rounds.Data.CurrentState != ROUND_CREATE then return false end
+		if !Round:InState( ROUND_CREATE ) then return false end
 		if ( ent:IsPlayer() ) then return false end
 		if ( !ply:IsAdmin() ) then return false end
 		if ent:IsBuyableProp() then
-			if ( !nz.Doors.Data.BuyableProps[ent:EntIndex()] ) then return false end
+			if ( !Doors.PropDoors[ent:EntIndex()] ) then return false end
 		else
-			if ( !nz.Doors.Data.LinkFlags[ent:doorIndex()] ) then return false end
+			if ( !Doors.MapDoors[ent:DoorIndex()] ) then return false end
 		end
 
 		return true 
@@ -143,12 +143,12 @@ properties.Add( "nz_unlock", {
 		
 		if ( !IsValid( ent ) ) then return false end
 		if ( !IsValid( player ) ) then return false end
-		if nz.Rounds.Data.CurrentState != ROUND_CREATE then return false end
+		if !Round:InState( ROUND_CREATE ) then return false end
 		if ( !player:IsAdmin() ) then return false end
 		if ( ent:IsPlayer() ) then return false end
 		if ( !self:Filter( ent, player ) ) then return false end
 		
-		nz.Doors.Functions.RemoveLink( ent )
+		Doors:RemoveLink( ent )
 		
 	end	
 } );
@@ -163,7 +163,7 @@ properties.Add( "nz_editzspawn", {
 
 		if ( !IsValid( ent ) ) then return false end
 		if ( ent:GetClass() != "zed_spawns" ) then return false end
-		if nz.Rounds.Data.CurrentState != ROUND_CREATE then return false end
+		if !Round:InState( ROUND_CREATE ) then return false end
 		if ( ent:IsPlayer() ) then return false end
 		if ( !ply:IsAdmin() ) then return false end
 
@@ -182,7 +182,7 @@ properties.Add( "nz_editzspawn", {
 		
 		if ( !IsValid( ent ) ) then return false end
 		if ( !IsValid( player ) ) then return false end
-		if nz.Rounds.Data.CurrentState != ROUND_CREATE then return false end
+		if !Round:InState( ROUND_CREATE ) then return false end
 		if ( !player:IsAdmin() ) then return false end
 		if ( ent:IsPlayer() ) then return false end
 		if ( !self:Filter( ent, player ) ) then return false end
@@ -202,7 +202,7 @@ properties.Add( "nz_wepbuy", {
 
 		if ( !IsValid( ent ) ) then return false end
 		if ( ent:GetClass() != "wall_buys" ) then return false end
-		if nz.Rounds.Data.CurrentState != ROUND_CREATE then return false end
+		if !Round:InState( ROUND_CREATE ) then return false end
 		if ( ent:IsPlayer() ) then return false end
 		if ( !ply:IsAdmin() ) then return false end
 
@@ -221,7 +221,7 @@ properties.Add( "nz_wepbuy", {
 		
 		if ( !IsValid( ent ) ) then return false end
 		if ( !IsValid( player ) ) then return false end
-		if nz.Rounds.Data.CurrentState != ROUND_CREATE then return false end
+		if !Round:InState( ROUND_CREATE ) then return false end
 		if ( !player:IsAdmin() ) then return false end
 		if ( ent:IsPlayer() ) then return false end
 		if ( !self:Filter( ent, player ) ) then return false end
@@ -241,7 +241,7 @@ properties.Add( "nz_editperk", {
 
 		if ( !IsValid( ent ) ) then return false end
 		if ( ent:GetClass() != "perk_machine" ) then return false end
-		if nz.Rounds.Data.CurrentState != ROUND_CREATE then return false end
+		if !Round:InState( ROUND_CREATE ) then return false end
 		if ( ent:IsPlayer() ) then return false end
 		if ( !ply:IsAdmin() ) then return false end
 
@@ -260,246 +260,12 @@ properties.Add( "nz_editperk", {
 		
 		if ( !IsValid( ent ) ) then return false end
 		if ( !IsValid( player ) ) then return false end
-		if nz.Rounds.Data.CurrentState != ROUND_CREATE then return false end
+		if !Round:InState( ROUND_CREATE ) then return false end
 		if ( !player:IsAdmin() ) then return false end
 		if ( ent:IsPlayer() ) then return false end
 		if ( !self:Filter( ent, player ) ) then return false end
 		
 		nz.Interfaces.Functions.SendInterface(player, "PerkMachine", {ent = ent})
-		
-	end
-} );
-
-properties.Add( "nz_invisblockeditxp", {
-	MenuLabel = "Increase X",
-	Order = 8001,
-	PrependSpacer = true,
-	MenuIcon = "icon16/arrow_up.png",
-	
-	Filter = function( self, ent, ply ) 
-
-		if ( !IsValid( ent ) ) then return false end
-		if ( ent:GetClass() != "wall_block" ) then return false end
-		if nz.Rounds.Data.CurrentState != ROUND_CREATE then return false end
-		if ( ent:IsPlayer() ) then return false end
-		if ( !ply:IsAdmin() ) then return false end
-
-		return true 
-
-	end,
-
-	Action = function( self, ent )
-		self:MsgStart()
-			net.WriteEntity( ent )
-		self:MsgEnd()
-	end,
-	
-	Receive = function( self, length, player )
-		local ent = net.ReadEntity()
-		
-		if ( !IsValid( ent ) ) then return false end
-		if ( !IsValid( player ) ) then return false end
-		if nz.Rounds.Data.CurrentState != ROUND_CREATE then return false end
-		if ( !player:IsAdmin() ) then return false end
-		if ( ent:IsPlayer() ) then return false end
-		if ( !self:Filter( ent, player ) ) then return false end
-		
-		ent:IncreaseXModel(player)
-		
-	end
-} );
-
-properties.Add( "nz_invisblockeditxm", {
-	MenuLabel = "Decrease X",
-	Order = 8002,
-	PrependSpacer = false,
-	MenuIcon = "icon16/arrow_down.png",
-	
-	Filter = function( self, ent, ply ) 
-
-		if ( !IsValid( ent ) ) then return false end
-		if ( ent:GetClass() != "wall_block" ) then return false end
-		if nz.Rounds.Data.CurrentState != ROUND_CREATE then return false end
-		if ( ent:IsPlayer() ) then return false end
-		if ( !ply:IsAdmin() ) then return false end
-
-		return true 
-
-	end,
-
-	Action = function( self, ent )
-		self:MsgStart()
-			net.WriteEntity( ent )
-		self:MsgEnd()
-	end,
-	
-	Receive = function( self, length, player )
-		local ent = net.ReadEntity()
-		
-		if ( !IsValid( ent ) ) then return false end
-		if ( !IsValid( player ) ) then return false end
-		if nz.Rounds.Data.CurrentState != ROUND_CREATE then return false end
-		if ( !player:IsAdmin() ) then return false end
-		if ( ent:IsPlayer() ) then return false end
-		if ( !self:Filter( ent, player ) ) then return false end
-		
-		ent:DecreaseXModel(player)
-		
-	end
-} );
-
-properties.Add( "nz_invisblockedityp", {
-	MenuLabel = "Increase Y",
-	Order = 8003,
-	PrependSpacer = false,
-	MenuIcon = "icon16/arrow_right.png",
-	
-	Filter = function( self, ent, ply ) 
-
-		if ( !IsValid( ent ) ) then return false end
-		if ( ent:GetClass() != "wall_block" ) then return false end
-		if nz.Rounds.Data.CurrentState != ROUND_CREATE then return false end
-		if ( ent:IsPlayer() ) then return false end
-		if ( !ply:IsAdmin() ) then return false end
-
-		return true 
-
-	end,
-
-	Action = function( self, ent )
-		self:MsgStart()
-			net.WriteEntity( ent )
-		self:MsgEnd()
-	end,
-	
-	Receive = function( self, length, player )
-		local ent = net.ReadEntity()
-		
-		if ( !IsValid( ent ) ) then return false end
-		if ( !IsValid( player ) ) then return false end
-		if nz.Rounds.Data.CurrentState != ROUND_CREATE then return false end
-		if ( !player:IsAdmin() ) then return false end
-		if ( ent:IsPlayer() ) then return false end
-		if ( !self:Filter( ent, player ) ) then return false end
-		
-		ent:IncreaseYModel(player)
-		
-	end
-} );
-
-properties.Add( "nz_invisblockeditym", {
-	MenuLabel = "Decrease Y",
-	Order = 8004,
-	PrependSpacer = false,
-	MenuIcon = "icon16/arrow_left.png",
-	
-	Filter = function( self, ent, ply ) 
-
-		if ( !IsValid( ent ) ) then return false end
-		if ( ent:GetClass() != "wall_block" ) then return false end
-		if nz.Rounds.Data.CurrentState != ROUND_CREATE then return false end
-		if ( ent:IsPlayer() ) then return false end
-		if ( !ply:IsAdmin() ) then return false end
-
-		return true 
-
-	end,
-
-	Action = function( self, ent )
-		self:MsgStart()
-			net.WriteEntity( ent )
-		self:MsgEnd()
-	end,
-	
-	Receive = function( self, length, player )
-		local ent = net.ReadEntity()
-		
-		if ( !IsValid( ent ) ) then return false end
-		if ( !IsValid( player ) ) then return false end
-		if nz.Rounds.Data.CurrentState != ROUND_CREATE then return false end
-		if ( !player:IsAdmin() ) then return false end
-		if ( ent:IsPlayer() ) then return false end
-		if ( !self:Filter( ent, player ) ) then return false end
-		
-		ent:DecreaseYModel(player)
-		
-	end
-} );
-
-properties.Add( "nz_invisblockeditzp", {
-	MenuLabel = "Increase Z",
-	Order = 8005,
-	PrependSpacer = false,
-	MenuIcon = "icon16/arrow_out.png",
-	
-	Filter = function( self, ent, ply ) 
-
-		if ( !IsValid( ent ) ) then return false end
-		if ( ent:GetClass() != "wall_block" ) then return false end
-		if nz.Rounds.Data.CurrentState != ROUND_CREATE then return false end
-		if ( ent:IsPlayer() ) then return false end
-		if ( !ply:IsAdmin() ) then return false end
-
-		return true 
-
-	end,
-
-	Action = function( self, ent )
-		self:MsgStart()
-			net.WriteEntity( ent )
-		self:MsgEnd()
-	end,
-	
-	Receive = function( self, length, player )
-		local ent = net.ReadEntity()
-		
-		if ( !IsValid( ent ) ) then return false end
-		if ( !IsValid( player ) ) then return false end
-		if nz.Rounds.Data.CurrentState != ROUND_CREATE then return false end
-		if ( !player:IsAdmin() ) then return false end
-		if ( ent:IsPlayer() ) then return false end
-		if ( !self:Filter( ent, player ) ) then return false end
-		
-		ent:IncreaseZModel(player)
-		
-	end
-} );
-
-properties.Add( "nz_invisblockeditzm", {
-	MenuLabel = "Decrease Z",
-	Order = 8006,
-	PrependSpacer = false,
-	MenuIcon = "icon16/arrow_in.png",
-	
-	Filter = function( self, ent, ply ) 
-
-		if ( !IsValid( ent ) ) then return false end
-		if ( ent:GetClass() != "wall_block" ) then return false end
-		if nz.Rounds.Data.CurrentState != ROUND_CREATE then return false end
-		if ( ent:IsPlayer() ) then return false end
-		if ( !ply:IsAdmin() ) then return false end
-
-		return true 
-
-	end,
-
-	Action = function( self, ent )
-		self:MsgStart()
-			net.WriteEntity( ent )
-		self:MsgEnd()
-	end,
-	
-	Receive = function( self, length, player )
-		local ent = net.ReadEntity()
-		
-		if ( !IsValid( ent ) ) then return false end
-		if ( !IsValid( player ) ) then return false end
-		if nz.Rounds.Data.CurrentState != ROUND_CREATE then return false end
-		if ( !player:IsAdmin() ) then return false end
-		if ( ent:IsPlayer() ) then return false end
-		if ( !self:Filter( ent, player ) ) then return false end
-		
-		ent:DecreaseZModel(player)
 		
 	end
 } );

@@ -40,7 +40,7 @@ end
 
 function nz.RandomBox.Functions.DecideWep(ply)
 	
-	local teddychance = math.random(1, 20)
+	local teddychance = math.random(1, 15)
 	if teddychance <= 1 and !nz.PowerUps.Functions.IsPowerupActive("firesale") then
 		return "nz_box_teddy"
 	end
@@ -64,7 +64,13 @@ function nz.RandomBox.Functions.DecideWep(ply)
 		end
 	end
 	
-	if IsValid(ents.FindByClass("random_box_handler")[1]) then
+	if nz.Mapping.MapSettings.rboxweps then
+		for k,v in pairs(nz.Mapping.MapSettings.rboxweps) do
+			if !table.HasValue(blacklist, v) then
+				table.insert(guns, v)
+			end
+		end
+	elseif IsValid(ents.FindByClass("random_box_handler")[1]) then
 		//Only add guns found in the Random Box Handler
 		for k,v in pairs( ents.FindByClass("random_box_handler")[1]:GetWeaponsList() ) do
 			if !table.HasValue(blacklist, v) then

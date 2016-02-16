@@ -9,12 +9,12 @@ function FAS2_PlayAnim(wep, anim, speed, cyc, time)
 
 	anim = string.lower(anim)
 	
-	if wep.Owner:HasPerk("sleight") then
+	if wep.Owner:HasPerk("speed") then
 		if string.find(anim, "reload") != nil or string.find(anim, "insert") != nil then
 			speed = 2
 		end
 	end
-	if wep.Owner:HasPerk("dtap") then
+	if wep.Owner:HasPerk("dtap") or wep.Owner:HasPerk("dtap2") then
 		if string.find(anim, "fire") != nil or string.find(anim, "cock") != nil or string.find(anim, "pump") != nil then
 			speed = 1.25
 		end
