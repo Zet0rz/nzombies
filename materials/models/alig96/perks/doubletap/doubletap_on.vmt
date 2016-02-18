@@ -1,0 +1,5 @@
+"VertexlitGeneric"
+{
+	"$basetexture" "models/alig96/perks/doubletap/Doubletap"
+                "$selfillum" 1
+}

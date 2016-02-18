@@ -1,0 +1,5 @@
+"UnlitGeneric"
+{
+	"$basetexture" "models/perk_bottle/c_perk_bottle_dtap2"
+	"$surfaceprop" "Default"
+}

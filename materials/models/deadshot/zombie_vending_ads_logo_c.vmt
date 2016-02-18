@@ -1,0 +1,19 @@
+"VertexlitGeneric"
+{
+	"$basetexture" "models/deadshot/zombie_vending_ads_logo_c"
+	"$bumpmap" "models/deadshot/zombie_vending_ads_logo_normal"
+                "$selfillum" "1"
+$phong 1
+$phongboost "0.2"
+$phongexponent 2
+$phongtint "[.85 .85 1]"
+$halflambert 0
+$phongfresnelranges "[.3 .65 30]"
+$ambientocclusion 1
+	"$rimlight" "0"
+	"$rimlightexponent" "30"
+	"$rimlightboost" "2"
+
+
+$diffuseexp "1.5"
+}

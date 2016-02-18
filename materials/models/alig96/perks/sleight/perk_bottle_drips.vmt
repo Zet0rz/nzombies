@@ -1,0 +1,15 @@
+"VertexLitGeneric"
+{
+	"$baseTexture" "models/alig96/perks/sleight/Perk_bottle_drips"
+	"$translucent" 1
+	"$phong" "0"
+	"$phongexponent" "8"
+	"$phongboost" ".1"	
+	"$phongfresnelranges"	"[.3 1 8]"
+	"$halflambert" "1"
+
+	// Rim lighting parameters
+	"$rimlight" "1"												// To enable rim lighting (requires phong)
+	"$rimlightexponent" "4"										// Exponent for phong component of rim lighting	
+	"$rimlightboost" "1"										// Boost for amb
+}

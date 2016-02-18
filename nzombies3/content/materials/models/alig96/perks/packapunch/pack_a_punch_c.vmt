@@ -1,6 +1,0 @@
-"VertexlitGeneric"
-{
-	"$basetexture" "models/alig96/perks/packapunch/pack_a_punch_c"
-	"$normalmap" "models/alig96/perks/packapunch/pack_a_punch_c"
-	"$surfaceprop" "Metal"
-}

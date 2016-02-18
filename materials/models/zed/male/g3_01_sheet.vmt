@@ -1,0 +1,6 @@
+"VertexLitGeneric"
+{
+	// Original shader: VertexLitTexture
+	"$basetexture" "models/Zed/Male/plaid_sheet"
+	"$halflambert" 1
+}
