@@ -27,7 +27,7 @@ if nz.Config.Halos == true then
 
 		//Normals
 		for k,v in pairs(Halos.Normal) do
-			halo.Add( ents.FindByClass( v[1] ), v[2], 0, 0, 0.1, 0, 1 )
+			halo.Add( ents.FindByClass( v[1] ), v[2], 0, 0, 1 )
 		end
 	end )
 end
@@ -41,3 +41,7 @@ NewHalo = nzNewHalo
 NewHalo("zed_spawns", Color(255,0,0), true)
 //Player Spawns
 NewHalo("player_spawns", Color(0,255,0), true)
+
+hook.Add( "PreDrawHalos", "AddHalos", function()
+	halo.Add( ents.FindByClass( "wall_buys*" ), Color( 255, 255, 255), 0.5, 0.5)
+end )
