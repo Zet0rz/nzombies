@@ -43,5 +43,5 @@ NewHalo("zed_spawns", Color(255,0,0), true)
 NewHalo("player_spawns", Color(0,255,0), true)
 
 hook.Add( "PreDrawHalos", "AddHalos", function()
-	halo.Add( ents.FindByClass( "wall_buys*" ), Color( 255, 255, 255), 0.5, 0.5)
+	halo.Add( ents.FindByClass( "wall_buys*" ), Color( 255, 255, 255), 0.25, 0.25)
 end )

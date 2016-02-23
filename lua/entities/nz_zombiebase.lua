@@ -139,17 +139,17 @@ function ENT:Think()
 
 			if self:GetStuckCounter() > 2 then
 
-				if self:GetStuckCounter() <= 4  then
+				if self:GetStuckCounter() <= 3  then
 					--try to unstuck via random velocity
 					self:ApplyRandomPush()
 				end
 
-				if self:GetStuckCounter() > 4 and self:GetStuckCounter() <= 7 then
+				if self:GetStuckCounter() > 3 and self:GetStuckCounter() <= 5 then
 					--try to unstuck via jump
 					self:Jump()
 				end
 
-				if self:GetStuckCounter() > 7 then
+				if self:GetStuckCounter() > 5 then
 					--Worst case:
 					--respawn the zombie after 32 seconds with no postion change
 					self:RespawnAtRandom()
@@ -856,7 +856,7 @@ function ENT:RespawnAtRandom( cur )
 		return
 	end
 	local spawnpoint = valids[ math.random(#valids) ]
-	if nz.Enemies.Functions.CheckIfSuitable(spawnpoint:GetPos()) then
+	if IsValid(spawnpoint) and nz.Enemies.Functions.CheckIfSuitable(spawnpoint:GetPos()) then
 		self:SetPos(spawnpoint:GetPos())
 		return true
 	end
@@ -873,7 +873,7 @@ function ENT:TimedEvent(time, callback)
 end
 
 function ENT:ApplyRandomPush( power )
-	if self:GetLastPush() + 0.5 < CurTime() or !self:IsOnGround() then return end
+	if CurTime() < self:GetLastPush() + 0.2 or !self:IsOnGround() then return end
 	power = power or 100
 	local vec =  self.loco:GetVelocity() + VectorRand() * power
 	vec.z = math.random( 100 )

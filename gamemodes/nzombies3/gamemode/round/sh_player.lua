@@ -6,6 +6,8 @@ function plyMeta:IsReady() return self:GetReady() end
 AccessorFunc( plyMeta, "bPlaying", "Playing", FORCE_BOOL )
 function plyMeta:IsPlaying() return self:GetPlaying() end
 
+function plyMeta:IsSpectating() return self:Team() == TEAM_SPECTATOR end
+
 local player = player
 
 --player.utils
