@@ -1,0 +1,6 @@
+"VertexlitGeneric"
+{
+	"$basetexture" "models/perkacola/pack_a_punch_moving_c"
+	"$normalmap" "models/perkacola/pack_a_punch_moving_n"
+	"$surfaceprop" "Metal"
+}

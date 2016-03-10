@@ -1,6 +1,0 @@
-"VertexlitGeneric"
-{
-	"$basetexture" "models/hoff/props/mysterybox/zombie_treasure_box_c"
-                "$alphatest" "1"
-                "$nocull" "1"
-}

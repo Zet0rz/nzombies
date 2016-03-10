@@ -1,0 +1,7 @@
+"VertexLitGeneric"
+{
+     "$basetexture" "models/nzprops/zombies_power_lever"
+     //"$bumpmap" "models/nzprops/zombies_power_lever_normal"
+     "$model" 1
+     //"$selfillum" 1
+}

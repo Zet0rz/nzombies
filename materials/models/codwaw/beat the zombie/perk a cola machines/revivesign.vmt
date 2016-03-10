@@ -1,0 +1,7 @@
+"VertexlitGeneric"
+{
+	"$basetexture" "Models/CoDWaW/Beat the Zombie/Perk A Cola Machines/Revivesign"
+	"$bumpmap" "Models/CoDWaW/Beat the Zombie/Perk A Cola Machines/Revivesign_NRM"
+	"$surfaceprop" "Metal"
+	"$nocull" 1
+}

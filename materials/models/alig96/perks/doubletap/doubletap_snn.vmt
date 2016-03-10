@@ -1,0 +1,8 @@
+"VertexlitGeneric"
+{
+	"$basetexture" "models/alig96/perks/doubletap/Doubletap_SNN"
+	"$bumpmap" "models/alig96/perks/doubletap/Doubletap_SNN_NRM"
+	"$surfaceprop" "Metal"
+	"$alphatest" 1
+	"$nocull" 1
+}

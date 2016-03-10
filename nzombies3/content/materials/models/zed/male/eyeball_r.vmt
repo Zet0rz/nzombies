@@ -1,6 +1,0 @@
-"eyes"
-{
-	"$basetexture" "models/Zed/Male/eyeball_r"
-	"$iris" "models/Zed/Male/pupil_r"
-	"$halflambert" 1
-}

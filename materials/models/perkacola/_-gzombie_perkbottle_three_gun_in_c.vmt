@@ -1,0 +1,19 @@
+"VertexlitGeneric"
+{
+	"$basetexture" "models/perkacola/_-gzombie_perkbottle_three_gun_in_c"
+	"$bumpmap" "models/perkacola/zombie_perkbottle_normal"
+                "$nocull" "1"
+$phong 1
+$phongboost "0.2"
+$phongexponent 2
+$phongtint "[.85 .85 1]"
+$halflambert 0
+$phongfresnelranges "[.3 .65 30]"
+$ambientocclusion 1
+	"$rimlight" "0"
+	"$rimlightexponent" "30"
+	"$rimlightboost" "2"
+
+
+$diffuseexp "1.5"
+}

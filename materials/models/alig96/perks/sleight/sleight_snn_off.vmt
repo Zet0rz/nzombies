@@ -1,0 +1,7 @@
+"VertexlitGeneric"
+{
+	"$basetexture" "models/alig96/perks/sleight/Sleight_SNN"
+	"$bumpmap" "models/alig96/perks/sleight/Sleight_SNN_NRM"
+	"$surfaceprop" "Metal"
+	"$nocull" 1
+}
