@@ -29,7 +29,7 @@ end
 function ENT:Use( activator )
 
 	if ( !activator:IsPlayer() ) then return end
-	if !IsElec() and (nz.Rounds.Data.CurrentState == ROUND_PREP or nz.Rounds.Data.CurrentState == ROUND_PROG) then
+	if !IsElec() and Round:InProgress() then
 		self:SetSwitch(true)
 		nz.Elec.Functions.Activate()
 	end

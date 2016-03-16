@@ -1,8 +1,8 @@
 //
 
-nz.Mapping.Data.Version = 350 //Note to Ali; Any time you make an update to the way this is saved, increment this.
+nz.Mapping.Data.Version = 381 //Note to Ali; Any time you make an update to the way this is saved, increment this.
 
-function nz.Mapping.Functions.SaveConfig()
+function nz.Mapping.Functions.SaveConfig(name)
 
 	local main = {}
 	
@@ -13,11 +13,42 @@ function nz.Mapping.Functions.SaveConfig()
 	
 	main.version = nz.Mapping.Data.Version
 	
+	local easter_eggs = {}
+	for k,v in pairs(ents.FindByClass("easter_egg")) do
+		table.insert(easter_eggs, {
+		pos = v:GetPos(),
+		angle = v:GetAngles(),
+		model = v:GetModel(),
+		})
+	end
+	
+	local player_handler = {}
+	for k,v in pairs(ents.FindByClass("player_handler")) do
+		table.insert(player_handler, {
+		pos = v:GetPos(),
+		startwep = v:GetStartWep(),
+		startpoints = v:GetStartPoints(),
+		numweps = v:GetNumWeps(),
+		eeurl = v:GetEEURL(),
+		angle = v:GetAngles( ),
+		})
+	end
+	
+	local random_box_handler = {}
+	for k,v in pairs(ents.FindByClass("random_box_handler")) do
+		table.insert(random_box_handler, {
+		pos = v:GetPos(),
+		guns = v:GetWeaponsList(),
+		angle = v:GetAngles( ),
+		})
+	end
+	
 	local zed_spawns = {}
 	for k,v in pairs(ents.FindByClass("zed_spawns")) do
 		table.insert(zed_spawns, {
 		pos = v:GetPos(),
-		link = v.link
+		link = v.link,
+		respawnable = v.respawnable
 		})
 	end
 	
@@ -40,11 +71,32 @@ function nz.Mapping.Functions.SaveConfig()
 	
 	local buyableprop_spawns = {}
 	for k,v in pairs(ents.FindByClass("prop_buys")) do
+		
+		-- Convert the table to a flag string - if it even has any
+		local data = v:GetDoorData()
+		local flagstr
+		if data then
+			flagstr = ""
+			for k2, v2 in pairs(data) do
+				flagstr = flagstr..k2.."="..v2..","
+			end
+			flagstr = string.Trim(flagstr, ",")
+		end
+		
 		table.insert(buyableprop_spawns, {
 		pos = v:GetPos(),
 		angle = v:GetAngles(),
 		model = v:GetModel(),
-		flags = v.Data,
+		flags = flagstr,
+		})
+	end
+	
+	local prop_effects = {}
+	for k,v in pairs(ents.FindByClass("nz_prop_effect")) do
+		table.insert(prop_effects, {
+		pos = v:GetPos(),
+		angle = v:GetAngles(),
+		model = v:GetModel(),
 		})
 	end
 	
@@ -61,7 +113,7 @@ function nz.Mapping.Functions.SaveConfig()
 	for k,v in pairs(ents.FindByClass("wall_block")) do
 		table.insert(block_spawns, {
 		pos = v:GetPos(),
-		angle = v:GetAngles( ),
+		angle = v:GetAngles(),
 		model = v:GetModel(),
 		})
 	end
@@ -85,14 +137,21 @@ function nz.Mapping.Functions.SaveConfig()
 	
 	//Normal Map doors
 	local door_setup = {}
-	for k,v in pairs(nz.Doors.Data.LinkFlags) do
-		v = nz.Doors.Functions.doorIndexToEnt(k)
-		if v:IsDoor() then
+	for k,v in pairs(Doors.MapDoors) do
+		local flags = ""
+		for k2, v2 in pairs(v) do
+			flags = flags..k2.."="..v2..","
+		end
+		flags = string.Trim(flags, ",")
+		door = Doors:DoorIndexToEnt(k)
+		if door:IsDoor() then
 			door_setup[k] = {
-			flags = v.Data,
+			flags = flags,
 			}
+			--print(door.Data)
 		end
 	end
+	--PrintTable(door_setup)
 	
 	//barricades
 	local break_entry = {}
@@ -102,6 +161,16 @@ function nz.Mapping.Functions.SaveConfig()
 			angle = v:GetAngles(),
 		})
 	end
+	
+	local special_entities = {}
+	for k,v in pairs(nz.QMenu.Data.SpawnedEntities) do
+		if IsValid(v) then
+			table.insert(special_entities, duplicator.CopyEntTable(v))
+		else
+			nz.QMenu.Data.SpawnedEntities[k] = nil
+		end
+	end
+	--PrintTable(special_entities)
 	
 	main["ZedSpawns"] = zed_spawns
 	main["PlayerSpawns"] = player_spawns
@@ -113,9 +182,30 @@ function nz.Mapping.Functions.SaveConfig()
 	main["PerkMachineSpawns"] = perk_machinespawns
 	main["DoorSetup"] = door_setup
 	main["BreakEntry"] = break_entry
+	main["RBoxHandler"] = random_box_handler
+	main["PlayerHandler"] = player_handler
+	main["EasterEggs"] = easter_eggs
+	main["PropEffects"] = prop_effects
+	main["SpecialEntities"] = special_entities
 	
-	file.Write( "nz/nz_"..game.GetMap( ).."_"..os.date("%H_%M_%j")..".txt", util.TableToJSON( main ) )
-	PrintMessage( HUD_PRINTTALK, "[NZ] Saved to garrysmod/data/nz/".."nz_"..game.GetMap( ).."_"..os.date("%H_%M_%j")..".txt" )
+	//We better clear the merges in case someone played around with them in create mode (lua_run)
+	nz.Nav.ResetNavGroupMerges()
+	main["NavTable"] = nz.Nav.Data
+	main["NavGroups"] = nz.Nav.NavGroups
+	main["NavGroupIDs"] = nz.Nav.NavGroupIDs
+	
+	//Save this map's configuration
+	main["MapSettings"] = nz.Mapping.MapSettings
+	
+	local configname
+	if name and name != "" then
+		configname = "nz/nz_"..game.GetMap( )..";"..name..".txt"
+	else
+		configname = "nz/nz_"..game.GetMap( )..";"..os.date("%H_%M_%j")..".txt"
+	end
+	
+	file.Write( configname, util.TableToJSON( main ) )
+	PrintMessage( HUD_PRINTTALK, "[NZ] Saved to garrysmod/data/"..configname )
 	
 end
 
@@ -125,6 +215,7 @@ function nz.Mapping.Functions.ClearConfig()
 	for k,v in pairs(ents.FindByClass("zed_spawns")) do
 		v:Remove()
 	end
+	nz.Enemies.Data.RespawnableSpawnpoints = {}
 	
 	for k,v in pairs(ents.FindByClass("player_spawns")) do
 		v:Remove()
@@ -154,28 +245,67 @@ function nz.Mapping.Functions.ClearConfig()
 		v:Remove()
 	end
 	
+	for k,v in pairs(ents.FindByClass("player_handler")) do
+		v:Remove()
+	end
+	
+	for k,v in pairs(ents.FindByClass("random_box_handler")) do
+		v:Remove()
+	end
+	
+	for k,v in pairs(ents.FindByClass("easter_egg")) do
+		v:Remove()
+	end
+	
+	for k,v in pairs(ents.FindByClass("nz_prop_effect")) do
+		v:Remove()
+	end
+	
 	//Normal Map doors
-	for k,v in pairs(nz.Doors.Data.LinkFlags) do
-		nz.Doors.Functions.RemoveMapDoorLink( k )
+	for k,v in pairs(Doors.MapDoors) do
+		Doors:RemoveMapDoorLink( k )
 	end
 	
 	for k,v in pairs(ents.FindByClass("breakable_entry")) do
 		v:Remove()
 	end
 	
+	//Reset Navigation table
+	for k,v in pairs(nz.Nav.Data) do
+		navmesh.GetNavAreaByID(k):SetAttributes(v.prev)
+	end
+	nz.Nav.Data = {}
+	
+	//Specially spawned entities
+	for k,v in pairs(nz.QMenu.Data.SpawnedEntities) do
+		if IsValid(v) then
+			v:Remove()
+		end
+	end
+	
+	nz.Mapping.Functions.CleanUpMap()
+	
+	nz.QMenu.Data.SpawnedEntities = {}
+	
+	nz.Mapping.MapSettings = {}
+	
+	Doors.MapDoors = {}
+	Doors.PropDoors = {}
+	
 	//Sync
-	nz.Rounds.Functions.SendSync()
-	nz.Doors.Functions.SendSync()
+	FullSyncModules["Round"]()
+	
+	-- Clear all door data
+	net.Start("nzClearDoorData")
+	net.Broadcast()
 end
 
 function nz.Mapping.Functions.LoadConfig( name )
 
 	local filepath = "nz/"..name
 	
-	if file.Exists( filepath, "DATA" ) then
+	if file.Exists( filepath, "DATA" )then
 		print("[NZ] MAP CONFIG FOUND!")
-		
-		
 		
 		local data = util.JSONToTable( file.Read( filepath, "DATA" ) )
 		
@@ -206,49 +336,127 @@ function nz.Mapping.Functions.LoadConfig( name )
 		
 		//Start sorting the data
 		
-		for k,v in pairs(data.ZedSpawns) do
-			nz.Mapping.Functions.ZedSpawn(v.pos, v.link)
+		if data.ZedSpawns then
+			for k,v in pairs(data.ZedSpawns) do
+				nz.Mapping.Functions.ZedSpawn(v.pos, v.link, v.respawnable)
+			end
 		end
 		
-		for k,v in pairs(data.PlayerSpawns) do
-			nz.Mapping.Functions.PlayerSpawn(v.pos)
+		if data.PlayerSpawns then
+			for k,v in pairs(data.PlayerSpawns) do
+				nz.Mapping.Functions.PlayerSpawn(v.pos)
+			end
 		end
 		
-		for k,v in pairs(data.WallBuys) do
-			nz.Mapping.Functions.WallBuy(v.pos,v.wep, v.price, v.angle)
+		if data.WallBuys then
+			for k,v in pairs(data.WallBuys) do
+				nz.Mapping.Functions.WallBuy(v.pos,v.wep, v.price, v.angle)
+			end
 		end
 		
-		for k,v in pairs(data.BuyablePropSpawns) do
-			nz.Mapping.Functions.PropBuy(v.pos, v.angle, v.model, v.flags)
+		if data.BuyablePropSpawns then
+			for k,v in pairs(data.BuyablePropSpawns) do
+				nz.Mapping.Functions.PropBuy(v.pos, v.angle, v.model, v.flags)
+			end
 		end
 		
-		for k,v in pairs(data.ElecSpawns) do
-			nz.Mapping.Functions.Electric(v.pos, v.angle, v.model)
+		if data.ElecSpawns then
+			for k,v in pairs(data.ElecSpawns) do
+				nz.Mapping.Functions.Electric(v.pos, v.angle, v.model)
+			end
 		end
 		
-		for k,v in pairs(data.BlockSpawns) do
-			nz.Mapping.Functions.BlockSpawn(v.pos, v.angle, v.model)
-		end
-			
-		for k,v in pairs(data.RandomBoxSpawns) do
-			nz.Mapping.Functions.BoxSpawn(v.pos, v.angle)
+		if data.BlockSpawns then
+			for k,v in pairs(data.BlockSpawns) do
+				nz.Mapping.Functions.BlockSpawn(v.pos, v.angle, v.model)
+			end
 		end
 		
-		for k,v in pairs(data.PerkMachineSpawns) do
-			nz.Mapping.Functions.PerkMachine(v.pos, v.angle, v.id)
+		if data.RandomBoxSpawns then
+			for k,v in pairs(data.RandomBoxSpawns) do
+				nz.Mapping.Functions.BoxSpawn(v.pos, v.angle)
+			end
+		end
+		
+		if data.PerkMachineSpawns then
+			for k,v in pairs(data.PerkMachineSpawns) do
+				nz.Mapping.Functions.PerkMachine(v.pos, v.angle, v.id)
+			end
+		end
+		
+		if data.RBoxHandler then
+			for k,v in pairs(data.RBoxHandler) do
+				nz.Mapping.Functions.RBoxHandler(v.pos, v.guns, v.angle)
+			end
+		end
+		
+		if data.EasterEggs then
+			for k,v in pairs(data.EasterEggs) do
+				nz.Mapping.Functions.EasterEgg(v.pos, v.angle, v.model)
+			end
 		end
 		
 		//Normal Map doors
-		for k,v in pairs(data.DoorSetup) do
-			nz.Doors.Functions.CreateMapDoorLink(k, v.flags)
+		if data.DoorSetup then
+			for k,v in pairs(data.DoorSetup) do
+				--print(v.flags)
+				Doors:CreateMapDoorLink(k, v.flags)
+			end
 		end
 		
 		if version >= 350 then
 			//Barricades
-			for k,v in pairs(data.BreakEntry) do
-				nz.Mapping.Functions.BreakEntry(v.pos, v.angle)
+			if data.BreakEntry then
+				for k,v in pairs(data.BreakEntry) do
+					nz.Mapping.Functions.BreakEntry(v.pos, v.angle)
+				end
 			end
 		end
+		
+		//NavTable saved
+		if data.NavTable then
+			nz.Nav.Data = data.NavTable
+			//Re-enable navmesh visualization
+			for k,v in pairs(nz.Nav.Data) do
+				local navarea = navmesh.GetNavAreaByID(k)
+				if v.link then
+					navarea:SetAttributes(NAV_MESH_STOP)
+				else 
+					navarea:SetAttributes(NAV_MESH_AVOID) 
+				end
+			end
+		end
+
+		if data.NavGroups then
+			nz.Nav.NavGroups = data.NavGroups
+		end
+		if data.NavGroupIDs then
+			nz.Nav.NavGroupIDs = data.NavGroupIDs
+		end
+		
+		if data.PropEffects then
+			for k,v in pairs(data.PropEffects) do
+				nz.Mapping.Functions.SpawnEffect(v.pos, v.angle, v.model)
+			end
+		end
+		
+		if data.SpecialEntities then
+			for k,v in pairs(data.SpecialEntities) do
+				PrintTable(v)
+				local ent = duplicator.CreateEntityFromTable(Entity(1), v)
+				table.insert(nz.QMenu.Data.SpawnedEntities, ent)
+			end
+		end
+		
+		if data.MapSettings then
+			nz.Mapping.MapSettings = data.MapSettings
+			for k,v in pairs(player.GetAll()) do
+				nz.Mapping.Functions.SendMapData(v)
+			end
+		end
+		
+		-- Generate all auto navmesh merging so we don't have to save that manually
+		nz.Nav.Functions.AutoGenerateAutoMergeLinks()
 		
 		print("[NZ] Finished loading map config.")
 	else
@@ -256,6 +464,37 @@ function nz.Mapping.Functions.LoadConfig( name )
 		print("[NZ] Warning: NO MAP CONFIG FOUND! Make a config in game using the /create command, then use /save to save it all!")
 	end
 	
+end
+
+util.AddNetworkString("nzCleanUp")
+function nz.Mapping.Functions.CleanUpMap()
+	game.CleanUpMap(true, {
+		"breakable_entry",
+		"breakable_entry_plank",
+		"button_elec",
+		"perk_machine",
+		"player_handler",
+		"player_spawns",
+		"prop_buys",
+		"random_box_spawns",
+		"random_box_handler",
+		"wall_block",
+		"wall_buys",
+		"zed_spawns",
+		"easter_egg"
+	})
+	//Gotta reset the doors and other entites' values!
+	for k,v in pairs(Doors.MapDoors) do
+		local door = Doors:DoorIndexToEnt(k)
+		door:SetLocked(true)
+		if door:IsDoor() then
+			door:LockDoor()
+		elseif door:IsButton() then
+			door:LockButton()
+		end
+	end
+	net.Start("nzCleanUp")
+	net.Broadcast()
 end
 
 hook.Add("Initialize", "nz_Loadmaps", function()

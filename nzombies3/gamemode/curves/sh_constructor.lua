@@ -19,6 +19,15 @@ if SERVER then
 		end
 		//PrintTable(nz.Curves.Data)
 	end
+	
+	function nz.Curves.Functions.GenerateHealthCurve(round)
+		return math.Round(nz.Config.BaseDifficultyHealthCurve*math.pow(round,nz.Config.DifficultyHealthCurve))
+	end
+	
+	function nz.Curves.Functions.GenerateMaxZombies(round)
+		return math.Round(nz.Config.BaseDifficultySpawnRateCurve*math.pow(round,nz.Config.DifficultySpawnRateCurve))
+	end
+
 
 	nz.Curves.Functions.GenerateCurve()
 

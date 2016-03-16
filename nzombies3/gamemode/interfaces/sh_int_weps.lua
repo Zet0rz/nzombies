@@ -3,7 +3,8 @@
 if SERVER then
 	function nz.Interfaces.Functions.WepBuyHandler( ply, data )
 		if ply:IsSuperAdmin() then
-			nz.Mapping.Functions.WallBuy(data.vec, data.class, tonumber(data.price), data.ang)
+			data.ent = data.ent or NULL
+			nz.Mapping.Functions.WallBuy(data.vec, data.class, tonumber(data.price), data.ang, data.ent, ply)
 		end
 	end
 end
@@ -14,6 +15,11 @@ if CLIENT then
 		local valz = {}
 		valz["Row1"] = "weapon_class"
 		valz["Row2"] = 500
+		
+		if data.ent then
+			valz["Row1"] = data.ent:GetEntName()
+			valz["Row2"] = data.ent:GetPrice()
+		end
 
 		local DermaPanel = vgui.Create( "DFrame" )
 		DermaPanel:SetPos( 100, 100 )
@@ -29,10 +35,18 @@ if CLIENT then
 		DProperties:SetSize( 280, 180 )
 		DProperties:SetPos( 10, 30 )
 
-		local Row1 = DProperties:CreateRow( "Weapon Settings", "Weapon Class" )
+		--[[local Row1 = DProperties:CreateRow( "Weapon Settings", "Weapon Class" )
 		Row1:Setup( "Generic" )
 		Row1:SetValue( valz["Row1"] )
+		Row1.DataChanged = function( _, val ) valz["Row1"] = val end]]
+		
+		local Row1 = DProperties:CreateRow( "Weapon Settings", "Weapon Class" )
+		Row1:Setup( "Combo" )
+		for k,v in pairs(weapons.GetList()) do
+			Row1:AddChoice(v.PrintName and v.PrintName != "" and v.PrintName or v.ClassName, v.ClassName, false)
+		end
 		Row1.DataChanged = function( _, val ) valz["Row1"] = val end
+		
 		local Row2 = DProperties:CreateRow( "Weapon Settings", "Price" )
 		Row2:Setup( "Integer" )
 		Row2:SetValue( valz["Row2"] )

@@ -23,9 +23,15 @@ function ENT:Initialize()
 	self:DrawShadow( false )
 end
 
+function ENT:OnRemove()
+	if SERVER and table.HasValue(nz.Enemies.Data.RespawnableSpawnpoints, self) then
+		table.RemoveByValue(nz.Enemies.Data.RespawnableSpawnpoints, self)
+	end
+end
+
 if CLIENT then
 	function ENT:Draw()
-		if nz.Rounds.Data.CurrentState == ROUND_CREATE then
+		if Round:InState( ROUND_CREATE ) then
 			self:DrawModel()
 		end
 	end

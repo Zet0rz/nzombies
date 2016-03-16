@@ -11,7 +11,7 @@ ENT.Instructions	= ""
 
 function ENT:Initialize()
 	self:SetModel( "models/hoff/props/mysterybox/box.mdl" )
-	self:SetColor( 255, 255, 255 )
+	self:SetColor( Color(255, 255, 255) )
 	self:SetMoveType( MOVETYPE_NONE )
 	self:SetSolid( SOLID_VPHYSICS )
 	self:SetCollisionGroup( COLLISION_GROUP_WEAPON )
@@ -20,7 +20,7 @@ end
 
 if CLIENT then
 	function ENT:Draw()
-		if nz.Rounds.Data.CurrentState == ROUND_CREATE then
+		if Round:InState( ROUND_CREATE ) then
 			self:DrawModel()
 		end
 	end

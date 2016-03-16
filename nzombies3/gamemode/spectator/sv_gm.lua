@@ -15,7 +15,7 @@ function nz.Spectator.Functions.InitialSpawn(ply)
 end
 
 function nz.Spectator.Functions.OnDeath(ply)
-	if (nz.Rounds.Data.CurrentState == ROUND_CREATE) and (ply:IsSuperAdmin()) then
+	if Round:InState( ROUND_CREATE ) and (ply:IsSuperAdmin()) then
 		timer.Simple(1, function() ply:Spawn() end)
 	else
 		timer.Simple(1, function() ply:SetAsSpec() end)

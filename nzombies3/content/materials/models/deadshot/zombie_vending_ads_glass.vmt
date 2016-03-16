@@ -1,0 +1,5 @@
+"VertexlitGeneric"
+{
+	"$basetexture" "models/deadshot/zombie_vending_ads_glass"
+	"$translucent" 1
+}

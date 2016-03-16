@@ -39,7 +39,8 @@ if SERVER then
 	function ENT:Use( activator, caller )
 		local price = self.Price
 		local ammo_type = weapons.Get(self.WeaponGive).Primary.Ammo
-		local ammo_price = math.Round((price - (price % 10))/2)
+		local ammo_price = math.ceil((price - (price % 10))/2)
+		local ammo_price_pap = 4500
 		local curr_ammo = activator:GetAmmoCount( ammo_type )
 		local give_ammo = nz.Weps.Functions.CalculateMaxAmmo(self.WeaponGive) - curr_ammo
 
@@ -49,14 +50,28 @@ if SERVER then
 				activator:TakePoints(price)
 				activator:Give(self.WeaponGive)
 				nz.Weps.Functions.GiveMaxAmmoWep(activator, self.WeaponGive)
+				--activator:EmitSound("nz/effects/buy.wav")
 			else
 				print("Can't afford!")
 			end
-		else // Refill ammo
+		elseif activator:GetWeapon(self.WeaponGive).pap then
+			if activator:CanAfford(ammo_price_pap) then
+				if give_ammo != 0 then
+					activator:TakePoints(ammo_price_pap)
+					nz.Weps.Functions.GiveMaxAmmoWep(activator, self.WeaponGive)
+					--activator:EmitSound("nz/effects/buy.wav")
+				else
+					print("Max Clip!")
+				end
+			else
+				print("Can't afford!")
+			end
+		else	// Refill ammo
 			if activator:CanAfford(ammo_price) then
 				if give_ammo != 0 then
 					activator:TakePoints(ammo_price)
 					nz.Weps.Functions.GiveMaxAmmoWep(activator, self.WeaponGive)
+					--activator:EmitSound("nz/effects/buy.wav")
 				else
 					print("Max Clip!")
 				end
