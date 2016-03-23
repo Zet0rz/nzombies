@@ -1,0 +1,13 @@
+"VertexLitGeneric"
+{
+	"$basetexture" "models\Alcatraz/c_zom_handsome_upper_c"
+        "$bumpmap" "models\Alcatraz/c_zom_handsome_upper_n"
+	"$model" 1
+
+	"$phong" "1"
+	"$phongexponent" "30"
+	"$phongboost" "2"
+	"$phongfresnelranges" "[0.3 1 7]"
+	"$phongalbedotint" "1"		
+}
+

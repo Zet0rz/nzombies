@@ -1,0 +1,7 @@
+"VertexlitGeneric"
+{
+	"$basetexture" "models/alig96/perks/doubletap/Doubletap"
+	"$surfaceprop" "Metal"
+	"$nocull" 1
+                "$alphatest" "1"
+}

@@ -1,6 +1,0 @@
-"VertexlitGeneric"
-{
-	"$basetexture" "models/alig96/perks/sleight/Power_Off"
-	"$surfaceprop" "Metal"
-	"$nocull" 1
-}

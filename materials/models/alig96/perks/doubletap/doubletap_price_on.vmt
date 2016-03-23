@@ -1,0 +1,8 @@
+"VertexlitGeneric"
+{
+	"$basetexture" "models/alig96/perks/doubletap/Doubletap_price"
+	"$surfaceprop" "Metal"
+	"$nocull" 1
+                "$selfillum" 1
+                "$selfillummask" "models/alig96/perks/doubletap/white"
+}

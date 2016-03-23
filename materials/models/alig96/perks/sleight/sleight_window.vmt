@@ -1,0 +1,7 @@
+"VertexlitGeneric"
+{
+	"$basetexture" "models/alig96/perks/sleight/Sleight_window"
+	"$surfaceprop" "Glass"
+	"$nocull" 1
+	"$translucent" 1
+}

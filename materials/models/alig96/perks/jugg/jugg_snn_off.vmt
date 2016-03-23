@@ -1,0 +1,7 @@
+"VertexlitGeneric"
+{
+	"$basetexture" "models/alig96/perks/jugg/Jugg_SNN"
+	"$bumpmap" "models/alig96/perks/jugg/Jugg_SNN_NRM"
+	"$surfaceprop" "Metal"
+	"$nocull" 1
+}

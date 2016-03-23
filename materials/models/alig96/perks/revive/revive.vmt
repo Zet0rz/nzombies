@@ -1,0 +1,8 @@
+"VertexlitGeneric"
+{
+	"$basetexture" "models/alig96/perks/revive/Revive"
+	"$bumpmap" "models/alig96/perks/revive/Revive_NRM"
+	"$surfaceprop" "Metal"
+	"$alphatest" 1
+	"$nocull" 1
+}

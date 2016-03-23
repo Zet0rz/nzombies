@@ -1,0 +1,14 @@
+"nzombies"
+{
+	"base"		"base"
+    "title"  "nZombies 3"
+    "version"   "3.0"
+    "menusystem"	"1"
+
+    "author_name"   "Alig96, Zet0r, Lolle"
+    "author_email"  ""
+
+    "icon"  ""
+    "info"  ""
+    "hide"  "0"
+}

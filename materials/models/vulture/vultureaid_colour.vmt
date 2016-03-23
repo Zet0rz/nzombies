@@ -1,0 +1,7 @@
+"VertexlitGeneric"
+{
+	"$basetexture" "models/vulture/vultureaid_colour"
+	"$bumpmap" "models/vulture/vultureaid_normal"
+                "$selfillum" "1"
+
+}

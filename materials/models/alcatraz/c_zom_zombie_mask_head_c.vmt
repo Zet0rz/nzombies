@@ -1,0 +1,13 @@
+"VertexLitGeneric"
+{
+	"$basetexture" "models\Alcatraz/c_zom_zombie_mask_head_c"
+        "$bumpmap" "models\Alcatraz/c_zom_zombie_mask_head_n"
+	"$alphatest" 1
+
+	"$phong" "1"
+	"$phongexponent" "30"
+	"$phongboost" "1"
+	"$phongfresnelranges" "[0.3 1 7]"
+	"$phongalbedotint" "1"		
+}
+

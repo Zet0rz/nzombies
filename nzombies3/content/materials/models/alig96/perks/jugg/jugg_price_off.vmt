@@ -1,6 +1,0 @@
-"VertexlitGeneric"
-{
-	"$basetexture" "models/alig96/perks/jugg/Jugg_price"
-	"$surfaceprop" "Metal"
-	"$nocull" 1
-}
