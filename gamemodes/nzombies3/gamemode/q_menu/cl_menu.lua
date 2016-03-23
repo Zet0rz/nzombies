@@ -1,10 +1,20 @@
 
 function nz.QMenu.Functions.CreatePropsMenu( )
-
+	
+	//Settings
+	frameSize = "Normal" //Sizes: Small, Normal, Large, or enter your own numbers (Ex: frameSize = 400, 600)
+	
 	//Create a Frame to contain everything.
 	nz.QMenu.Data.MainFrame = vgui.Create( "DFrame" )
 	nz.QMenu.Data.MainFrame:SetTitle( "Props Menu" )
-	nz.QMenu.Data.MainFrame:SetSize( 475, 340 )
+	if frameSize == "Normal" then
+		nz.QMenu.Data.MainFrame:SetSize( 500, 360 )
+	elseif frameSize == "Small" then
+		nz.QMenu.Data.MainFrame:SetSize( 250, 180)
+	elseif frameSize == "Large" then
+		nz.QMenu.Data.MainFrame:SetSize( 750, 540)
+	elseif frameSize != "Small" or frameSize != "Normal" or frameSize != "Large" then
+		nz.QMenu.Data.MainFrame:SetSize( frameSize )
 	nz.QMenu.Data.MainFrame:Center()
 	nz.QMenu.Data.MainFrame:SetPopupStayAtBack(true)
 	nz.QMenu.Data.MainFrame:MakePopup()
