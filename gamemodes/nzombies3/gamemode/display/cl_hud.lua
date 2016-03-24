@@ -350,3 +350,6 @@ hook.Add("HUDPaint", "grenadeHUD", DrawGrenadeHud )
 
 hook.Add("OnRoundPreperation", "BeginRoundHUDChange", StartChangeRound)
 hook.Add("OnRoundStart", "EndRoundHUDChange", EndChangeRound)
+
+//Bind Grenade to G (Is it +grenade1 or nz_grenade?)
+RunConsoleCommand( "bind G nz_grenade" )
