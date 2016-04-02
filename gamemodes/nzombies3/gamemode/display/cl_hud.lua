@@ -20,10 +20,15 @@ local function StatesHud()
 end
 
 local function ScoreHud()
-	local scale = (ScrW()/1920 + 1)/2
+	local scale = (ScrW() / 1920 + 1) / 2
 
 	if Round:InProgress() then
-		for k,v in pairs(player.GetAll()) do
+		local plyAndPoints = {}
+		for _, v in pairs(player.GetAll()) do
+			plyAndPoints[v] = v:GetPoints()
+		end
+		plyAndPoints = table.SortByKey(plyAndPoints, true)
+		for k, v in pairs(plyAndPoints) do
 			local hp = v:Health()
 			if hp == 0 then hp = "Dead" elseif Revive.Players[v:EntIndex()] then hp = "Downed" else hp = hp .. " HP"  end
 			if v:GetPoints() >= 0 then
@@ -372,7 +377,7 @@ function GM:HUDWeaponPickedUp( wep )
 	if ( !IsValid( wep ) ) then return end
 	if ( !isfunction( wep.GetPrintName ) ) then return end
 	if blockedweps[wep:GetClass()] then return end
-		
+
 	local pickup = {}
 	pickup.time			= CurTime()
 	pickup.name			= wep:GetPrintName()
@@ -381,7 +386,7 @@ function GM:HUDWeaponPickedUp( wep )
 	pickup.fadein		= 0.04
 	pickup.fadeout		= 0.3
 	pickup.color		= Color( 255, 200, 50, 255 )
-	
+
 	surface.SetFont( pickup.font )
 	local w, h = surface.GetTextSize( pickup.name )
 	pickup.height		= h
@@ -390,7 +395,7 @@ function GM:HUDWeaponPickedUp( wep )
 	if ( self.PickupHistoryLast >= pickup.time ) then
 		pickup.time = self.PickupHistoryLast + 0.05
 	end
-	
+
 	table.insert( self.PickupHistory, pickup )
 	self.PickupHistoryLast = pickup.time
 
