@@ -1,19 +1,25 @@
 AddCSLuaFile()
 
+-- Defining what type of entity this is
+
 ENT.Type = "anim"
  
+-- Defining what to call it by, the author, how to contact him/her, the purpose, and instructions on how to use this
 ENT.PrintName		= "drop_tombstone"
 ENT.Author			= "Zet0r"
 ENT.Contact			= "Don't"
 ENT.Purpose			= ""
 ENT.Instructions	= ""
 
+-- Creating data tables
 function ENT:SetupDataTables()
-
+	
+	-- Defining a network variable to determin perk owner
 	self:NetworkVar( "Entity", 0, "PerkOwner" )
 	
 end
 
+--INIT Section
 function ENT:Initialize()
 	
 	self:SetModel("models/props_c17/gravestone003a.mdl")
@@ -45,7 +51,9 @@ function ENT:Initialize()
 		end
 	end)
 end
+-- End INIT section
 
+-- Server operations to give tombstone (soda) and replace stripped PAP weapons with PAP weapons
 if SERVER then
 	function ENT:StartTouch(hitEnt)
 		--print("Collided")
@@ -73,6 +81,7 @@ if SERVER then
 	end
 end
 
+-- Client side operations to draw tombstone halos
 if CLIENT then
 	function ENT:Draw()
 		self:DrawModel()
