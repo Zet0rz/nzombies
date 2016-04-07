@@ -1,19 +1,23 @@
 AddCSLuaFile()
 
+-- Defining what type of entity this is
 ENT.Type = "anim"
  
+-- Defining the name to call it by, the author, the contact information, the purpose of this, and the instructions on how to use this
 ENT.PrintName		= "drop_powerups"
 ENT.Author			= "Alig96"
 ENT.Contact			= "Don't"
 ENT.Purpose			= ""
 ENT.Instructions	= ""
 
+-- Ctreating data tables
 function ENT:SetupDataTables()
 
 	self:NetworkVar( "String", 0, "PowerUp" )
 	
 end
 
+-- INIT Section
 function ENT:Initialize()
 
 	//self:SetPowerUp("dp")
@@ -43,7 +47,9 @@ function ENT:Initialize()
 		end
 	end)
 end
+-- End INIT section
 
+-- Server side operations to activate the powerup
 if SERVER then
 	function ENT:StartTouch(hitEnt)
 		if (hitEnt:IsValid() and hitEnt:IsPlayer()) then
@@ -53,6 +59,7 @@ if SERVER then
 	end
 end
 
+-- Client side operations to render the powerup and rotate the powerup
 if CLIENT then
 	--local glow = Material ( "sprites/glow04_noz" )
 	--local col = Color(0,200,255,255)
