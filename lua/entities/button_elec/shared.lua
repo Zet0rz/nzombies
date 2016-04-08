@@ -17,7 +17,7 @@ function ENT:SetupDataTables()
 	
 end
 
--- INIT Section
+
 function ENT:Initialize()
 	if SERVER then
 		self:SetModel( "models/MaxOfS2D/button_01.mdl" )
@@ -29,7 +29,7 @@ function ENT:Initialize()
 		self.PosePosition = 0
 	end
 end
--- End INIT section
+
 
 -- Defining what happens when a playrer presses E on the switch entity
 function ENT:Use( activator )
