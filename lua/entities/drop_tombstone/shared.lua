@@ -1,15 +1,20 @@
 AddCSLuaFile()
 
+-- Defining what type of entity this is
+
 ENT.Type = "anim"
  
+-- Defining what to call it by, the author, how to contact him/her, the purpose, and instructions on how to use this
 ENT.PrintName		= "drop_tombstone"
 ENT.Author			= "Zet0r"
 ENT.Contact			= "Don't"
 ENT.Purpose			= ""
 ENT.Instructions	= ""
 
+-- Creating data tables
 function ENT:SetupDataTables()
-
+	
+	-- Defining a network variable to determin perk owner
 	self:NetworkVar( "Entity", 0, "PerkOwner" )
 	
 end
@@ -46,6 +51,7 @@ function ENT:Initialize()
 	end)
 end
 
+-- Server operations to give tombstone and replace stripped PAP weapons with PAP weapons
 if SERVER then
 	function ENT:StartTouch(hitEnt)
 		--print("Collided")
@@ -73,16 +79,19 @@ if SERVER then
 	end
 end
 
+-- Client side operations to draw tombstone halos
 if CLIENT then
 	function ENT:Draw()
 		self:DrawModel()
 	end
 	
+	-- Rotating the model constantly
 	function ENT:Think()
 		if !self:GetRenderAngles() then self:SetRenderAngles(self:GetAngles()) end
 		self:SetRenderAngles(self:GetRenderAngles()+(Angle(0,50,0)*FrameTime()))
 	end
 	
+	-- Adding halo effect to the powerup on the ground
 	hook.Add( "PreDrawHalos", "drop_powerups_halos", function()
 		halo.Add( ents.FindByClass( "drop_powerup" ), Color( 0, 255, 0 ), 2, 2, 2 )
 	end )

@@ -1,18 +1,22 @@
 AddCSLuaFile( )
 
+-- Defining entity type
 ENT.Type = "anim"
  
+-- Defining name to call it by, the author, the contact information, the purpose of this entity, and instructions on how to use this
 ENT.PrintName		= "button_elec"
 ENT.Author			= "Alig96"
 ENT.Contact			= "Don't"
 ENT.Purpose			= ""
 ENT.Instructions	= ""
 
+-- Creating data tables
 function ENT:SetupDataTables()
 
 	self:NetworkVar( "Bool", 0, "Switch" )
 	
 end
+
 
 function ENT:Initialize()
 	if SERVER then
@@ -26,6 +30,8 @@ function ENT:Initialize()
 	end
 end
 
+
+-- Defining what happens when a playrer presses E on the switch entity
 function ENT:Use( activator )
 
 	if ( !activator:IsPlayer() ) then return end
@@ -35,7 +41,8 @@ function ENT:Use( activator )
 	end
 
 end
-	
+
+-- Client side operations to render the switch and activate the switch
 if CLIENT then
 
 	function ENT:Think()
