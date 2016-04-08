@@ -17,7 +17,7 @@ function ENT:SetupDataTables()
 	
 end
 
--- INIT Section
+
 function ENT:Initialize()
 
 	//self:SetPowerUp("dp")
@@ -47,7 +47,7 @@ function ENT:Initialize()
 		end
 	end)
 end
--- End INIT section
+
 
 -- Server side operations to activate the powerup
 if SERVER then
@@ -66,6 +66,7 @@ if CLIENT then
 	
 	local particledelay = 0.1
 	
+	-- Rendering the green glow on powerups
 	function ENT:Draw()
 		if CurTime() > self.NextParticle then
 			local effectdata = EffectData()
@@ -76,6 +77,7 @@ if CLIENT then
 		self:DrawModel()
 	end
 	
+	-- Rotating the model constantly
 	function ENT:Think()
 		if !self:GetRenderAngles() then self:SetRenderAngles(self:GetAngles()) end
 		self:SetRenderAngles(self:GetRenderAngles()+(Angle(0,50,0)*FrameTime()))
