@@ -19,7 +19,6 @@ function ENT:SetupDataTables()
 	
 end
 
---INIT Section
 function ENT:Initialize()
 	
 	self:SetModel("models/props_c17/gravestone003a.mdl")
@@ -51,9 +50,8 @@ function ENT:Initialize()
 		end
 	end)
 end
--- End INIT section
 
--- Server operations to give tombstone (soda) and replace stripped PAP weapons with PAP weapons
+-- Server operations to give tombstone and replace stripped PAP weapons with PAP weapons
 if SERVER then
 	function ENT:StartTouch(hitEnt)
 		--print("Collided")
@@ -87,11 +85,13 @@ if CLIENT then
 		self:DrawModel()
 	end
 	
+	-- Rotating the model constantly
 	function ENT:Think()
 		if !self:GetRenderAngles() then self:SetRenderAngles(self:GetAngles()) end
 		self:SetRenderAngles(self:GetRenderAngles()+(Angle(0,50,0)*FrameTime()))
 	end
 	
+	-- Adding halo effect to the powerup on the ground
 	hook.Add( "PreDrawHalos", "drop_powerups_halos", function()
 		halo.Add( ents.FindByClass( "drop_powerup" ), Color( 0, 255, 0 ), 2, 2, 2 )
 	end )
