@@ -14,7 +14,7 @@ ENT.Instructions	= ""
 //models/props_interiors/elevatorshaft_door01a.mdl
 //models/props_debris/wood_board02a.mdl
 
--- INIT Section
+
 function ENT:Initialize()
 
 	self:SetModel("models/props_debris/wood_board02a.mdl")
@@ -22,7 +22,7 @@ function ENT:Initialize()
 	self:SetSolid( SOLID_VPHYSICS )
 	
 end
--- End INIT section
+
 
 -- Client side operations to draw plank model
 if CLIENT then
