@@ -13,9 +13,9 @@ ENT.Instructions	= ""
 //models/props_interiors/elevatorshaft_door01a.mdl
 //models/props_debris/wood_board02a.mdl
 
--- INIT Section
 function ENT:Initialize()
-
+	
+	-- Setting the model for the plank
 	self:SetModel("models/props_c17/fence01b.mdl")
 	self:SetMoveType( MOVETYPE_NONE )
 	self:SetSolid( SOLID_VPHYSICS )
@@ -40,7 +40,7 @@ function ENT:SetupDataTables()
 
 end
 
--- Function that adds the planks
+
 function ENT:AddPlank(nosound)
 	self:SpawnPlank()
 	self:SetNumPlanks( (self:GetNumPlanks() or 0) + 1 )
@@ -49,7 +49,7 @@ function ENT:AddPlank(nosound)
 	end
 end
 
--- Function to remove the planks
+
 function ENT:RemovePlank()
 
 	local plank = table.Random(self.Planks)
@@ -72,7 +72,7 @@ function ENT:RemovePlank()
 	end
 end
 
--- Function to reset the planks
+
 function ENT:ResetPlanks(nosoundoverride)
 	for i=1, GetConVar("nz_difficulty_barricade_planks_max"):GetInt() do
 		self:RemovePlank()
@@ -94,7 +94,7 @@ function ENT:Use( activator, caller )
 	end
 end
 
--- Function to spawn planks
+
 function ENT:SpawnPlank()
 	//Spawn
 	local angs = {-60,-70,60,70}
