@@ -99,6 +99,8 @@ This is an edited version from Aligs original featuring these changes:
 	- Pack-a-Punch now a global hook, will work on all weapons
 	- Prop Search menu
 
+- Creative Mode
+	- Revive yourself with /revive
 
 - Workshop Release To-do list:
 	Check the Issues tab with the "Workshop Release" milestone. Feel free to discuss your opinion about the things in there, it would help greatly.
