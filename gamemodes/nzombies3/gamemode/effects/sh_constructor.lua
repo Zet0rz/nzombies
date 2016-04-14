@@ -1,0 +1,2 @@
+nzEffects = {}
+Effects = nzEffects

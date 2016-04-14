@@ -1,0 +1,8 @@
+"VertexlitGeneric"
+{
+	"$basetexture" "models/alig96/perks/jugg/Jugg_SNN"
+	"$surfaceprop" "Metal"
+	"$nocull" 1
+                "$selfillum" 1
+                "$selfillummask" "models/alig96/perks/jugg/white"
+}

@@ -1,6 +1,0 @@
-"VertexLitGeneric"
-{
-	// Original shader: VertexLitTexture
-	"$basetexture" "models\Zombie_Classic/van_facemap"
-	"$halflambert" 1
-}

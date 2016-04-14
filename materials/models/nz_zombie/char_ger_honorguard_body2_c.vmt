@@ -1,0 +1,6 @@
+"VertexLitGeneric"
+{
+     "$basetexture" "models/nz_zombie/char_ger_honorguard_body2_c"
+	 "$bumpmap" "models/nz_zombie/char_ger_honorguard_body1_n"
+     "$model" 1
+}

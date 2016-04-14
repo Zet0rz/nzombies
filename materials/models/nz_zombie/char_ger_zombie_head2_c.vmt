@@ -1,0 +1,8 @@
+"VertexLitGeneric"
+{
+     "$basetexture" "models/nz_zombie/char_ger_zombie_head2_c"
+     "$bumpmap" "models/nz_zombie/char_ger_zombie_head1_n"
+     "$model" 1
+     //"$selfillum" 1
+	 
+}

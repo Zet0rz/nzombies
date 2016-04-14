@@ -1,0 +1,2 @@
+nzRandomBox = {}
+RandomBox = nzRandomBox

@@ -1,6 +1,0 @@
-"VertexLitGeneric"
-{
-	// Original shader: VertexLitTexture
-	"$basetexture" "models/Zed/Male/sandro_facemap"
-	"$halflambert" 1
-}
