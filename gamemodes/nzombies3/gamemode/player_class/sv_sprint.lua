@@ -20,7 +20,7 @@ hook.Add( "PlayerSpawn", "PlayerSprintSpawn", function( ply )
 	ply:SetMaxStamina( 100 )
 
 	--The rate is fixed on 0.05 seconds
-	ply:SetStaminaLossAmount( 2.5 )
+	ply:SetStaminaLossAmount( 2 )
 	ply:SetStaminaRecoverAmount( 4 )
 
 	ply:SetLastStaminaLoss( 0 )

@@ -104,6 +104,15 @@ function ENT:RevivePlayer()
 	
 	-- Everything bought as the clone will be refunded, even doors
 	ply:GivePoints(ply.WhosWhoMoney)
+	
+	local revivor = Revive.Players[id] and Revive.Players[id].RevivePlayer or nil
+	if IsValid(revivor) and revivor:IsPlayer() then
+		if self.DownPoints then
+			revivor:GivePoints(self.DownPoints)
+		end
+		revivor:StripWeapon("nz_revive_morphine") -- Remove the viewmodel again
+	end
+	
 	self:Remove()
 end
 
@@ -115,6 +124,8 @@ function ENT:StartRevive(revivor, nosync)
 	Revive.Players[id].ReviveTime = CurTime()
 	Revive.Players[id].RevivePlayer = revivor
 	revivor.Reviving = self
+	
+	revivor:Give("nz_revive_morphine") -- Give them the viewmodel
 
 	if !nosync then hook.Call("PlayerBeingRevived", Revive, self, revivor) end
 end
@@ -122,6 +133,11 @@ end
 function ENT:StopRevive(nosync)
 	local id = self:EntIndex()
 	if !Revive.Players[id] then return end -- Not even downed
+	
+	local revivor = Revive.Players[id].RevivePlayer
+	if IsValid(revivor) then
+		revivor:StripWeapon("nz_revive_morphine") -- Remove the revivors viewmodel
+	end
 		
 	Revive.Players[id].ReviveTime = nil
 	Revive.Players[id].RevivePlayer = nil
@@ -139,6 +155,12 @@ function ENT:OnRemove()
 		-- No more refunds for you once you become your clone mate!
 		ply.WhosWhoMoney = nil
 	end
+	
+	local revivor = Revive.Players[id] and Revive.Players[id].RevivePlayer or nil
+	if IsValid(revivor) then -- This shouldn't happen as players can't die if they are currently being revived
+		revivor:StripWeapon("nz_revive_morphine") -- Remove the revivors if someone was reviving viewmodel
+	end
+	
 	Revive.Players[self:EntIndex()] = nil
 	
 	if SERVER then

@@ -246,6 +246,7 @@ function MenuSettingsList:Init()
 	self:AddButton( "Load Map config", "say", "/load" )
 	self:AddButton( "Save Map config", "say", "/save" )
 	self:AddButton( "Generate Navmesh", "say", "/generate" )
+	self:AddButton( "Cheats (Beta)", "say", "/cheats" )
 end
 
 function MenuSettingsList:AddButton( lbl, cmd, args )
@@ -344,18 +345,23 @@ function PlayerList:Init()
 end
 
 local bloodline_points = Material("bloodline_score.png", "unlitgeneric smooth")
-function PlayerList:Paint()
+function PlayerList:Paint(w, h)
 	local c = 0
 	local n = #player.GetAllReady()
-	local w, h = self:GetSize()
-	for _,ply in pairs( player.GetAllNonSpecs() ) do
+	for _,ply in pairs( player.GetAll() ) do
 		if IsValid(ply) then
 			local text = ""
 			surface.SetMaterial(bloodline_points)
 			surface.SetDrawColor(200,0,0)
-			surface.DrawTexturedRect(0, h/2 - n*17.5 + 35*c, 300, 40)
-			if ply:IsReady() then text = "Ready" else text = "Not ready" end
-			draw.SimpleText(ply:Nick().." - "..text, "nz.display.hud.small", 25, h/2 - n*17.5 + 35*c + 15, Color(255,255,255,255), TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
+			surface.DrawTexturedRect(0, h / 2 - n * 17.5 + 35 * c, 300, 40)
+			if ply:IsReady() then text = "Ready" else
+				if Round:InState(ROUND_CREATE) and ply:Alive() then
+					text = "In Creative"
+				else
+					text = "Not ready"
+				end
+			end
+			draw.SimpleText(ply:Nick() .. " - " .. text, "nz.display.hud.small", 25, h / 2 - n * 17.5 + 35 * c + 15, Color(255,255,255,255), TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
 			c = c + 1
 		end
 	end

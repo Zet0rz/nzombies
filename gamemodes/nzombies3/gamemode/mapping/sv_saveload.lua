@@ -1,4 +1,4 @@
-Mapping.Version = 382 --Note to Ali; Any time you make an update to the way this is saved, increment this.
+Mapping.Version = 400 --Note to Ali; Any time you make an update to the way this is saved, increment this.
 
 function Mapping:SaveConfig(name)
 
@@ -20,33 +20,20 @@ function Mapping:SaveConfig(name)
 		})
 	end
 
-	local player_handler = {}
-	for _, v in pairs(ents.FindByClass("player_handler")) do
-		table.insert(player_handler, {
-		pos = v:GetPos(),
-		startwep = v:GetStartWep(),
-		startpoints = v:GetStartPoints(),
-		numweps = v:GetNumWeps(),
-		eeurl = v:GetEEURL(),
-		angle = v:GetAngles( ),
-		})
-	end
-
-	local random_box_handler = {}
-	for _, v in pairs(ents.FindByClass("random_box_handler")) do
-		table.insert(random_box_handler, {
-		pos = v:GetPos(),
-		guns = v:GetWeaponsList(),
-		angle = v:GetAngles( ),
-		})
-	end
-
 	local zed_spawns = {}
 	for _, v in pairs(ents.FindByClass("zed_spawns")) do
 		table.insert(zed_spawns, {
 		pos = v:GetPos(),
 		link = v.link,
 		respawnable = v.respawnable
+		})
+	end
+	
+	local zed_special_spawns = {}
+	for _, v in pairs(ents.FindByClass("zed_special_spawns")) do
+		table.insert(zed_special_spawns, {
+		pos = v:GetPos(),
+		link = v.link
 		})
 	end
 
@@ -63,7 +50,8 @@ function Mapping:SaveConfig(name)
 		pos = v:GetPos(),
 		wep = v.WeaponGive,
 		price = v.Price,
-		angle = v:GetAngles( ),
+		angle = v:GetAngles(),
+		flipped = v:GetFlipped(),
 		})
 	end
 
@@ -168,8 +156,18 @@ function Mapping:SaveConfig(name)
 		end
 	end
 	--PrintTable(special_entities)
+	
+	-- Store all invisible walls with their boundaries and angles
+	local invis_walls = {}
+	for _, v in pairs(ents.FindByClass("invis_wall")) do
+		table.insert(invis_walls, {
+			pos = v:GetPos(),
+			maxbound = v:GetMaxBound(),
+		})
+	end
 
 	main["ZedSpawns"] = zed_spawns
+	main["ZedSpecialSpawns"] = zed_special_spawns
 	main["PlayerSpawns"] = player_spawns
 	main["WallBuys"] = wall_buys
 	main["BuyablePropSpawns"] = buyableprop_spawns
@@ -179,11 +177,10 @@ function Mapping:SaveConfig(name)
 	main["PerkMachineSpawns"] = perk_machinespawns
 	main["DoorSetup"] = door_setup
 	main["BreakEntry"] = break_entry
-	main["RBoxHandler"] = random_box_handler
-	main["PlayerHandler"] = player_handler
 	main["EasterEggs"] = easter_eggs
 	main["PropEffects"] = prop_effects
 	main["SpecialEntities"] = special_entities
+	main["InvisWalls"] = invis_walls
 
 	--We better clear the merges in case someone played around with them in create mode (lua_run)
 	nz.Nav.ResetNavGroupMerges()
@@ -193,6 +190,7 @@ function Mapping:SaveConfig(name)
 
 	--Save this map's configuration
 	main["MapSettings"] = self.Settings
+	main["RemoveProps"] = self.MarkedProps
 
 	local configname
 	if name and name != "" then
@@ -208,6 +206,9 @@ end
 
 function Mapping:ClearConfig()
 	print("[NZ] Clearing current map")
+	
+	-- ALWAYS do this first!
+	Mapping:UnloadScript()
 
 	--Resets spawnpoints ther should be a function/accessor for this rather than jsu a table reset
 	nz.Enemies.Data.RespawnableSpawnpoints = {}
@@ -215,6 +216,7 @@ function Mapping:ClearConfig()
 	--Entities to clear:
 	local entClasses = {
 		["zed_spawns"] = true,
+		["zed_special_spawns"] = true,
 		["player_spawns"] = true,
 		["wall_buys"] = true,
 		["prop_buys"] = true,
@@ -232,6 +234,9 @@ function Mapping:ClearConfig()
 		["edit_sun"] = true,
 		["nz_triggerzone"] = true,
 		["power_box"] = true,
+		["invis_wall"] = true,
+		["nz_script_triggerzone"] = true,
+		["nz_script_prop"] = true,
 	}
 
 	--jsut loop once over all entities isntead of seperate findbyclass calls
@@ -259,11 +264,10 @@ function Mapping:ClearConfig()
 		end
 	end
 
-	self:CleanUpMap()
-
 	nz.QMenu.Data.SpawnedEntities = {}
 
 	Mapping.Settings = {}
+	Mapping.MarkedProps = {}
 
 	Doors.MapDoors = {}
 	Doors.PropDoors = {}
@@ -276,20 +280,31 @@ function Mapping:ClearConfig()
 	net.Broadcast()
 	
 	Mapping.CurrentConfig = nil
+	
+	Mapping:CleanUpMap()
 end
 
 function Mapping:LoadConfig( name, loader )
 
 	local filepath = "nz/" .. name
+	local location = "DATA"
+	
+	if string.GetExtensionFromFilename(name) == "lua" then
+		if file.Exists("gamemodes/nzombies3/officialconfigs/"..name, "GAME") then
+			location, filepath = "GAME", "gamemodes/nzombies3/officialconfigs/"..name
+		else
+			location = "LUA"
+		end
+	end
 
-	if file.Exists( filepath, "DATA" )then
+	if file.Exists( filepath, location )then
 		print("[NZ] MAP CONFIG FOUND!")
 
 		-- Load a lua file for a specific map
 		-- Make sure all hooks are removed before adding the new ones
 		Mapping:UnloadScript()
 
-		local data = util.JSONToTable( file.Read( filepath, "DATA" ) )
+		local data = util.JSONToTable( file.Read( filepath, location ) )
 
 		local version = data.version
 
@@ -323,6 +338,12 @@ function Mapping:LoadConfig( name, loader )
 				Mapping:ZedSpawn(v.pos, v.link, v.respawnable)
 			end
 		end
+		
+		if data.ZedSpecialSpawns then
+			for k,v in pairs(data.ZedSpecialSpawns) do
+				Mapping:ZedSpecialSpawn(v.pos, v.link)
+			end
+		end
 
 		if data.PlayerSpawns then
 			for k,v in pairs(data.PlayerSpawns) do
@@ -332,7 +353,7 @@ function Mapping:LoadConfig( name, loader )
 
 		if data.WallBuys then
 			for k,v in pairs(data.WallBuys) do
-				Mapping:WallBuy(v.pos,v.wep, v.price, v.angle)
+				Mapping:WallBuy(v.pos,v.wep, v.price, v.angle, nil, nil, v.flipped)
 			end
 		end
 
@@ -363,12 +384,6 @@ function Mapping:LoadConfig( name, loader )
 		if data.PerkMachineSpawns then
 			for k,v in pairs(data.PerkMachineSpawns) do
 				Mapping:PerkMachine(v.pos, v.angle, v.id)
-			end
-		end
-
-		if data.RBoxHandler then
-			for k,v in pairs(data.RBoxHandler) do
-				Mapping:RBoxHandler(v.pos, v.guns, v.angle)
 			end
 		end
 
@@ -434,6 +449,27 @@ function Mapping:LoadConfig( name, loader )
 			Mapping.Settings = data.MapSettings
 			for k,v in pairs(player.GetAll()) do
 				Mapping:SendMapData(v)
+			end
+		end
+		
+		if data.RemoveProps then
+			Mapping.MarkedProps = data.RemoveProps
+			if !Round:InState( ROUND_CREATE ) then
+				for k,v in pairs(Mapping.MarkedProps) do
+					local ent = ents.GetMapCreatedEntity(k)
+					if IsValid(ent) then ent:Remove() end
+				end
+			else
+				for k,v in pairs(Mapping.MarkedProps) do
+					local ent = ents.GetMapCreatedEntity(k)
+					if IsValid(ent) then ent:SetColor(Color(200,0,0)) end
+				end
+			end
+		end
+		
+		if data.InvisWalls then
+			for k,v in pairs(data.InvisWalls) do
+				Mapping:CreateInvisibleWall(v.pos, v.maxbound)
 			end
 		end
 

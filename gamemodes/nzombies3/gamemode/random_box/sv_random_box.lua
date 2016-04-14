@@ -3,9 +3,12 @@
 function RandomBox:Spawn(exclude)
 	--Get all spawns
 	local all = ents.FindByClass("random_box_spawns")
-	if exclude and IsValid(exclude) then
+	if IsValid(exclude) then
 		table.RemoveByValue(all, exclude)
-		print("Excluded ", exclude)
+		--print("Excluded ", exclude)
+		if table.Count(all) <= 0 then
+			all = {exclude} -- Should there be nothing left, reuse the old excluded one
+		end
 	end
 
 	local rand = all[ math.random( #all ) ]
@@ -40,8 +43,8 @@ end
 
 function RandomBox:DecideWep(ply)
 
-	local teddychance = math.random(1, 12)
-	if teddychance <= 1 and !nz.PowerUps.Functions.IsPowerupActive("firesale") then
+	local teddychance = math.random(1, 15)
+	if teddychance <= 1 and !nz.PowerUps.Functions.IsPowerupActive("firesale") and table.Count(ents.FindByClass("random_box_spawns")) > 1 then
 		return "nz_box_teddy"
 	end
 
@@ -66,16 +69,16 @@ function RandomBox:DecideWep(ply)
 		end
 	end
 
-	if nz.Config.UseMapWeaponList and Mapping.Settings.rboxweps then
+	if GetConVar("nz_randombox_maplist"):GetBool() and Mapping.Settings.rboxweps then
 		for k,v in pairs(Mapping.Settings.rboxweps) do
 			if !blacklist[v] then
 				table.insert(guns, v)
 			end
 		end
-	elseif nz.Config.UseWhiteList then
+	elseif GetConVar("nz_randombox_whitelist"):GetBool() then
 		-- Load only weapons that have a prefix from the whitelist
 		for k,v in pairs( weapons.GetList() ) do
-			if !blacklist[v.ClassName] then
+			if !blacklist[v.ClassName] and !v.NZPreventBox then
 				for k2,v2 in pairs(nz.Config.WeaponWhiteList) do
 					if string.sub(v.ClassName, 1, #v2) == v2 then
 						table.insert(guns, v.ClassName)
@@ -87,7 +90,7 @@ function RandomBox:DecideWep(ply)
 	else
 		-- No weapon list and not using whitelist only, add all guns
 		for k,v in pairs( weapons.GetList() ) do
-			if !blacklist[v.ClassName] then
+			if !blacklist[v.ClassName] and !v.NZPreventBox then
 				table.insert(guns, v.ClassName)
 			end
 		end

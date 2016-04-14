@@ -39,6 +39,8 @@ SWEP.Secondary =
 SWEP.CanHolster			= true
 SWEP.CanDeploy			= true
 
+SWEP.NZPreventBox = true
+
 --[[---------------------------------------------------------
 	Initialize
 -----------------------------------------------------------]]
@@ -128,9 +130,11 @@ function SWEP:PrimaryAttack()
 
 	self:DoShootEffect( trace.HitPos, trace.HitNormal, trace.Entity, trace.PhysicsBone, IsFirstTimePredicted() )
 
-	if SERVER and nz.Tools.ToolData[self.ToolMode] then
+	if CLIENT and !game.SinglePlayer() and !IsFirstTimePredicted() then return end
+	if nz.Tools.ToolData[self.ToolMode] and nz.Tools.ToolData[self.ToolMode].PrimaryAttack then
 		nz.Tools.ToolData[self.ToolMode].PrimaryAttack(self, self.Owner, trace, self.Owner.NZToolData)
 	end
+	if ( game.SinglePlayer() ) then self:CallOnClient( "PrimaryAttack" ) end
 end
 
 
@@ -146,10 +150,11 @@ function SWEP:SecondaryAttack()
 
 	self:DoShootEffect( trace.HitPos, trace.HitNormal, trace.Entity, trace.PhysicsBone, IsFirstTimePredicted() )
 
-	if SERVER and nz.Tools.ToolData[self.ToolMode] then
+	if CLIENT and !game.SinglePlayer() and !IsFirstTimePredicted() then return end
+	if nz.Tools.ToolData[self.ToolMode] and nz.Tools.ToolData[self.ToolMode].SecondaryAttack then
 		nz.Tools.ToolData[self.ToolMode].SecondaryAttack(self, self.Owner, trace, self.Owner.NZToolData)
 	end
-
+	if ( game.SinglePlayer() ) then self:CallOnClient( "SecondaryAttack" ) end
 end
 
 local reload_cd = CurTime()
@@ -163,24 +168,30 @@ function SWEP:Reload()
 
 		self:DoShootEffect( trace.HitPos, trace.HitNormal, trace.Entity, trace.PhysicsBone, IsFirstTimePredicted() )
 
-		if SERVER and nz.Tools.ToolData[self.ToolMode] then
+		reload_cd = CurTime() + 0.3
+		
+		if CLIENT and !game.SinglePlayer() and !IsFirstTimePredicted() then return end
+		if nz.Tools.ToolData[self.ToolMode] and nz.Tools.ToolData[self.ToolMode].Reload then
 			nz.Tools.ToolData[self.ToolMode].Reload(self, self.Owner, trace, self.Owner.NZToolData)
 		end
 
-		reload_cd = CurTime() + 0.3
 	end
+	if ( game.SinglePlayer() ) then self:CallOnClient( "Reload" ) end
 end
 
 function SWEP:Deploy()
-	if SERVER and nz.Tools.ToolData[self.ToolMode] then
+	if CLIENT and !game.SinglePlayer() and !IsFirstTimePredicted() then return end
+	if nz.Tools.ToolData[self.ToolMode] and nz.Tools.ToolData[self.ToolMode].OnEquip then
 		nz.Tools.ToolData[self.ToolMode].OnEquip(self, self.Owner, self.Owner.NZToolData)
 	end
+	if ( game.SinglePlayer() ) then self:CallOnClient( "Deploy" ) end
 end
 
 function SWEP:Holster()
-	if SERVER and nz.Tools.ToolData[self.ToolMode] then
+	if nz.Tools.ToolData[self.ToolMode] and nz.Tools.ToolData[self.ToolMode].OnHolster then
 		nz.Tools.ToolData[self.ToolMode].OnHolster(self, self.Owner, self.Owner.NZToolData)
 	end
+	if ( game.SinglePlayer() ) then self:CallOnClient( "Holster" ) end
 	return true
 end
 
@@ -269,5 +280,11 @@ if CLIENT then
 		cam.End2D()
 		render.SetRenderTarget( OldRT )
 		render.SetViewPort( 0, 0, oldW, oldH )
+	end
+	
+	function SWEP:DrawHUD()
+		if nz.Tools.ToolData[self.ToolMode] and nz.Tools.ToolData[self.ToolMode].drawhud then
+			nz.Tools.ToolData[self.ToolMode].drawhud()
+		end
 	end
 end

@@ -28,6 +28,27 @@ function Mapping:ZedSpawn(pos, link, respawnable, ply)
 	return ent
 end
 
+function Mapping:ZedSpecialSpawn(pos, link, ply)
+
+	local ent = ents.Create("zed_special_spawns")
+	pos.z = pos.z - ent:OBBMaxs().z
+	ent:SetPos( pos )
+	ent:Spawn()
+	ent.link = tonumber(link)
+	//For the link displayer
+	if link != nil then
+		ent:SetLink(link)
+	end
+
+	if ply then
+		undo.Create( "Special Zombie Spawnpoint" )
+			undo.SetPlayer( ply )
+			undo.AddEntity( ent )
+		undo.Finish( "Effect (" .. tostring( model ) .. ")" )
+	end
+	return ent
+end
+
 function Mapping:PlayerSpawn(pos, ply)
 
 	local ent = ents.Create("player_spawns")
@@ -66,7 +87,7 @@ function Mapping:EasterEgg(pos, ang, model, ply)
 	return egg
 end
 
-function Mapping:WallBuy(pos, gun, price, angle, oldent, ply)
+function Mapping:WallBuy(pos, gun, price, angle, oldent, ply, flipped)
 
 	if IsValid(oldent) then oldent:Remove() end
 
@@ -82,89 +103,13 @@ function Mapping:WallBuy(pos, gun, price, angle, oldent, ply)
 	if phys:IsValid() then
 		phys:EnableMotion(false)
 	end
+	
+	if flipped != nil then
+		ent:SetFlipped(flipped)
+	end
 
 	if ply then
 		undo.Create( "Wall Gun" )
-			undo.SetPlayer( ply )
-			undo.AddEntity( ent )
-		undo.Finish( "Effect (" .. tostring( model ) .. ")" )
-	end
-	return ent
-
-end
-
-function Mapping:RBoxHandler(pos, guns, angle, keep, ply)
-
-	if not guns then
-		print("No guns were supplied for the RBoxHandler ... did you use a save where it isn't defined?")
-	return end
-	PrintTable(guns)
-
-	if keep then
-		local ent = ents.FindByClass("random_box_handler")[1]
-		ent:ClearWeapons()
-	else
-		if !IsValid( ent ) then ent = ents.Create("random_box_handler") end
-		ent:SetAngles(angle)
-		ent:SetPos( pos )
-		ent:Spawn()
-		ent:PhysicsInit( SOLID_VPHYSICS )
-		ent:SetColor( Color(0, 255, 255) )
-
-		local phys = ent:GetPhysicsObject()
-		if phys:IsValid() then
-			phys:EnableMotion(false)
-		end
-		//Just to be sure
-		ent:ClearWeapons()
-	end
-
-	for k,v in pairs(guns) do
-		if weapons.Get(v) != nil then
-			ent:AddWeapon(v)
-		else
-			print("SKIPPED: " .. v .. ". Are you sure you have it installed?")
-		end
-	end
-
-	if ply then
-		undo.Create( "Random Box Handler" )
-			undo.SetPlayer( ply )
-			undo.AddEntity( ent )
-		undo.Finish( "Effect (" .. tostring( model ) .. ")" )
-	end
-	return ent
-
-end
-
-function Mapping:PlayerHandler(pos, angle, startwep, startpoints, numweps, eeurl, keep, ply)
-
-	local ent
-
-	if keep then
-		ent = ents.FindByClass("player_handler")[1]
-	else
-		for k,v in pairs(ents.FindByClass("player_handler")) do
-			//WE CAN ONLY HAVE 1!
-			v:Remove()
-		end
-		ent = ents.Create("player_handler")
-		ent:SetAngles(angle)
-		ent:SetPos( pos )
-		ent:Spawn()
-		ent:PhysicsInit( SOLID_VPHYSICS )
-		ent:SetColor( Color(0, 255, 255) )
-
-		local phys = ent:GetPhysicsObject()
-		if phys:IsValid() then
-			phys:EnableMotion(false)
-		end
-	end
-
-	ent:SetData(startpoints, startwep, numweps, eeurl)
-
-	if ply then
-		undo.Create( "Player Handler" )
 			undo.SetPlayer( ply )
 			undo.AddEntity( ent )
 		undo.Finish( "Effect (" .. tostring( model ) .. ")" )
@@ -344,6 +289,7 @@ function Mapping:CleanUpMap()
 		"wall_block",
 		"wall_buys",
 		"zed_spawns",
+		"zed_special_spawns",
 		"easter_egg",
 		"edit_fog",
 		"edit_fog_special",
@@ -353,7 +299,8 @@ function Mapping:CleanUpMap()
 		"nz_prop_effect_attachment",
 		"nz_fire_effect",
 		"edit_color",
-		"power_box"
+		"power_box",
+		"invis_wall",
 	})
 
 	-- Gotta reset the doors and other entites' values!
@@ -370,6 +317,20 @@ function Mapping:CleanUpMap()
 	-- Reset bought status on wall buys
 	for k,v in pairs(ents.FindByClass("wall_buys")) do
 		v:SetBought(false)
+	end
+	
+	if self.MarkedProps then
+		if !Round:InState( ROUND_CREATE ) then
+			for k,v in pairs(self.MarkedProps) do
+				local ent = ents.GetMapCreatedEntity(k)
+				if IsValid(ent) then ent:Remove() end
+			end
+		else
+			for k,v in pairs(self.MarkedProps) do
+				local ent = ents.GetMapCreatedEntity(k)
+				if IsValid(ent) then ent:SetColor(Color(200,0,0)) end
+			end
+		end
 	end
 end
 
@@ -391,11 +352,35 @@ function Mapping:SpawnEntity(pos, ang, ent, ply)
 	return entity
 end
 
+function Mapping:CreateInvisibleWall(vec1, vec2, ply)
+	local wall = ents.Create( "invis_wall" )
+	wall:SetPos( vec1 ) -- Later we might make the position the center
+	--wall:SetAngles( ang )
+	--wall:SetMinBound(vec1) -- Just the position for now
+	wall:SetMaxBound(vec2)
+	wall:Spawn()
+	wall:PhysicsInitBox( Vector(0,0,0), vec2 )
+	
+	local phys = wall:GetPhysicsObject()
+	if IsValid(phys) then
+		phys:EnableMotion(false)
+	end
+
+	if ply then
+		undo.Create( "Invis Wall" )
+			undo.SetPlayer( ply )
+			undo.AddEntity( wall )
+		undo.Finish( "Effect (" .. tostring( model ) .. ")" )
+	end
+	return wall
+end
+
 //Physgun Hooks
 local ghostentities = {
 	["prop_buys"] = true,
 	["wall_block"] = true,
 	["breakable_entry"] = true,
+	["invis_wall"] = true,
 	--["wall_buys"] = true,
 }
 local function onPhysgunPickup( ply, ent )

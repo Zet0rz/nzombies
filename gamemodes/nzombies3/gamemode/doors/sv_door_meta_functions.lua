@@ -66,10 +66,11 @@ end
 
 function meta:LockDoor()
 	if self:IsDoor() then
+		local data = self:GetDoorData()
 		print("Locked ", self)
 		self:SetLocked(true)
 		
-		if self.buyable and !tobool(self.buyable) then return end
+		if data.buyable and !tobool(data.buyable) then return end
 		
 		self:Fire("close", "", 0)
 		self:Fire("Close", "", 0)

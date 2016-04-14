@@ -12,6 +12,7 @@ function ENT:SetupDataTables()
 	self:NetworkVar("String", 0, "PerkID")
 	self:NetworkVar("Bool", 0, "Active")
 	self:NetworkVar("Bool", 1, "BeingUsed")
+	self:NetworkVar("Int", 0, "Price")
 end
 
 function ENT:Initialize()
@@ -21,22 +22,24 @@ function ENT:Initialize()
 		self:DrawShadow( false )
 		self:SetUseType( SIMPLE_USE )
 		self:SetBeingUsed(false)
+		local perkData = nz.Perks.Functions.Get(self:GetPerkID())
+		self:SetPrice(perkData.price)
 	end
 end
 
 function ENT:TurnOn()
-	self:Update()
 	self:SetActive(true)
+	self:Update()
 end
 
 function ENT:TurnOff()
-	self:Update()
 	self:SetActive(false)
+	self:Update()
 end
 
 function ENT:Update()
 	local perkData = nz.Perks.Functions.Get(self:GetPerkID())
-	self:SetModel(perkData and perkData.off_model or "")
+	self:SetModel(perkData and (self:IsOn() and perkData.on_model or perkData.off_model) or "")
 end
 
 function ENT:IsOn()
@@ -51,9 +54,9 @@ function ENT:Use(activator, caller)
 	local perkData = nz.Perks.Functions.Get(self:GetPerkID())
 	
 	if self:IsOn() then
-		local price = perkData.price
+		local price = self:GetPrice()
 		-- As long as they have less than the max perks, unless it's pap
-		if #activator:GetPerks() < nz.Config.MaxPerks or self:GetPerkID() == "pap" then
+		if #activator:GetPerks() < GetConVar("nz_difficulty_perks_max"):GetInt() or self:GetPerkID() == "pap" then
 			-- If they have enough money
 			if activator:CanAfford(price) then
 				if !activator:HasPerk(self:GetPerkID()) then
@@ -63,6 +66,8 @@ function ENT:Use(activator, caller)
 						if !MachinesNoDrink[self:GetPerkID()] then
 							local wep = activator:Give("nz_perk_bottle")
 							wep:SetPerk(self:GetPerkID())
+						else
+							activator:Give("nz_packapunch_arms")
 						end
 						self:EmitSound("nz/machines/jingle/"..self:GetPerkID().."_get.wav", 75)
 					end

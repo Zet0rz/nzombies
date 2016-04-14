@@ -41,10 +41,15 @@ end)
 concommand.Add("nz_forceround", function(ply, cmd, args, argStr)
 	if !IsValid(ply) or ply:IsSuperAdmin() then
 		local round = args[1] and tonumber(args[1]) or nil
+		local nokill = args[2] and tobool(args[2]) or false
+		
+		if !nokill then
+			nz.PowerUps.Functions.Nuke(true) -- Nuke kills them all, no points
+		end
 		
 		if round then
-			nz.Rounds.Data.CurrentRound = round - 1
+			Round:SetNumber( round - 1 )
 		end
-		nz.Rounds.Functions.PrepareRound()
+		Round:Prepare()
 	end
 end)

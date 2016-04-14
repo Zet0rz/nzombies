@@ -13,6 +13,16 @@ function nz.Perks.Functions.Get(id)
 	return nz.Perks.Data[id]
 end
 
+function nz.Perks.Functions.GetByName(name)
+	for _, perk in pairs(nz.Perks.Data) do
+		if perk.name == name then
+			return perk
+		end
+	end
+
+	return nil
+end
+
 function nz.Perks.Functions.GetList()
 	local tbl = {}
 
@@ -81,12 +91,19 @@ nz.Perks.Functions.NewPerk("revive", {
 	on_model = "models/alig96/perks/revive/revive_on.mdl",
 	price = 1500,
 	func = function(self, ply, machine)
-			print(self)
+			if #player.GetAllPlaying() <= 1 then
+				if !ply.SoloRevive or ply.SoloRevive < 3 then
+					ply:ChatPrint("You got Quick Revive (Solo)!")
+				else 
+					ply:ChatPrint("You can only get Quick Revive Solo 3 times.")
+					return false
+				end
+			end
 			--ply:PrintMessage( HUD_PRINTTALK, "You've got Quick Revive!")
 			return true
 	end,
 	lostfunc = function(self, ply)
-	
+
 	end,
 })
 
@@ -138,29 +155,30 @@ nz.Perks.Functions.NewPerk("pap", {
 	func = function(self, ply, machine)
 		local wep = ply:GetActiveWeapon()
 		if (!wep.pap or (wep:IsCW2() and CustomizableWeaponry)) and !machine:GetBeingUsed() then
-			local reroll = (wep.pap and wep:IsCW2() and CustomizableWeaponry and true)
+			local reroll = (wep.pap and wep.Attachments and ((wep:IsCW2() and CustomizableWeaponry) or wep:IsFAS2()) and true or false)
 			local cost = reroll and 2000 or 5000
-			
+
 			if !ply:CanAfford(cost) then return end
 			ply:TakePoints(cost)
-			
+
 			machine:SetBeingUsed(true)
 			machine:EmitSound("nz/machines/pap_up.wav")
 			local class = wep:GetClass()
-			
+
 			wep:Remove()
 			local wep = ents.Create("pap_weapon_fly")
 			wep:SetPos(machine:GetPos() + machine:GetAngles():Forward()*30 + machine:GetAngles():Up()*25 + machine:GetAngles():Right()*-3)
 			wep:SetAngles(machine:GetAngles() + Angle(0,90,0))
 			wep.WepClass = class
 			wep:Spawn()
-			local model = weapons.Get(class) and weapons.Get(class).WorldModel or "models/weapons/w_rif_ak47.mdl"
+			local weapon = weapons.Get(class)
+			local model = weapon and weapon.WM or weapon.WorldModel or "models/weapons/w_rif_ak47.mdl"
 			if !util.IsValidModel(model) then model = "models/weapons/w_rif_ak47.mdl" end
 			wep:SetModel(model)
 			wep.machine = machine
 			wep.Owner = ply
 			wep:SetMoveType( MOVETYPE_FLY )
-			
+
 			--wep:SetNotSolid(true)
 			--wep:SetGravity(0.000001)
 			--wep:SetCollisionBounds(Vector(0,0,0), Vector(0,0,0))
@@ -184,7 +202,7 @@ nz.Perks.Functions.NewPerk("pap", {
 					wep:SetLocalVelocity(machine:GetAngles():Forward()*30)
 					--print(machine:GetAngles():Forward()*30, wep:GetVelocity())
 					wep:CreateTriggerZone(reroll)
-					print(reroll)
+					--print(reroll)
 				end
 			end)
 			timer.Simple(4.2, function()
@@ -208,7 +226,7 @@ nz.Perks.Functions.NewPerk("pap", {
 					machine:SetBeingUsed(false)
 				end
 			end)
-			
+
 			--nz.Weps.Functions.ApplyPaP( ply, wep )
 			timer.Simple(2, function() ply:RemovePerk("pap") end)
 			return true
@@ -218,7 +236,7 @@ nz.Perks.Functions.NewPerk("pap", {
 		end
 	end,
 	lostfunc = function(self, ply)
-	
+
 	end,
 })
 

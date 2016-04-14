@@ -1,7 +1,0 @@
-"VertexlitGeneric"
-{
-	"$basetexture" "Models/CoDWaW/Beat the Zombie/Perk A Cola Machines/Sleight_window"
-	"$surfaceprop" "Glass"
-	"$nocull" 1
-	"$translucent" 1
-}

@@ -19,7 +19,7 @@ hook.Add("KeyPress", "SpecialWeaponsUsage", function(ply, key)
 	local id = SpecialWeapons.Keys[key]
 	if id and ply:GetNotDowned() then -- Can't use grenades and stuff while downed
 		local wep = ply:GetSpecialWeaponFromCategory( id )
-		if IsValid(wep) and !ply.UsingSpecialWep and SpecialWeapons.Weapons[wep:GetClass()].use then
+		if IsValid(wep) and !ply:GetUsingSpecialWeapon() and SpecialWeapons.Weapons[wep:GetClass()].use then
 			SpecialWeapons.Weapons[wep:GetClass()].use(ply, wep)
 		end
 	end

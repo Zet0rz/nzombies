@@ -1,0 +1,11 @@
+"VertexLitGeneric"
+{
+     "$basetexture" "models/weapons/morphine_glass_c"
+     "$model" 1
+	 
+	"$phong" "1"
+	"$phongexponent" "100"
+	"$phongboost" "0.1"
+	"$phongfresnelranges" "[0.2 0.5 1]"
+	"$phongalbedotint" "1"	
+}

@@ -18,7 +18,7 @@ if (SERVER) then
 	-- Sets the character's amount of currency to a specific value.
 	function _PLAYER:SetPoints(amount)
 		amount = math.Round(amount, 2)
-		if nz.Config.PointNotifcationMode == NZ_POINT_NOTIFCATION_NET then
+		if !GetConVar("nz_point_notification_clientside"):GetBool() then
 			local num = amount - self:GetPoints()
 			if num != 0 then -- 0 points doesn't get sent
 				net.Start("nz_points_notification")
@@ -46,9 +46,9 @@ if (SERVER) then
 		if !nosound then
 			self:EmitSound("nz/effects/buy.wav")
 		end
-		
+
 		-- If you have a clone like this, it tracks money spent which will be refunded on revival
 		if self.WhosWhoMoney then self.WhosWhoMoney = self.WhosWhoMoney + amount end
 	end
-	
+
 end

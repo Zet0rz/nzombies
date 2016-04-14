@@ -1,9 +1,7 @@
 
 -- Zombies
-util.PrecacheModel("models/zed/male_shared.mdl")
-util.PrecacheModel("models/zed/malezed_04.mdl")
-util.PrecacheModel("models/zed/malezed_06.mdl")
-util.PrecacheModel("models/zed/malezed_08.mdl")
+util.PrecacheModel("models/nz_zombie/zombie_rerig_animated.mdl")
+util.PrecacheModel("models/nz_zombie/zombie_hellhound.mdl")
 
 -- Perk machines
 util.PrecacheModel("models/alig96/perks/cherry/cherry.mdl")
@@ -25,11 +23,25 @@ util.PrecacheModel("models/alig96/perks/tombstone/tombstone.mdl")
 util.PrecacheModel("models/alig96/perks/vulture/vultureaid.mdl")
 util.PrecacheModel("models/alig96/perks/whoswho/whoswho.mdl")
 
--- Mysery box and teddy
+-- Mysery box, teddy and other props
 util.PrecacheModel("models/hoff/props/mysterybox/box.mdl")
 util.PrecacheModel("models/hoff/props/mysterybox/box1.mdl")
 util.PrecacheModel("models/hoff/props/mysterybox/box2.mdl")
 util.PrecacheModel("models/hoff/props/teddy_bear/teddy_bear.mdl")
+util.PrecacheModel("models/nzprops/monkey_bomb.mdl")
+util.PrecacheModel("models/nzprops/power_lever.mdl")
+util.PrecacheModel("models/nzprops/power_lever_handle.mdl")
+util.PrecacheModel("models/nzprops/power_lever_short.mdl")
 
--- Perk bottle viewmodel
+-- Powerups
+util.PrecacheModel("models/nzpowerups/carpenter.mdl")
+util.PrecacheModel("models/nzpowerups/nuke.mdl")
+util.PrecacheModel("models/nzpowerups/x2.mdl")
+util.PrecacheModel("models/nzpowerups/insta.mdl")
+
+-- Viewmodels
 util.PrecacheModel("models/weapons/c_perk_bottle.mdl")
+util.PrecacheModel("models/weapons/c_monkey_bomb.mdl")
+util.PrecacheModel("models/weapons/c_bowie_knife.mdl")
+util.PrecacheModel("models/weapons/c_revive_morphine.mdl")
+util.PrecacheModel("models/weapons/c_packapunch_arms.mdl")

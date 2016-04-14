@@ -12,16 +12,20 @@ local traceents = {
 		
 		if !LocalPlayer():HasWeapon( wepclass ) then
 			text = "Press E to buy " .. name .." for " .. price .. " points."
-		elseif LocalPlayer():GetWeapon( wepclass ).pap then
-			text = "Press E to buy " .. wep.Primary.Ammo .."  Ammo refill for " .. 4500 .. " points."
+		elseif string.lower(wep.Primary.Ammo) != "none" then
+			if LocalPlayer():GetWeapon( wepclass ).pap then
+				text = "Press E to buy " .. wep.Primary.Ammo .."  Ammo refill for " .. 4500 .. " points."
+			else
+				text = "Press E to buy " .. wep.Primary.Ammo .."  Ammo refill for " .. ammo_price .. " points."
+			end
 		else
-			text = "Press E to buy " .. wep.Primary.Ammo .."  Ammo refill for " .. ammo_price .. " points."
+			text = "You already have this weapon."
 		end
 		
 		return text
 	end,
 	["breakable_entry"] = function(ent)
-		if ent:GetNumPlanks() < nz.Config.MaxPlanks then
+		if ent:GetNumPlanks() < GetConVar("nz_difficulty_barricade_planks_max"):GetInt() then
 			local text = "Hold E to rebuild the barricade."
 			return text
 		end
@@ -56,7 +60,7 @@ local traceents = {
 			if ent:GetPerkID() == "pap" then
 				local wep = LocalPlayer():GetActiveWeapon()
 				if wep.pap then
-					if wep:IsCW2() and CustomizableWeaponry then
+					if wep.Attachments and ((wep:IsCW2() and CustomizableWeaponry) or wep:IsFAS2()) then
 						text = "Press E to reroll attachments for 2000 points."
 					else
 						text = "This weapon is already upgraded."
@@ -67,7 +71,7 @@ local traceents = {
 			else
 				local perkData = nz.Perks.Functions.Get(ent:GetPerkID())
 				-- Its on
-				text = "Press E to buy " .. perkData.name .. " for " .. perkData.price .. " points."
+				text = "Press E to buy " .. perkData.name .. " for " .. ent:GetPrice() .. " points."
 				-- Check if they already own it
 				if LocalPlayer():HasPerk(ent:GetPerkID()) then
 					text = "You already own this perk."
@@ -110,7 +114,13 @@ local function GetDoorText( ent )
 	local door_data = ent:GetDoorData()
 	local text = ""
 	
-	if door_data and tonumber(door_data.buyable) == 1 then
+	if door_data and tonumber(door_data.price) == 0 and Round:InState(ROUND_CREATE) then
+		if tobool(door_data.elec) then 
+			text = "This door will open when electricity is turned on."
+		else
+			text = "This door will open on game start."
+		end
+	elseif door_data and tonumber(door_data.buyable) == 1 then
 		local price = tonumber(door_data.price)
 		local req_elec = tobool(door_data.elec)
 		local link = door_data.link
@@ -135,10 +145,14 @@ end
 
 local function GetText( ent )
 
+	if !IsValid(ent) then return "" end
+
 	local class = ent:GetClass()
 	local text = ""
 
-	if ent:IsPlayer() then
+	if ent:GetNWString("NZText") != "" then
+		text = ent:GetNWString("NZText")
+	elseif ent:IsPlayer() then
 		if ent:GetNotDowned() then
 			text = ent:Nick() .. " - " .. ent:Health() .. " HP"
 		else
@@ -156,7 +170,7 @@ end
 local function GetMapScriptEntityText()
 	local text = ""
 	
-	for k,v in pairs(ents.FindByClass("nz_triggerzone")) do
+	for k,v in pairs(ents.FindByClass("nz_script_triggerzone")) do
 		local dist = v:NearestPoint(EyePos()):Distance(EyePos())
 		if dist <= 1 then
 			text = GetDoorText(v)

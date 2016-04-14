@@ -31,18 +31,23 @@ function Round:Prepare()
 	self:SetZombieHealth( nz.Curves.Functions.GenerateHealthCurve(self:GetNumber()) )
 	self:SetZombiesMax( nz.Curves.Functions.GenerateMaxZombies(self:GetNumber()) )
 
-	if nz.Config.EnemyTypes[ self:GetNumber() ] then
+	-- Quickly make sure that a special round with the convar on does not use the config (temporarily)
+	if nz.Config.EnemyTypes[ self:GetNumber() ] and !(self:IsSpecial() and GetConVar("nz_test_hellhounds"):GetBool()) then
 		self:SetZombieData( nz.Config.EnemyTypes[ self:GetNumber() ].types )
+		if nz.Config.EnemyTypes[ self:GetNumber() ].count then
+			self:SetZombiesMax( nz.Config.EnemyTypes[ self:GetNumber() ].count )
+		end
 	elseif self:IsSpecial() then -- The config always takes priority, however if nothing has been set for this round, assume special round settings
-		self:SetZombieData( nz.Config.SpecialRoundData.types )
-		self:SetZombiesMax( nz.Config.SpecialRoundData.modifycount(self:GetZombiesMax()) )
+		if GetConVar("nz_test_hellhounds"):GetBool() then
+			self:SetSpecialZombieData( {["nz_zombie_special_dog"] = {chance = 100}} )
+			self:SetZombiesMax( self:GetZombiesMax() * 0.5 )
+		else
+			self:SetSpecialZombieData( nz.Config.SpecialRoundData.types )
+			self:SetZombiesMax( nz.Config.SpecialRoundData.modifycount(self:GetZombiesMax()) )
+		end
 	end
 	self:SetZombieSpeeds( nz.Curves.Functions.GenerateSpeedTable(self:GetNumber()) )
 
-	if nz.Config.EnemyTypes[ self:GetNumber() ] and nz.Config.EnemyTypes[ self:GetNumber() ].count then
-		self:SetZombiesMax( nz.Config.EnemyTypes[ self:GetNumber() ].count )
-		--print("Round "..nz.Rounds.Data.CurrentRound.." has a special count: "..nz.Rounds.Data.MaxZombies)
-	end
 	self:SetZombiesKilled( 0 )
 	self:SetZombiesSpawned( 0 )
 
@@ -67,10 +72,10 @@ function Round:Prepare()
 	CurRoundOverSpawned = false
 
 	--Start the next round
-	timer.Simple(nz.Config.PrepareTime, function() self:Start() end )
+	timer.Simple(GetConVar("nz_round_prep_time"):GetFloat(), function() self:Start() end )
 
 	if self:IsSpecial() then
-		self:SetNextSpecialRound( self:GetNumber() + nz.Config.SpecialRoundInterval )
+		self:SetNextSpecialRound( self:GetNumber() + GetConVar("nz_round_special_interval"):GetInt() )
 	end
 
 end
@@ -80,6 +85,15 @@ local CurRoundOverSpawned = false
 function Round:Start()
 
 	self:SetState( ROUND_PROG )
+	self:SetNextSpawnTime( CurTime() + 3 ) -- Delay zombie spawning by 3 seconds
+	
+	if self:IsSpecial() and GetConVar("nz_test_hellhounds"):GetBool() then -- The config always takes priority, however if nothing has been set for this round, assume special round settings
+		self:SetNextSpawnTime( CurTime() + 5 )
+		timer.Simple(3, function()
+			Round:CallHellhoundRound()
+		end)
+	end
+	
 	--Notify
 	PrintMessage( HUD_PRINTTALK, "ROUND: " .. self:GetNumber() .. " started" )
 	hook.Call("OnRoundStart", Round, self:GetNumber() )
@@ -143,6 +157,7 @@ function Round:ResetGame()
 	--Reset all downed players' downed status
 	for k,v in pairs( player.GetAll() ) do
 		v:KillDownedPlayer( true )
+		v.SoloRevive = nil -- Reset Solo Revive counter
 	end
 
 	--Remove all enemies
@@ -158,7 +173,7 @@ function Round:ResetGame()
 	end
 
 	--Reset the electricity
-	nz.Elec.Functions.Reset()
+	Elec:Reset(true)
 
 	--Remove the random box
 	RandomBox:Remove()
@@ -213,6 +228,8 @@ function Round:Create()
 			end
 		end
 
+		Mapping:CleanUpMap()
+
 		--Re-enable navmesh visualization
 		for k,v in pairs(nz.Nav.Data) do
 			local navarea = navmesh.GetNavAreaByID(k)
@@ -255,12 +272,15 @@ function Round:SetupGame()
 
 	-- Open all doors with no price and electricity requirement
 	for k,v in pairs(ents.GetAll()) do
-		if v:IsDoor() or v:IsBuyableProp() then
-			if v.price == 0 and v.elec == 0 then
-				Doors:OpenDoor( v )
+		if v:IsBuyableEntity() then
+			local data = v:GetDoorData()
+			if data then
+				if tonumber(data.price) == 0 and tobool(data.elec) == false then
+					Doors:OpenDoor( v )
+				end
 			end
 		end
-		//Setup barricades
+		-- Setup barricades
 		if v:GetClass() == "breakable_entry" then
 			v:ResetPlanks()
 		end
@@ -275,5 +295,18 @@ function Round:SetupGame()
 
 	-- Spawn a random box
 	RandomBox:Spawn()
+
+	local power = ents.FindByClass("power_box")
+	if !IsValid(power[1]) then -- No power switch D:
+		Elec:Activate(true) -- Silently turn on the power
+	else
+		Elec:Reset() -- Reset with no value to play the power down sound
+	end
+	
+	nz.Perks.Functions.UpdateQuickRevive()
+	
+	Round:SetNextSpecialRound( GetConVar("nz_round_special_interval"):GetInt() )
+	
+	hook.Call( "OnGameBegin", Round )
 
 end

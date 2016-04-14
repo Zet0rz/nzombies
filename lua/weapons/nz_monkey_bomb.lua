@@ -26,10 +26,10 @@ SWEP.Instructions	= "Let the gamemode give you it"
 SWEP.Spawnable			= false
 SWEP.AdminSpawnable		= false
 
-SWEP.HoldType = "grenade"
+SWEP.HoldType = "slam"
 
-SWEP.ViewModel	= "models/weapons/c_grenade.mdl"
-SWEP.WorldModel	= "models/weapons/w_grenade.mdl"
+SWEP.ViewModel	= "models/weapons/c_monkey_bomb.mdl"
+SWEP.WorldModel	= "models/nzprops/monkey_bomb.mdl"
 SWEP.UseHands = true
 SWEP.vModel = true
 
@@ -45,14 +45,48 @@ SWEP.Secondary.Ammo			= "none"
 
 SWEP.NextReload				= 1
 
+SWEP.PrimeSounds = {
+	"nz/monkey/voice_prime/raise_vox_00.wav",
+	"nz/monkey/voice_prime/raise_vox_01.wav",
+	"nz/monkey/voice_prime/raise_vox_02.wav",
+	"nz/monkey/voice_prime/raise_vox_03.wav",
+	"nz/monkey/voice_prime/raise_vox_04.wav",
+	"nz/monkey/voice_prime/raise_vox_05.wav",
+	"nz/monkey/voice_prime/raise_vox_06.wav",
+	"nz/monkey/voice_prime/raise_vox_07.wav",
+	"nz/monkey/voice_prime/raise_vox_08.wav",
+	"nz/monkey/voice_prime/raise_vox_09.wav",
+	"nz/monkey/voice_prime/raise_vox_10.wav",
+	"nz/monkey/voice_prime/raise_vox_11.wav",
+}
+
 function SWEP:Initialize()
 
-	self:SetHoldType( self.HoldType )
+	self:SetHoldType( "slam" )
 
 end
 
 function SWEP:Deploy()
 	self:SendWeaponAnim(ACT_VM_DRAW)
+	self:SetHoldType( "slam" )
+	timer.Simple(2, function() if IsValid(self) then self:SetHoldType("grenade") end end)
+	if CLIENT then
+		local sound = self.PrimeSounds[math.random(1,#self.PrimeSounds)]
+		surface.PlaySound(sound)
+		timer.Simple(1.2, function() 
+			if IsValid(self) then
+				surface.PlaySound("nz/monkey/hat1.wav")
+				local i = 0
+				timer.Create("MonkeyCymbalViewmodel", 0.23, 7, function()
+					surface.PlaySound("nz/monkey/cymbals/monk_cymb_0"..math.Round(i/2)..".wav")
+					i = i < 8 and i + 1 or 8
+				end)
+			end 
+		end)
+		
+	else
+		self:CallOnClient("Deploy")
+	end
 end
 
 function SWEP:PrimaryAttack()
@@ -64,7 +98,10 @@ function SWEP:ThrowBomb(force)
 	self:SendWeaponAnim(ACT_VM_THROW)
 	
 	local nade = ents.Create("nz_monkeybomb")
-	nade:SetPos(self.Owner:EyePos() + (self.Owner:GetAimVector() * 20))
+	local pos = self.Owner:EyePos() + (self.Owner:GetAimVector() * 20)
+	local ang = Angle(0,(self.Owner:GetPos() - pos):Angle()[2]-90,0)
+	nade:SetPos(pos)
+	nade:SetAngles(ang)
 	nade:Spawn()
 	nade:Activate()
 	nade:SetOwner(self.Owner)
@@ -72,8 +109,8 @@ function SWEP:ThrowBomb(force)
 	local nadePhys = nade:GetPhysicsObject()
 		if !IsValid(nadePhys) then return end
 	nadePhys:ApplyForceCenter(self.Owner:GetAimVector():GetNormalized() * force + self.Owner:GetVelocity())
+	nade:EmitSound("nz/monkey/voice_throw/throw_0"..math.random(0,3)..".wav")
 	
-	nade:SetExplosionTimer(10)
 end
 
 function SWEP:PostDrawViewModel()
@@ -88,24 +125,56 @@ function SWEP:OnRemove()
 	
 end
 
-if SpecialWeapons then
+function SWEP:GetViewModelPosition( pos, ang )
+ 
+ 	local newpos = LocalPlayer():EyePos()
+	local newang = LocalPlayer():EyeAngles()
+	local up = newang:Up()
+	
+	newpos = newpos + LocalPlayer():GetAimVector()*6 - up*65
+	
+	return newpos, newang
+ 
+end
+
+if engine.ActiveGamemode() == "nzombies3" then 
 	SpecialWeapons:AddWeapon( "nz_monkey_bomb", "specialgrenade", function(ply) -- Use function
 		if SERVER then
 			if ply:GetAmmoCount("nz_specialgrenade") <= 0 then return end
-			local prevwep = ply:GetActiveWeapon():GetClass()
-			ply.UsingSpecialWep = true
+			ply:SetUsingSpecialWeapon(true)
 			ply:SelectWeapon("nz_monkey_bomb")
-			timer.Simple(0.5, function()
+			timer.Simple(3, function()
 				if IsValid(ply) then
 					local wep = ply:GetActiveWeapon()
-					wep:ThrowBomb(700)
-					ply:SetAmmo(ply:GetAmmoCount("nz_specialgrenade") - 1, "nz_specialgrenade")
-				end
-			end)
-			timer.Simple(1, function()
-				if IsValid(ply) then
-					ply.UsingSpecialWep = nil
-					ply:SelectWeapon(prevwep)
+					if wep:GetClass() == "nz_monkey_bomb" then
+						if !ply:KeyDown(IN_GRENADE2) then
+							wep:ThrowBomb(700)
+							ply:SetAmmo(ply:GetAmmoCount("nz_specialgrenade") - 1, "nz_specialgrenade")
+							timer.Simple(1, function()
+								if IsValid(ply) then
+									ply:SetUsingSpecialWeapon(false)
+									ply:EquipPreviousWeapon()
+								end
+							end)
+						else
+							hook.Add("KeyRelease", "CheckMonkeyRelease"..ply:EntIndex(), function(kply, key)
+								if kply == ply and key == IN_GRENADE2 then
+									wep:ThrowBomb(700)
+									ply:SetAmmo(ply:GetAmmoCount("nz_specialgrenade") - 1, "nz_specialgrenade")
+									timer.Simple(1, function()
+										if IsValid(ply) then
+											ply:SetUsingSpecialWeapon(false)
+											ply:EquipPreviousWeapon()
+										end
+									end)
+									hook.Remove("KeyRelease", "CheckMonkeyRelease"..ply:EntIndex())
+								end
+							end)
+						end
+					else
+						ply:SetUsingSpecialWeapon(false)
+						ply:EquipPreviousWeapon()
+					end
 				end
 			end)
 		end

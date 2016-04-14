@@ -3,7 +3,7 @@
 function nz.Players.Functions.PlayerNoClip( ply, desiredState )
 	-- We hardcode the "knife" special weapons category to be called from noclip
 	local wep = ply:GetSpecialWeaponFromCategory( "knife" )
-	if IsValid(wep) and !ply.UsingSpecialWep then
+	if IsValid(wep) and !ply:GetUsingSpecialWeapon() then
 		SpecialWeapons.Weapons[wep:GetClass()].use(ply, wep)
 	end
 
@@ -14,7 +14,7 @@ end
 
 function nz.Players.Functions.FullSync( ply )
 	--Electric
-	nz.Elec.Functions.SendSync()
+	--Elec:SendSync()
 	--PowerUps
 	nz.PowerUps.Functions.SendSync()
 	--Doors
@@ -25,8 +25,6 @@ function nz.Players.Functions.FullSync( ply )
 	--Round:SendSync( ply ) --handled differently since feb 2016
 	--Revival System
 	--nz.Revive.Functions.SendSync() -- Now sends full sync using the module below
-	--Fog
-	nz.Fog.Functions.SendSync()
 
 	-- A full sync module using the new rewrites
 	if IsValid(ply) then
@@ -52,8 +50,13 @@ end
 local function friendlyFire( ply, ent )
 	if !ply:GetNotDowned() then return false end
 	if ent:IsPlayer() then
-		--Friendly fire is disabled for all players TODO make hardcore setting?
-		return false
+		if ent == ply then
+			-- You can damage yourself, although PhD prevents this
+			if ply:HasPerk("phd") then return false else return true end
+		else
+			--Friendly fire is disabled for all other players TODO make hardcore setting?
+			return false
+		end
 	end
 end
 

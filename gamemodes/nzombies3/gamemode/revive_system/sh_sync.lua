@@ -11,25 +11,25 @@ if SERVER then
 
 	function Revive:SendPlayerFullData(ply, receiver)
 		local data = table.Copy(self.Players[ply:EntIndex()])
-		
+
 		net.Start( "nzRevivePlayerFull" )
 			net.WriteInt(ply:EntIndex(), 13)
 			net.WriteTable( data )
 		return receiver and net.Send(receiver) or net.Broadcast()
 	end
-	
+
 	function Revive:SendPlayerDowned(ply, receiver)
 		net.Start( "nzRevivePlayerDowned" )
 			net.WriteInt(ply:EntIndex(), 13)
 		return receiver and net.Send(receiver) or net.Broadcast()
 	end
-	
+
 	function Revive:SendPlayerRevived(ply, receiver)
 		net.Start( "nzRevivePlayerRevived" )
 			net.WriteInt(ply:EntIndex(), 13)
 		return receiver and net.Send(receiver) or net.Broadcast()
 	end
-	
+
 	function Revive:SendPlayerBeingRevived(ply, revivor, receiver)
 		net.Start( "nzRevivePlayerBeingRevived" )
 			net.WriteInt(ply:EntIndex(), 13)
@@ -41,13 +41,13 @@ if SERVER then
 			end
 		return receiver and net.Send(receiver) or net.Broadcast()
 	end
-	
+
 	function Revive:SendPlayerKilled(ply, receiver)
 		net.Start( "nzRevivePlayerKilled" )
 			net.WriteInt(ply:EntIndex(), 13)
 		return receiver and net.Send(receiver) or net.Broadcast()
 	end
-	
+
 	FullSyncModules["Revive"] = function(ply)
 		for k,v in pairs(player.GetAll()) do
 			if !v:GetNotDowned() then -- Player needs to be downed
@@ -70,7 +70,7 @@ if CLIENT then
 			Revive:DownedHeadsUp(ply, "needs to be revived!")
 		end
 	end
-	
+
 	local function ReceivePlayerRevived()
 		local id = net.ReadInt(13)
 		Revive.Players[id] = nil
@@ -81,14 +81,14 @@ if CLIENT then
 			Revive:DownedHeadsUp(ply, "has been revived!")
 		end
 	end
-	
+
 	local function ReceivePlayerBeingRevived()
 		local id = net.ReadInt(13)
 		local bool = net.ReadBool()
 		if bool then
 			local revivor = Entity(net.ReadInt(13))
 			Revive.Players[id] = Revive.Players[id] or {}
-			if !Revive.Players[id].ReviveTime then 
+			if !Revive.Players[id].ReviveTime then
 				Revive.Players[id].ReviveTime = CurTime()
 				Revive.Players[id].RevivePlayer = revivor
 			end
@@ -98,7 +98,7 @@ if CLIENT then
 			Revive.Players[id].RevivePlayer = nil
 		end
 	end
-	
+
 	local function ReceivePlayerKilled()
 		local id = net.ReadInt(13)
 		Revive.Players[id] = nil
@@ -109,7 +109,7 @@ if CLIENT then
 			Revive:DownedHeadsUp(ply, "has died!")
 		end
 	end
-	
+
 	local function ReceiveFullPlayerSync()
 		local id = net.ReadInt(13)
 		local data = net.ReadTable()
@@ -120,7 +120,7 @@ if CLIENT then
 			Revive:DownedHeadsUp(ply, "has been downed!")
 		end
 	end
-	
+
 	//Receivers
 	net.Receive( "nzRevivePlayerDowned", ReceivePlayerDowned )
 	net.Receive( "nzRevivePlayerRevived", ReceivePlayerRevived )

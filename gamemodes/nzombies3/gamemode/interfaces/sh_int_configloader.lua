@@ -21,15 +21,45 @@ if CLIENT then
 		local selectedconfig
 		local hoveredpanel
 		
-		for k,v in pairs(data.configs) do
-			local name = string.Explode(";", v)
-			local map, configname = name[1], name[2]
-			if name[2] then
-				local config = {}
-				config.map = string.sub(map, 4)
-				config.name = string.sub(configname, 0, #configname-4)
-				config.config = v
-				table.insert(configs, config)
+		if data.officialconfigs then
+			for k,v in pairs(data.officialconfigs) do
+				local name = string.Explode(";", v)
+				local map, configname = name[1], name[2]
+				if name[2] then
+					local config = {}
+					config.map = string.sub(map, 4)
+					config.name = string.sub(configname, 0, #configname-4)
+					config.config = v
+					config.official = true
+					table.insert(configs, config)
+				end
+			end
+		end
+		if data.configs then
+			for k,v in pairs(data.configs) do
+				local name = string.Explode(";", v)
+				local map, configname = name[1], name[2]
+				if name[2] then
+					local config = {}
+					config.map = string.sub(map, 4)
+					config.name = string.sub(configname, 0, #configname-4)
+					config.config = v
+					table.insert(configs, config)
+				end
+			end
+		end
+		if data.workshopconfigs then
+			for k,v in pairs(data.workshopconfigs) do
+				local name = string.Explode(";", v)
+				local map, configname = name[1], name[2]
+				if name[2] then
+					local config = {}
+					config.map = string.sub(map, 4)
+					config.name = string.sub(configname, 0, #configname-4)
+					config.config = v
+					config.workshop = true
+					table.insert(configs, config)
+				end
 			end
 		end
 		
@@ -76,8 +106,20 @@ if CLIENT then
 		OldConfigs:SetSize(250, 100)
 		OldConfigs:SetMultiSelect(false)
 		OldConfigs:AddColumn("Name")
-		for k,v in pairs(data.configs) do
-			OldConfigs:AddLine(v)
+		if data.configs then
+			for k,v in pairs(data.configs) do
+				OldConfigs:AddLine(v)
+			end
+		end
+		if data.workshopconfigs then
+			for k,v in pairs(data.workshopconfigs) do
+				OldConfigs:AddLine(v)
+			end
+		end
+		if data.officialconfigs then
+			for k,v in pairs(data.officialconfigs) do
+				OldConfigs:AddLine(v)
+			end
 		end
 		OldConfigs.OnRowSelected = function(self, index, row)
 			selectedconfig = row:GetValue(1)
@@ -114,7 +156,8 @@ if CLIENT then
 			end
 			--config:SetBackgroundColor(ColorRand())
 			
-			local mapicon = "maps/thumb/" .. v.map .. ".png"
+			local mapicon = "nzmapicons/"..string.StripExtension(v.config)..".png"
+			if ( Material(mapicon):IsError() ) then mapicon = "maps/thumb/" .. v.map .. ".png" end
 			if ( Material(mapicon):IsError() ) then mapicon = "maps/" .. v.map .. ".png" end
 			if ( Material(mapicon):IsError() ) then mapicon = "noicon.png" end
 			
@@ -133,14 +176,20 @@ if CLIENT then
 			mapname:SetText(v.map)
 			mapname:SetTextColor(Color(20, 20, 20))
 			mapname:SizeToContents()
-			mapname:SetPos(200, 18)
+			mapname:SetPos(180, 18)
 			
 			local mapstatus = vgui.Create("DLabel", config)
 			local status = file.Find("maps/"..v.map..".bsp", "GAME")[1] and true or false
-			mapstatus:SetText(status and "Installed" or "Not installed" )
+			mapstatus:SetText(status and "Map installed" or "Map not installed" )
 			mapstatus:SetTextColor(status and Color(20, 200, 20) or Color(200, 20, 20))
 			mapstatus:SizeToContents()
-			mapstatus:SetPos(360 - mapstatus:GetWide(), 18)
+			mapstatus:SetPos(360 - mapstatus:GetWide(), 12)
+			
+			local configlocation = vgui.Create("DLabel", config)
+			configlocation:SetText(v.workshop and "Workshop" or v.official and "Official" or "Local")
+			configlocation:SetTextColor(v.workshop and Color(150, 20, 100) or v.official and Color(255,0,0) or Color(20, 20, 200))
+			configlocation:SizeToContents()
+			configlocation:SetPos(360 - configlocation:GetWide(), 26)
 			
 			local click = vgui.Create("DButton", config)
 			click:SetText("")

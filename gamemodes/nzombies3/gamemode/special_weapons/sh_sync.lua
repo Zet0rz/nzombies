@@ -27,15 +27,15 @@ end
 
 if CLIENT then
 	local function ReceiveSpecialWeaponAdded()
-		if !LocalPlayer().SpecialWeapons then LocalPlayer().SpecialWeapons = {} end
+		if !LocalPlayer().NZSpecialWeapons then LocalPlayer().NZSpecialWeapons = {} end
 		local id = net.ReadString()
 		local bool = net.ReadBool()
 		
 		if bool then
 			local ent = net.ReadEntity()
-			LocalPlayer().SpecialWeapons[id] = ent
+			LocalPlayer().NZSpecialWeapons[id] = ent
 		else
-			LocalPlayer().SpecialWeapons[id] = nil
+			LocalPlayer().NZSpecialWeapons[id] = nil
 		end
 	end
 	net.Receive("nzSendSpecialWeapon", ReceiveSpecialWeaponAdded)

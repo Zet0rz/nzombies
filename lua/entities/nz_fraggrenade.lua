@@ -55,7 +55,7 @@ function ENT:SetExplosionTimer( time )
 			local pos = self:GetPos()
 			local owner = self:GetOwner()
 
-			util.BlastDamage(self, owner, pos, 500, 150)
+			util.BlastDamage(self, owner, pos, 400, 150)
 
 			fx = EffectData()
 			fx:SetOrigin(pos)

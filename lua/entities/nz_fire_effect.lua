@@ -66,6 +66,7 @@ function ENT:CreateFire()
 	self.FireEffect:Activate()
 	self.FireEffect:Fire("StartFire")
 	self.FireEffect:SetKeyValue("spawnflags", "1")
+	--print(self.FireEffect)
 end
 
 function ENT:Draw()

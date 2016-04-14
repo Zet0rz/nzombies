@@ -131,9 +131,9 @@ end
 CreateMismatchCheck("Wall Buys", function()
 	local tbl = {}
 	for k,v in pairs(ents.FindByClass("wall_buys")) do
-		if !weapons.Get(v:GetEntName()) then
-			print("Wall Buy has non-existant weapon class: " .. v:GetEntName() .. "!")
-			tbl[v:GetEntName()] = true
+		if !weapons.Get(v:GetWepClass()) then
+			print("Wall Buy has non-existant weapon class: " .. v:GetWepClass() .. "!")
+			tbl[v:GetWepClass()] = true
 		end
 	end
 	
@@ -178,12 +178,12 @@ end, function(frame)
 
 end, function( data )
 	for k,v in pairs(ents.FindByClass("wall_buys")) do
-		local new = data[v:GetEntName()]
+		local new = data[v:GetWepClass()]
 		if new then
 			if new == "nz_removeweapon" then
 				v:Remove()
 			else
-				v:SetEntName(new)
+				v:GetWepClass(new)
 			end
 		end
 	end

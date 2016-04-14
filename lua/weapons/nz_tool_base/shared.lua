@@ -39,6 +39,8 @@ SWEP.Secondary =
 SWEP.CanHolster			= true
 SWEP.CanDeploy			= true
 
+SWEP.NZPreventBox = true
+
 --[[---------------------------------------------------------
 	Initialize
 -----------------------------------------------------------]]

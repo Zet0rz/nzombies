@@ -122,6 +122,11 @@ function Doors.OnUseDoor( ply, ent )
 	-- Players can't use stuff while ysing special weapons! (Perk bottles, knives, etc)
 	if IsValid(ply:GetActiveWeapon()) and ply:GetActiveWeapon():IsSpecial() then return false end
 	
+	-- Used in map scripting
+	if ent.OnUsed and type(ent.OnUsed) == "function" then
+		ent:OnUsed()
+	end
+	
 	if ent:IsBuyableEntity() then
 		if ent.buyable == nil or tobool(ent.buyable) then
 			Doors:BuyDoor( ply, ent )

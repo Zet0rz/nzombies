@@ -1,7 +1,7 @@
 AddCSLuaFile()
 
 ENT.Type = "anim"
- 
+
 ENT.PrintName		= "drop_vulture"
 ENT.Author			= "Zet0r"
 ENT.Contact			= "Don't"
@@ -11,7 +11,7 @@ ENT.Instructions	= ""
 function ENT:SetupDataTables()
 
 	self:NetworkVar( "String", 0, "DropType" )
-	
+
 end
 
 local vulturedrops = {
@@ -27,7 +27,7 @@ local vulturedrops = {
 			self:DrawModel()
 		end,
 		initialize = function(self)
-		
+
 		end,
 	},
 	["ammo"] = {
@@ -40,9 +40,9 @@ local vulturedrops = {
 				local give = max/math.Rand(9,11)
 				local ammo = wep.Primary.Ammo
 				local cur = ply:GetAmmoCount(ammo)
-				
+
 				--print(give, max, cur)
-				
+
 				if cur + give > max then give = max - cur end
 				if give <= 0 then return false end
 				ply:GiveAmmo(give, ammo)
@@ -54,18 +54,23 @@ local vulturedrops = {
 			self:DrawModel()
 		end,
 		initialize = function(self)
-		
+
 		end,
 	},
 	["gas"] = {
 		id = "gas",
 		model = Model(""),
 		effect = function(ply)
-			ply.vulturegas = CurTime() + 3
+			ply:SetTargetPriority(TARGET_PRIORITY_NONE)
+			timer.Simple(3, function()
+				if IsValid(ply) then
+					ply:SetDefaultTargetPriority()
+				end
+			end)
 		end,
 		timer = 5,
 		draw = function(self)
-			
+
 		end,
 		initialize = function(self)
 			local sfx = EffectData()
@@ -76,13 +81,13 @@ local vulturedrops = {
 }
 
 function ENT:Initialize()
-	
+
 	-- Random chance of any
 	if SERVER then
 		self:SetDropType(table.Random(vulturedrops).id)
 	end
 	self:SetModel(vulturedrops[self:GetDropType()].model)
-	
+
 	self:PhysicsInitSphere(50, "default_silent")
 	self:SetMoveType(MOVETYPE_NONE)
 	self:SetSolid(SOLID_NONE)
@@ -101,10 +106,10 @@ function ENT:Initialize()
 			timer.Destroy(self:EntIndex().."_deathtimer")
 			if SERVER then
 				self:Remove()
-			end	
+			end
 		end
 	end)
-	
+
 	vulturedrops[self:GetDropType()].initialize(self)
 end
 
@@ -125,12 +130,12 @@ if CLIENT then
 	function ENT:Draw()
 		vulturedrops[self:GetDropType()].draw(self)
 	end
-	
+
 	function ENT:Think()
 		if !self:GetRenderAngles() then self:SetRenderAngles(self:GetAngles()) end
 		self:SetRenderAngles(self:GetRenderAngles()+(Angle(0,50,0)*FrameTime()))
 	end
-	
+
 	hook.Add( "PreDrawHalos", "drop_powerups_halos", function()
 		halo.Add( ents.FindByClass( "drop_powerup" ), Color( 0, 255, 0 ), 2, 2, 2 )
 	end )

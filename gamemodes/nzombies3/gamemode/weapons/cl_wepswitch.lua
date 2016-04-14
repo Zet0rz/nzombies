@@ -4,9 +4,10 @@ AccessorFunc( plyMeta, "iCurrentWeaponSlot", "CurrentWeaponSlot", FORCE_NUMBER)
 function plyMeta:SelectWeapon( class )
 	if ( !self:HasWeapon( class ) ) then return end
 	self.DoWeaponSwitch = self:GetWeapon( class )
+	print(self.DoWeaponSwitch)
 end
 
-hook.Add( "CreateMove", "WeaponSwitch", function( cmd )
+hook.Add( "CreateMove", "nz_WeaponSwitch", function( cmd )
 	if ( IsValid( LocalPlayer().DoWeaponSwitch ) ) then
 		cmd:SelectWeapon( LocalPlayer().DoWeaponSwitch )
 
@@ -19,6 +20,7 @@ end )
 
 function GM:PlayerBindPress( ply, bind, pressed )
 	if Round:InProgress() then
+		if !ply:GetCurrentWeaponSlot() then ply:SetCurrentWeaponSlot(ply:GetActiveWeapon():GetNWInt("SwitchSlot", 1)) end
 		local slot
 		local curslot = ply:GetCurrentWeaponSlot() or 1
 		if ( string.find( bind, "slot1" ) ) then slot = 1 end
@@ -36,7 +38,7 @@ function GM:PlayerBindPress( ply, bind, pressed )
 				slot = ply:HasPerk("mulekick") and 3 or 2
 			end
 		end
-		if !Round:InState(ROUND_CREATE) and (bind == "+menu" and pressed ) then slot = ply:GetLastWeaponSlot() or 1 print(slot) end
+		if !Round:InState(ROUND_CREATE) and (bind == "+menu" and pressed ) then slot = ply:GetLastWeaponSlot() or 1 end
 		if slot then
 			ply:SetLastWeaponSlot( ply:GetActiveWeapon():GetNWInt( "SwitchSlot", 1) )
 			if slot == 3 then

@@ -68,7 +68,7 @@ end
 local function DrawColorModulation()
 	if !Revive.Players[LocalPlayer():EntIndex()] then return end
 	
-	local fadeadd = ((1/nz.Config.DownTime) * FrameTime()) * -1 	//Change 45 to the revival time
+	local fadeadd = ((1/GetConVar("nz_downtime"):GetFloat()) * FrameTime()) * -1 	//Change 45 to the revival time
 	tab[ "$pp_colour_colour" ] = math.Approach(tab[ "$pp_colour_colour" ], 0, fadeadd)
 	tab[ "$pp_colour_brightness" ] = math.Approach(tab[ "$pp_colour_brightness" ], -0.5, fadeadd * 0.5)
 	
@@ -106,7 +106,7 @@ local function DrawDownedPlayers()
 			if v.ReviveTime then
 				surface.SetDrawColor(255, 255, 255)
 			else
-				surface.SetDrawColor(255, 150 - (CurTime() - v.DownTime)*(150/nz.Config.DownTime), 0)
+				surface.SetDrawColor(255, 150 - (CurTime() - v.DownTime)*(150/GetConVar("nz_downtime"):GetFloat()), 0)
 			end
 			
 			--draw.SimpleText(v.ReviveTime and "REVIVING" or "DOWNED", font, posxy["x"], posxy["y"] + 10, v.ReviveTime and Color(255,255,255) or Color(200, 0, 0,255), TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP)
@@ -122,7 +122,7 @@ local function DrawRevivalProgress()
 	local dply = tr.Entity
 	local id = dply:EntIndex()
 	
-	local revtime = LocalPlayer():HasPerk("revive") and 2 or 5
+	local revtime = LocalPlayer():HasPerk("revive") and 2 or 4
 	
 	if IsValid(dply) and Revive.Players[id] and Revive.Players[id].RevivePlayer == LocalPlayer() then
 		surface.SetDrawColor(0,0,0)

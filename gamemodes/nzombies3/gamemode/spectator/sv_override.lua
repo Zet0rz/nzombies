@@ -6,13 +6,17 @@ end
 
 function GM:PlayerDeath( ply, wep, killer )
 	ply:SetSpectator()
+	ply:SetTargetPriority(TARGET_PRIORITY_NONE)
 end
 
 function GM:PlayerDeathThink( ply )
 
 	-- Allow players in creative mode to respawn
 	if ply:IsSuperAdmin() and Round:InState( ROUND_CREATE ) then
-		return true
+		if ply:KeyDown(IN_JUMP) or ply:KeyDown(IN_ATTACK) then
+			ply:Spawn()
+			return true
+		end
 	end
 
 	local players = player.GetAllPlayingAndAlive()
@@ -35,11 +39,11 @@ function GM:PlayerDeathThink( ply )
 	end
 end
 
-hook.Add( "PlayerUse", "disableDeadUse", disableDeadUse)
-
 local function disableDeadUse( ply, ent )
 	if !ply:Alive() then return false end
 end
+
+hook.Add( "PlayerUse", "disableDeadUse", disableDeadUse)
 
 local function disableDeadPickups( ply, ent )
 	if !ply:Alive() then return false end

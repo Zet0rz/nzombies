@@ -41,7 +41,7 @@
 --returns: boolean
 --
 
-function nz.Effects.Functions.Tesla( data )
+function Effects:Tesla( data )
 
 	local tesla = ents.Create("point_tesla")
 
@@ -50,7 +50,7 @@ function nz.Effects.Functions.Tesla( data )
 	tesla:SetParent( data.ent )
 	tesla:SetOwner( data.ent )
 
-	tesla:SetKeyValue("texture", data.texture and tostring(data.texture) or "effects/tool_tracer.vmt")
+	tesla:SetKeyValue("texture", data.texture and tostring(data.texture) or "trails/electric.vmt")
 	tesla:SetKeyValue("m_iszSpriteName", "sprites/physbeam.vmt")
 	tesla:SetKeyValue("m_Color", data.color and tostring(data.color) or "255 255 255")
 	tesla:SetKeyValue("m_flRadius", data.radius and tostring(data.radius) or "50")

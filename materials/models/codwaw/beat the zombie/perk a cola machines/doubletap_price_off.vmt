@@ -1,6 +1,0 @@
-"VertexlitGeneric"
-{
-	"$basetexture" "Models/CoDWaW/Beat the Zombie/Perk A Cola Machines/Doubletap_price"
-	"$surfaceprop" "Metal"
-	"$nocull" 1
-}

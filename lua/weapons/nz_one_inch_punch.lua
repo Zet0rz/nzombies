@@ -27,6 +27,9 @@ SWEP.Instructions	= "Let the gamemode give you it"
 
 SWEP.Spawnable			= false
 SWEP.AdminSpawnable		= false
+SWEP.WorldModel 		= Model( "models/effects/combineball.mdl" )
+
+SWEP.NZPreventBox = true
 
 function SWEP:PostDrawViewModel()
 
@@ -58,9 +61,11 @@ function SWEP:PrimaryAttack( right )
 	self:SetNextPrimaryFire( CurTime() + 0.9 )
 	self:SetNextSecondaryFire( CurTime() + 0.9 )
 	
-	local e = EffectData()
-	e:SetMagnitude(bone)
-	util.Effect("one_inch_punch_blow",e)
+	if CLIENT then
+		local e = EffectData()
+		e:SetMagnitude(bone)
+		util.Effect("one_inch_punch_blow",e)
+	end
 
 end
 
@@ -146,6 +151,32 @@ function SWEP:DealDamage()
 
 end
 
+function SWEP:Think()
+
+	local vm = self.Owner:GetViewModel()
+	local curtime = CurTime()
+	local idletime = self:GetNextIdle()
+
+	if ( idletime > 0 && CurTime() > idletime ) then
+
+		vm:SendViewModelMatchingSequence( vm:LookupSequence( "fists_idle_0" .. math.random( 1, 2 ) ) )
+
+		self:UpdateNextIdle()
+
+	end
+
+	local meleetime = self:GetNextMeleeAttack()
+
+	if ( meleetime > 0 && CurTime() > meleetime ) then
+
+		self:DealDamage()
+
+		self:SetNextMeleeAttack( 0 )
+
+	end
+
+end
+
 function SWEP:Deploy()
 
 	local vm = self.Owner:GetViewModel()
@@ -155,11 +186,11 @@ function SWEP:Deploy()
 
 end
 
-if SpecialWeapons then
+if engine.ActiveGamemode() == "nzombies3" then 
 	SpecialWeapons:AddWeapon( "nz_one_inch_punch", "knife", function(ply, wep)
 		if SERVER then
-			local prevwep = ply:GetActiveWeapon():GetClass()
-			ply.UsingSpecialWep = true
+			ply:SetUsingSpecialWeapon(true)
+			ply:SetActiveWeapon(nil)
 			ply:SelectWeapon("nz_one_inch_punch")
 			timer.Simple(0.1, function()
 				if IsValid(ply) then
@@ -173,20 +204,20 @@ if SpecialWeapons then
 			end)
 			timer.Simple(0.7, function()
 				if IsValid(ply) then
-					ply.UsingSpecialWep = nil
-					ply:SelectWeapon(prevwep)
+					ply:SetUsingSpecialWeapon(false)
+					ply:EquipPreviousWeapon()
 				end
 			end)
 		end
 	end, function(ply, wep)
 		if SERVER then
 			local prevwep = ply:GetActiveWeapon():GetClass()
-			ply.UsingSpecialWep = true
+			ply:SetUsingSpecialWeapon(true)
 			ply:SelectWeapon("nz_one_inch_punch")
 			timer.Simple(1, function()
 				if IsValid(ply) then
-					ply.UsingSpecialWep = nil
-					ply:SelectWeapon(prevwep)
+					ply:SetUsingSpecialWeapon(false)
+					ply:EquipPreviousWeapon()
 				end
 			end)
 		end

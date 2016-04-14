@@ -25,7 +25,6 @@ local PLAYER_LINE = {
 		self.AvatarButton:Dock( LEFT )
 		self.AvatarButton:SetSize( 32, 32 )
 		self.AvatarButton.DoClick = function() self.Player:ShowProfile() end
-		self.AvatarButton:DockMargin( 30, 0, 0, 0 )
 
 		self.Avatar = vgui.Create( "AvatarImage", self.AvatarButton )
 		self.Avatar:SetSize( 32, 32 )
@@ -34,13 +33,11 @@ local PLAYER_LINE = {
 		self.Name = self:Add( "DLabel" )
 		self.Name:Dock( FILL )
 		self.Name:SetFont( "ScoreboardDefault" )
-		self.Name:SetTextColor( Color( 255, 255, 255 ) )
-		self.Name:DockMargin( 8, 0, 0, 0 )
+		self.Name:SetTextColor( self.TextColor or Color(255, 255, 255) )
 
 		self.Mute = self:Add( "DImageButton" )
 		self.Mute:SetSize( 32, 32 )
 		self.Mute:Dock( RIGHT )
-		self.Mute:DockMargin( 0, 0, 30, 0 )
 
 		self.Ping = self:Add( "DLabel" )
 		self.Ping:Dock( RIGHT )
@@ -49,31 +46,37 @@ local PLAYER_LINE = {
 		self.Ping:SetTextColor( Color( 255, 255, 255 ) )
 		self.Ping:SetContentAlignment( 5 )
 
-		self.Deaths = self:Add( "DLabel" )
-		self.Deaths:Dock( RIGHT )
-		self.Deaths:SetWidth( 50 )
-		self.Deaths:SetFont( "ScoreboardDefault" )
-		self.Deaths:SetTextColor( Color( 255, 255, 255 ) )
-		self.Deaths:SetContentAlignment( 5 )
+		self.Revives = self:Add( "DLabel" )
+		self.Revives:Dock( RIGHT )
+		self.Revives:SetWidth( 100 )
+		self.Revives:SetFont( "ScoreboardDefault" )
+		self.Revives:SetTextColor( self.TextColor or Color(255, 255, 255)  )
+		self.Revives:SetContentAlignment( 5 )
+
+		self.Downs = self:Add( "DLabel" )
+		self.Downs:Dock( RIGHT )
+		self.Downs:SetWidth( 100 )
+		self.Downs:SetFont( "ScoreboardDefault" )
+		self.Downs:SetTextColor( self.TextColor or Color(255, 255, 255)  )
+		self.Downs:SetContentAlignment( 5 )
 
 		self.Kills = self:Add( "DLabel" )
 		self.Kills:Dock( RIGHT )
-		self.Kills:SetWidth( 50 )
+		self.Kills:SetWidth( 100 )
 		self.Kills:SetFont( "ScoreboardDefault" )
-		self.Kills:SetTextColor( Color( 255, 255, 255 ) )
+		self.Kills:SetTextColor( self.TextColor or Color(255, 255, 255)  )
 		self.Kills:SetContentAlignment( 5 )
-		
+
 		self.Points = self:Add( "DLabel" )
 		self.Points:Dock( RIGHT )
 		self.Points:SetWidth( 100 )
-		self.Points:SetFont( "nz.display.hud.small" )
-		self.Points:SetTextColor( Color( 255, 255, 255 ) )
+		self.Points:SetFont( "ScoreboardDefault" )
+		self.Points:SetTextColor( self.TextColor or Color(255, 255, 255) )
 		self.Points:SetContentAlignment( 5 )
 
 		self:Dock( TOP )
-		self:DockPadding( 3, 3, 3, 3 )
-		self:SetHeight( 32 + 3 * 2 )
-		self:DockMargin( 2, 0, 2, 2 )
+		self:SetSize( 32, 32)
+		self:DockMargin(5,0,5,0)
 
 	end,
 
@@ -98,29 +101,44 @@ local PLAYER_LINE = {
 			return
 		end
 
+		if ( self.TextColor == nil || self.TextColor != player.GetColorByIndex( self.Player:EntIndex() ) ) then
+			self.TextColor = player.GetColorByIndex( self.Player:EntIndex() )
+			self.Name:SetTextColor( self.TextColor )
+			self.Points:SetTextColor( self.TextColor )
+			self.Revives:SetTextColor( self.TextColor )
+			self.Ping:SetTextColor( self.TextColor )
+			self.Downs:SetTextColor( self.TextColor  )
+			self.Kills:SetTextColor( self.TextColor )
+		end
+
+		if ( self.ZombieKills == nil || self.ZombieKills != self.Player:GetTotalKills() ) then
+			self.ZombieKills = self.Player:GetTotalKills()
+			self.Kills:SetText( self.ZombieKills )
+		end
+
+		if ( self.NumDowns == nil || self.Downs != self.Player:GetTotalDowns() ) then
+			self.NumDowns = self.Player:GetTotalDowns()
+			self.Downs:SetText( self.NumDowns )
+		end
+
+		if ( self.NumRevives == nil || self.NumRevives != self.Player:GetTotalRevives() ) then
+			self.NumRevives = self.Player:GetTotalRevives()
+			self.Revives:SetText( self.NumRevives )
+		end
+
 		if ( self.PName == nil || self.PName != self.Player:Nick() ) then
 			self.PName = self.Player:Nick()
 			self.Name:SetText( self.PName )
 		end
-		
-		if ( self.NumKills == nil || self.NumKills != self.Player:Frags() ) then
-			self.NumKills = self.Player:Frags()
-			self.Kills:SetText( self.NumKills )
-		end
 
-		if ( self.NumDeaths == nil || self.NumDeaths != self.Player:Deaths() ) then
-			self.NumDeaths = self.Player:Deaths()
-			self.Deaths:SetText( self.NumDeaths )
+		if ( self.NumPoints == nil || self.NumPoints != self.Player:GetPoints() ) then
+			self.NumPoints = self.Player:GetPoints()
+			self.Points:SetText( self.NumPoints )
 		end
 
 		if ( self.NumPing == nil || self.NumPing != self.Player:Ping() ) then
 			self.NumPing = self.Player:Ping()
 			self.Ping:SetText( self.NumPing )
-		end
-		
-		if ( self.NumPoints == nil || self.NumPoints != self.Player:GetPoints() ) then
-			self.NumPoints = self.Player:GetPoints()
-			self.Points:SetText( self.NumPoints )
 		end
 
 		--
@@ -152,7 +170,7 @@ local PLAYER_LINE = {
 		-- so if we set the z order according to kills they'll be ordered that way!
 		-- Careful though, it's a signed short internally, so needs to range between -32,768k and +32,767
 		--
-		self:SetZPos( ( self.NumKills * -50 ) + self.NumDeaths + self.Player:EntIndex() )
+		self:SetZPos( ( self.NumPoints * -50 ) + self.NumPoints + self.Player:EntIndex() )
 
 	end,
 
@@ -165,18 +183,18 @@ local PLAYER_LINE = {
 		--
 		-- We draw our background a different colour based on the status of the player
 		--
-		
+
 		--if ( !self.Player:Alive() ) then
 			--draw.RoundedBox( 4, 0, 0, w, h, Color( pColor[1] * 150, pColor[2] * 150, pColor[3] * 150, 255 ) )
 			--return
 		--end
 
 		--draw.RoundedBox( 4, 0, 0, w, h, Color( pColor[1] * 100 + 155, pColor[2] * 100 + 155, pColor[3] * 100 + 155, 255 ) )
-		
-		surface.SetMaterial(bloodline_scoreboard)
-		surface.SetDrawColor(255,255,255)
+
+		surface.SetMaterial(player.GetBloodByIndex(self.Player:EntIndex()))
+		surface.SetDrawColor(200,200,200)
 		surface.DrawTexturedRect(0, 0, w, h)
-		
+
 	end
 }
 
@@ -189,6 +207,7 @@ PLAYER_LINE = vgui.RegisterTable( PLAYER_LINE, "DPanel" )
 -- Here we define a new panel table for the scoreboard. It basically consists
 -- of a header and a scrollpanel - into which the player lines are placed.
 --
+
 local SCORE_BOARD = {
 	Init = function( self )
 
@@ -197,12 +216,67 @@ local SCORE_BOARD = {
 		self.Header:SetHeight( 100 )
 
 		self.Name = self.Header:Add( "DLabel" )
-		self.Name:SetFont( "ScoreboardDefaultTitle" )
+		self.Name:SetFont( "nz.display.hud.main" )
 		self.Name:SetTextColor( Color( 255, 255, 255, 255 ) )
 		self.Name:Dock( TOP )
 		self.Name:SetHeight( 40 )
 		self.Name:SetContentAlignment( 5 )
-		self.Name:SetExpensiveShadow( 2, Color( 0, 0, 0, 200 ) )
+
+		self.Key = self:Add( "DPanel" )
+		self.Key:Dock( TOP )
+		self.Key:SetContentAlignment( 6 )
+		self.Key:SetHeight( 20 )
+		self.Key.Paint = function() end
+
+		self.Mute = self.Key:Add( "DLabel" )
+		self.Mute:Dock( RIGHT )
+		self.Mute:SetWidth( 32 )
+		self.Mute:SetFont( "ScoreboardDefault" )
+		self.Mute:SetTextColor( Color( 255, 255, 255 ) )
+		self.Mute:SetContentAlignment( 5 )
+		self.Mute:SetText("")
+
+		self.Ping = self.Key:Add( "DLabel" )
+		self.Ping:Dock( RIGHT )
+		self.Ping:SetWidth( 50 )
+		self.Ping:SetFont( "ScoreboardDefault" )
+		self.Ping:SetTextColor( Color( 255, 255, 255 ) )
+		self.Ping:SetContentAlignment( 5 )
+		self.Ping:SetText("Ping")
+
+		self.Revives = self.Key:Add( "DLabel" )
+		self.Revives:Dock( RIGHT )
+		self.Revives:SetWidth( 100 )
+		self.Revives:SetFont( "ScoreboardDefault" )
+		self.Revives:SetTextColor( Color(255, 255, 255)  )
+		self.Revives:SetContentAlignment( 5 )
+		self.Revives:SetText("Revives")
+
+		self.Downs = self.Key:Add( "DLabel" )
+		self.Downs:Dock( RIGHT )
+		self.Downs:SetWidth( 100 )
+		self.Downs:SetFont( "ScoreboardDefault" )
+		self.Downs:SetTextColor( Color(255, 255, 255)  )
+		self.Downs:SetContentAlignment( 5 )
+		self.Downs:SetText("Downs")
+
+		self.Kills = self.Key:Add( "DLabel" )
+		self.Kills:Dock( RIGHT )
+		self.Kills:SetWidth( 100 )
+		self.Kills:SetFont( "ScoreboardDefault" )
+		self.Kills:SetTextColor( Color( 255, 255, 255, 255 ) )
+		self.Kills:SetContentAlignment( 5 )
+		self.Kills:SetText("Kills")
+
+		self.Points = self.Key:Add( "DLabel" )
+		self.Points:Dock( RIGHT )
+		self.Points:SetWidth( 100 )
+		self.Points:SetFont( "ScoreboardDefault" )
+		self.Points:SetTextColor( Color( 255, 255, 255, 255 ) )
+		self.Points:SetContentAlignment( 5 )
+		self.Points:SetText("Points")
+
+
 
 		--self.NumPlayers = self.Header:Add( "DLabel" )
 		--self.NumPlayers:SetFont( "ScoreboardDefault" )
@@ -225,7 +299,7 @@ local SCORE_BOARD = {
 
 	Paint = function( self, w, h )
 
-		--draw.RoundedBox( 4, 0, 0, w, h, Color( 0, 0, 0, 200 ) )
+		--DrawBlurRect( 0, 0, w, h )
 
 	end,
 

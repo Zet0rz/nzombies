@@ -32,6 +32,7 @@ function ENT:BlockUnlock()
 		self:SetCollisionBounds( Vector(-4, -4, 0), Vector(4, 4, 64) )
 	end
 	self:SetSolid( SOLID_NONE )
+	self:SetNoDraw(true)
 	self:SetLocked(false)
 end
 
@@ -42,6 +43,7 @@ function ENT:BlockLock()
 		self:SetCollisionBounds( self.Boundone, self.Boundtwo )
 	end
 	self:SetSolid( SOLID_VPHYSICS )
+	self:SetNoDraw(false)
 	self:SetLocked(true)
 end
 
@@ -56,9 +58,9 @@ end
 if CLIENT then
 	function ENT:Draw()
 		if Round:InProgress() then
-			if self:IsLocked() then
+			--if self:IsLocked() then
 				self:DrawModel()
-			end
+			--end
 		else
 			self:DrawModel()
 		end

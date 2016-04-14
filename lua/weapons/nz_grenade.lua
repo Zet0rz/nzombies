@@ -1,6 +1,6 @@
 if SERVER then
 	AddCSLuaFile("nz_grenade.lua")
-	SWEP.Weight			= 5
+	SWEP.Weight			= 1
 	SWEP.AutoSwitchTo	= false
 	SWEP.AutoSwitchFrom	= true	
 end
@@ -51,6 +51,9 @@ end
 
 function SWEP:Deploy()
 	self:SendWeaponAnim(ACT_VM_DRAW)
+	if !self.Owner:GetUsingSpecialWeapon() then
+		self.Owner:EquipPreviousWeapon()
+	end
 end
 
 function SWEP:StartGrenadeModel()
@@ -65,7 +68,7 @@ function SWEP:EndGrenadeModel()
 end
 
 function SWEP:PrimaryAttack()
-	
+	--self:ThrowGrenade(1000)
 end
 
 function SWEP:ThrowGrenade(force)
@@ -103,5 +106,10 @@ function SWEP:DrawWorldModel()
 end
 
 function SWEP:OnRemove()
-	
+	self:EndGrenadeModel()
+end
+
+function SWEP:Holster( wep )
+	if not IsFirstTimePredicted() then return end
+	self:EndGrenadeModel()
 end

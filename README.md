@@ -101,11 +101,4 @@ This is an edited version from Aligs original featuring these changes:
 
 
 - Workshop Release To-do list:
-	- Monkey Bombs, a few other random wonder weapons
-	- Wonder Weapon system (Only one of them at a time)
-	- Implement all new animations for zombies
-	- Model pack system to replace models on a per-config basis
-	- Hellhounds (Yes, we're getting those)
-	- Maps with no power switch has permanent power
-	- Modify curves to be better
-	- After all the above, 3-4 official high-quality configs
+	Check the Issues tab with the "Workshop Release" milestone. Feel free to discuss your opinion about the things in there, it would help greatly.

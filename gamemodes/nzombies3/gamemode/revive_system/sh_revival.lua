@@ -3,7 +3,7 @@ if SERVER then
 	hook.Add("Think", "CheckDownedPlayersTime", function()
 		for k,v in pairs(Revive.Players) do
 			//The time it takes for a downed player to die - Prevent dying if being revived
-			if CurTime() - v.DownTime >= nz.Config.DownTime and !v.ReviveTime then
+			if CurTime() - v.DownTime >= GetConVar("nz_downtime"):GetFloat() and !v.ReviveTime then
 				Entity(k):KillDownedPlayer()
 			end
 		end
@@ -30,8 +30,8 @@ function Revive.HandleRevive(ply, ent)
 				-- print(CurTime() - Revive.Players[id].ReviveTime)
 				
 				if ply:HasPerk("revive") and CurTime() - Revive.Players[id].ReviveTime >= 2 //With quick-revive
-				or CurTime() - Revive.Players[id].ReviveTime >= 5 then	//5 is the time it takes to revive
-					dply:RevivePlayer()
+				or CurTime() - Revive.Players[id].ReviveTime >= 4 then	//4 is the time it takes to revive
+					dply:RevivePlayer(ply)
 					ply.Reviving = nil
 				end
 			end
@@ -39,9 +39,7 @@ function Revive.HandleRevive(ply, ent)
 			if IsValid(ply.Reviving) and ply.Reviving != dply then -- Holding E on another player or no player
 				local id = ply.Reviving:EntIndex()
 				if Revive.Players[id] then 
-					if Revive.Players[id].ReviveTime then 
-						Revive.Players[id].ReviveTime = nil
-						Revive.Players[id].RevivePlayer = nil
+					if Revive.Players[id].ReviveTime then
 						--ply:SetMoveType(MOVETYPE_WALK)
 						ply.Reviving:StopRevive()
 						ply.Reviving = nil
@@ -55,9 +53,7 @@ function Revive.HandleRevive(ply, ent)
 			if IsValid(ply.Reviving) and (ply.Reviving:IsPlayer() or ply.Reviving:GetClass() == "whoswho_downed_clone") then
 				local id = ply.Reviving:EntIndex()
 				if Revive.Players[id] then 
-					if Revive.Players[id].ReviveTime then 
-						Revive.Players[id].ReviveTime = nil
-						Revive.Players[id].RevivePlayer = nil
+					if Revive.Players[id].ReviveTime then
 						--ply:SetMoveType(MOVETYPE_WALK)
 						ply.Reviving:StopRevive()
 						ply.Reviving = nil
@@ -141,36 +137,48 @@ function Revive:RespawnWithWhosWho(ply, pos)
 	local pos = pos or nil
 	
 	if !pos then
-		local areas = {}
+		local spawns = {}
 		local plypos = ply:GetPos()
-		for k,v in pairs(navmesh.Find(plypos, 1250, 100, 100)) do
-			if nz.Nav.Functions.IsPosInSameNavGroup(plypos, v:GetCenter()) then
-				table.insert(areas, v:GetID())
-			end
-		end
-		for k,v in pairs(navmesh.Find(plypos, 750, 100, 100)) do
-			if table.HasValue(areas, v:GetID()) then
-				table.RemoveByValue(areas, v:GetID())
-			end
-		end
+		local maxdist = 1500^2
+		local mindist = 500^2
 		
-		pos = navmesh.GetNavAreaByID(table.Random(areas)):GetRandomPoint() + Vector(0,0,20)
+		local available = ents.FindByClass("zed_special_spawns")
+		if IsValid(available[1]) then
+			for k,v in pairs(available) do
+				local dist = plypos:DistToSqr(v:GetPos())
+				if v.link == nil or Doors.OpenedLinks[tonumber(v.link)] then -- Only for rooms that are opened (using links)
+					if dist < maxdist and dist > mindist then -- Within the range we set above
+						if nz.Enemies.Functions.CheckIfSuitable(v:GetPos()) then -- And nothing is blocking it
+							table.insert(spawns, v)
+						end
+					end
+				end
+			end
+			if !IsValid(spawns[1]) then
+				for k,v in pairs(available) do -- Retry, but without the range check (just use all of them)
+					local dist = plypos:DistToSqr(v:GetPos())
+					if v.link == nil or Doors.OpenedLinks[tonumber(v.link)] then
+						if nz.Enemies.Functions.CheckIfSuitable(v:GetPos()) then
+							table.insert(spawns, v)
+						end
+					end
+				end
+			end
+			if !IsValid(spawns[1]) then -- Still no open linked ones?! Spawn at a random player spawnpoint
+				local pspawns = ents.FindByClass("player_spawns")
+				pos = pspawns[math.random(#pspawns)]:GetPos()
+			else
+				pos = spawns[math.random(#spawns)]:GetPos()
+			end
+		else
+			-- There exists no special spawnpoints - Use regular player spawns
+			local pspawns = ents.FindByClass("player_spawns")
+			pos = pspawns[math.random(#pspawns)]:GetPos()
+		end
 	end
 	ply:RevivePlayer()
 	ply:StripWeapons()
-	
-	-- Give starting weapons
-	if Mapping.Settings.startwep then
-		ply:Give( Mapping.Settings.startwep )
-	elseif IsValid(ents.FindByClass("player_handler")[1]) then
-		local ent = ents.FindByClass("player_handler")[1]
-		ply:Give( ent:GetStartWep() )
-	else
-		for k,v in pairs(nz.Config.BaseStartingWeapons) do
-			ply:Give( v )
-		end
-	end
-	nz.Weps.Functions.GiveMaxAmmo(ply)
+	player_manager.RunClass(ply, "Loadout") -- Rearm them
 	
 	ply:SetPos(pos)
 

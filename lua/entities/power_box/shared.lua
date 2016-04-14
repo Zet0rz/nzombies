@@ -43,7 +43,7 @@ function ENT:Use( activator )
 	if !IsElec() and Round:InProgress() then
 		self:SetSwitch(true)
 		self.Switched = 0
-		nz.Elec.Functions.Activate()
+		Elec:Activate()
 	end
 
 end

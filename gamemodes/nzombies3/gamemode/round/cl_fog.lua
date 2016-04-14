@@ -1,15 +1,15 @@
 local fade
 local fadetime = 5
 
-local fogstart = 10000
-local fogend = 10000
-local fogdensity = 0
-local fogcolor = Vector(0,0,0)
+local fogstart = fogstart or 50
+local fogend = fogend or 1000
+local fogdensity = fogdensity or 0
+local fogcolor = fogcolor or Vector(0.4,0.7,0.8)
 
-local tfogstart = 10000
-local tfogend = 10000
-local tfogdensity = 0
-local tfogcolor = Vector(0,0,0)
+local tfogstart = tfogstart or 50
+local tfogend = tfogend or 1000
+local tfogdensity = tfogdensity or 0
+local tfogcolor = tfogcolor or Vector(0.4,0.7,0.8)
 
 local ofogstart = fogstart
 local ofogend = fogend
@@ -32,10 +32,10 @@ function Round:EnableSpecialFog( bool )
 			tfogdensity = ent_special:GetDensity()
 			tfogcolor = ent_special:GetFogColor()
 		else
-			tfogstart = 10000
-			tfogend = 10000
-			tfogdensity = 0
-			tfogcolor = Vector(0,0,0)
+			tfogstart = 50
+			tfogend = 1000
+			tfogdensity = 0.9
+			tfogcolor = Vector(0.4,0.7,0.8)
 		end
 		specialfog = true
 	elseif specialfog or !foginit then
@@ -45,14 +45,15 @@ function Round:EnableSpecialFog( bool )
 			tfogdensity = ent:GetDensity()
 			tfogcolor = ent:GetFogColor()
 		else
-			tfogstart = 10000
-			tfogend = 10000
+			tfogstart = 50
+			tfogend = 1000
 			tfogdensity = 0
-			tfogcolor = Vector(0,0,0)
+			tfogcolor = Vector(0.4,0.7,0.8)
 		end
 		specialfog = false
 	end
-	if IsValid(ent) or IsValid(ent_special) then
+	-- Changed to always true because we now have defaults that apply if the entities don't exist
+	if true then --IsValid(ent) or IsValid(ent_special) then
 		fade = 0
 		ofogstart = fogstart
 		ofogend = fogend

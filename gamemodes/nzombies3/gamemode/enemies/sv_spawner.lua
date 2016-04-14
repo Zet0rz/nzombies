@@ -19,17 +19,21 @@ function nz.Enemies.Functions.CheckIfSuitable(pos)
 
 end
 
-function nz.Enemies.Functions.ValidSpawns()
+function nz.Enemies.Functions.ValidSpawns(zclass)
 
 	local spawns = {}
+	local spawntype = "zed_spawns"
+	if nz.Config.ValidEnemies[zclass] and nz.Config.ValidEnemies[zclass].SpecialSpawn then
+		spawntype = "zed_special_spawns"
+	end
 
 	-- Make a table of spawns
 	for _, ply in pairs(player.GetAllPlayingAndAlive()) do
 		-- Get all spawns in the range
 		for _,v2 in pairs(ents.FindInSphere(ply:GetPos(), 1500)) do
-			if v2:GetClass() == "zed_spawns" and (v2.spawnable == nil or tobool(v2.spawnable)) then
+			if v2:GetClass() == spawntype and (v2.spawnable == nil or tobool(v2.spawnable)) then
 				-- If enable, then if the player is in the same area group as the spawnpoint
-				if !nz.Config.NavGroupTargeting or nz.Nav.Functions.IsInSameNavGroup(ply, v2) then
+				if !GetConVar("nz_nav_grouptargeting"):GetBool() or nz.Nav.Functions.IsInSameNavGroup(ply, v2) then
 					if v2:GetPos():DistToSqr(ply:GetPos()) > 22500 then
 						local nav = navmesh.GetNearestNavArea( v2:GetPos() )
 						--check if navmesh is close
@@ -65,22 +69,11 @@ function nz.Enemies.Functions.TotalCurrentEnemies()
 	return c
 end
 
-function nz.Enemies.Functions.SpawnZombie(spawnpoint)
-	if nz.Enemies.Functions.TotalCurrentEnemies() < nz.Config.MaxZombiesSim then
-		local ent = "nz_zombie_walker"
-
-		-- Get the latest round number from the table
-		for i = Round:GetNumber(), 0, -1 do
-			if nz.Config.EnemyTypes[i] != nil then
-				-- Use weightkey "chance" as defined in the new config format
-				ent = nz.Misc.Functions.WeightedRandom( Round:GetZombieData(), "chance")
-				break
-			end
-		end
-
+function nz.Enemies.Functions.SpawnZombie(spawnpoint, zclass)
+	if nz.Enemies.Functions.TotalCurrentEnemies() < GetConVar("nz_difficulty_max_zombies_alive"):GetInt() then
 		if !IsValid(spawnpoint) then return end
 
-		local zombie = ents.Create(ent)
+		local zombie = ents.Create(zclass)
 		zombie:SetPos(spawnpoint:GetPos())
 		zombie:Spawn()
 		zombie:Activate()
@@ -95,27 +88,32 @@ end
 
 function nz.Enemies.Functions.ZombieSpawner()
 	-- Not enough Zombies
-	if Round:InState( ROUND_PROG ) then
+	if CurTime() >= Round:GetNextSpawnTime() and Round:InState( ROUND_PROG ) then
 		if Round:GetZombiesSpawned() < Round:GetZombiesMax() then
-
-			local valids = nz.Enemies.Functions.ValidSpawns()
+		
+			local zclass = nz.Misc.Functions.WeightedRandom( Round:GetZombieData(), "chance")
+			print(zclass)
+			local valids = nz.Enemies.Functions.ValidSpawns(zclass)
 
 			if #valids == 0  then
 				print("No valid spawns were found!")
+				Round:SetNextSpawnTime(CurTime() + 1)
 				return
 				-- Since we couldn't find a valid spawn, just back out for now.
 			end
 
 			local spawnpoint = table.Random(valids)
+			
+			Round:SetNextSpawnTime(CurTime() + 1) -- Default to 1; zombies spawned below can change that
 
 			if nz.Enemies.Functions.CheckIfSuitable(spawnpoint:GetPos()) then
-				nz.Enemies.Functions.SpawnZombie(spawnpoint)
+				nz.Enemies.Functions.SpawnZombie(spawnpoint, zclass)
 			end
 		end
 	end
 end
 
-timer.Create("nz.Rounds.ZombieSpawner", 1, 0, nz.Enemies.Functions.ZombieSpawner)
+hook.Add("Think", "ZombieSpawnThink", nz.Enemies.Functions.ZombieSpawner)
 
 function nz.Enemies.Functions.ValidRespawns(cur)
 	local spawns = nz.Enemies.Functions.ValidSpawns()

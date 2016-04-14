@@ -284,7 +284,7 @@ function nz.QMenu.Functions.Open()
 	//Check if we're in create mode
 	if Round:InState( ROUND_CREATE ) and LocalPlayer():IsSuperAdmin() then
 		if !IsValid(nz.QMenu.Data.MainFrame) then
-			if LocalPlayer():GetActiveWeapon():GetClass() == "nz_multi_tool" then
+			if IsValid(LocalPlayer():GetActiveWeapon()) and LocalPlayer():GetActiveWeapon():GetClass() == "nz_multi_tool" then
 				nz.QMenu.Functions.CreateToolsMenu()
 			else
 				nz.QMenu.Functions.CreatePropsMenu()
@@ -292,10 +292,10 @@ function nz.QMenu.Functions.Open()
 		end
 		
 		//If the toolgun is equipped and the menu isn't the toolmenu or vice versa, recreate
-		if LocalPlayer():GetActiveWeapon():GetClass() == "nz_multi_tool" and !nz.QMenu.Data.MainFrame.ToolMode then
+		if IsValid(LocalPlayer():GetActiveWeapon()) and LocalPlayer():GetActiveWeapon():GetClass() == "nz_multi_tool" and !nz.QMenu.Data.MainFrame.ToolMode then
 			nz.QMenu.Data.MainFrame:Remove()
 			nz.QMenu.Functions.CreateToolsMenu()
-		elseif LocalPlayer():GetActiveWeapon():GetClass() != "nz_multi_tool" and nz.QMenu.Data.MainFrame.ToolMode then
+		elseif IsValid(LocalPlayer():GetActiveWeapon()) and LocalPlayer():GetActiveWeapon():GetClass() != "nz_multi_tool" and nz.QMenu.Data.MainFrame.ToolMode then
 			nz.QMenu.Data.MainFrame:Remove()
 			nz.QMenu.Functions.CreatePropsMenu()
 		end

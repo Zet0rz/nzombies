@@ -1,6 +1,0 @@
-"VertexlitGeneric"
-{
-	$basetexture "models\Alcatraz\c_gen_insidemouth_c"
-	"$nocull" 1
-
-}

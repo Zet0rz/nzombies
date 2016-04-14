@@ -17,7 +17,7 @@ if SERVER then
 		
 
 		for k,v in pairs(self.ScriptHooks) do
-			if isfunction(v) then
+			if type(v) == "function" then
 				hook.Add(k, "nzmapscript"..k, v)
 			end
 		end
@@ -49,7 +49,7 @@ if SERVER then
 		if !self.ScriptHooks then return end
 
 		for k,v in pairs(self.ScriptHooks) do
-			if isfunction(v) then
+			if type(v) == "function" then
 				hook.Remove(k, "nzmapscript"..k)
 			end
 		end
@@ -89,7 +89,7 @@ if CLIENT then
 		local path = net.ReadString()
 		print(path)
 		
-		if !file.Exists( path, "LUA") then return false end
+		if !file.Exists( path, "LUA") then return end
 
 		Mapping.ScriptHooks = include( path )
 		

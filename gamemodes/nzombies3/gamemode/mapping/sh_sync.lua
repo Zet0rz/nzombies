@@ -42,6 +42,16 @@ if CLIENT then
 		if !EEAudioChannel or (oldeeurl != Mapping.Settings.eeurl and Mapping.Settings.eeurl) then
 			EasterEggData.ParseSong()
 		end
+		
+		-- Precache all random box weapons in the list
+		if Mapping.Settings.rboxweps then
+			for k,v in pairs(Mapping.Settings.rboxweps) do
+				local wep = weapons.Get(v)
+				if wep and (wep.WM or wep.WorldModel) then
+					util.PrecacheModel(wep.WM or wep.WorldModel)
+				end
+			end
+		end
 	end
 	net.Receive( "Mapping.SyncSettings", receiveMapData )
 

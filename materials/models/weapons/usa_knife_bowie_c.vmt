@@ -1,0 +1,12 @@
+"VertexLitGeneric"
+{
+    "$basetexture" "models/weapons/usa_knife_bowie_c"
+    "$bumpmap" "models/weapons/usa_knife_bowie_n_bump"
+    "$model" 1
+	 
+	"$phong" "1"
+	"$phongexponent" "300"
+	"$phongboost" "10"
+	"$phongfresnelranges" "[0.2 1 2]"
+	"$phongalbedotint" "1"	
+}

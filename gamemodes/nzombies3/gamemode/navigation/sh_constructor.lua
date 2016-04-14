@@ -1,9 +1,9 @@
 //Main Tables
-nz.Nav = {}
-nz.Nav.Functions = {}
+nz.Nav = nz.Nav or {}
+nz.Nav.Functions = nz.Nav.Functions or {}
 nz.Nav.Data = nz.Nav.Data or {}
-nz.Nav.NavGroups = {}
-nz.Nav.NavGroupIDs = {}
+nz.Nav.NavGroups = nz.Nav.NavGroups or {}
+nz.Nav.NavGroupIDs = nz.Nav.NavGroupIDs or {}
 
 //Reset navmesh attributes so they don't accidentally save
 function GM:ShutDown()
@@ -193,4 +193,10 @@ function nz.Nav.Functions.OnNavMeshUnlocked(areaids)
 		end
 		prev_group = k
 	end
+end
+
+function nz.Nav.Functions.FlushAllNavModifications()
+	nz.Nav.Data = {}
+	nz.Nav.NavGroups = {}
+	nz.Nav.NavGroupIDs = {}
 end

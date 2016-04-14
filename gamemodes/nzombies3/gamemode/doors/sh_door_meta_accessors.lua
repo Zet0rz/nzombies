@@ -6,9 +6,9 @@ Doors.OpenedLinks = Doors.OpenedLinks or {}
 
 function meta:IsLocked() 
 	if self:IsBuyableProp() or self:IsScriptBuyable() then
-		return Doors.PropDoors[self:EntIndex()].locked
+		return Doors.PropDoors[self:EntIndex()] and Doors.PropDoors[self:EntIndex()].locked or false
 	else
-		return Doors.MapDoors[self:DoorIndex()].locked
+		return Doors.MapDoors[self:DoorIndex()] and Doors.MapDoors[self:DoorIndex()].locked or false
 	end
 end
 
@@ -30,7 +30,7 @@ local validdoors = {
 }
 
 local scriptbuyables = {
-	["nz_triggerzone"] = true,
+	["nz_script_triggerzone"] = true,
 	["nz_triggerbutton"] = true,
 }
 

@@ -20,15 +20,23 @@ function ENT:Initialize()
 	self.NextPlank = CurTime()
 
 	self.Planks = {}
+	
+	--self:SetTriggerJumps(true) Not yet
 
 	if SERVER then
 		self:ResetPlanks(true)
+		if self:GetTriggerJumps() then
+			--print("Triggered!")
+			--self:UseTriggerBounds(true)
+			self:SetTrigger(true)
+		end
 	end
 end
 
 function ENT:SetupDataTables()
 
 	self:NetworkVar( "Int", 0, "NumPlanks" )
+	self:NetworkVar( "Bool", 0, "TriggerJumps" )
 
 end
 
@@ -63,17 +71,17 @@ function ENT:RemovePlank()
 end
 
 function ENT:ResetPlanks(nosoundoverride)
-	for i=1, nz.Config.MaxPlanks do
+	for i=1, GetConVar("nz_difficulty_barricade_planks_max"):GetInt() do
 		self:RemovePlank()
 	end
-	for i=1, nz.Config.MaxPlanks do
+	for i=1, GetConVar("nz_difficulty_barricade_planks_max"):GetInt() do
 		self:AddPlank(!nosoundoverride)
 	end
 end
 
 function ENT:Use( activator, caller )
 	if CurTime() > self.NextPlank then
-		if self:GetNumPlanks() < nz.Config.MaxPlanks then
+		if self:GetNumPlanks() < GetConVar("nz_difficulty_barricade_planks_max"):GetInt() then
 			self:AddPlank()
                   activator:GivePoints(10)
 				  activator:EmitSound("nz/effects/repair_ching.wav")
@@ -94,16 +102,22 @@ function ENT:SpawnPlank()
 	table.insert(self.Planks, plank)
 end
 
+function ENT:Touch(ent)
+	if self:GetTriggerJumps() and self:GetNumPlanks() == 0 then
+		if ent.TriggerBarricadeJump then ent:TriggerBarricadeJump() end
+	end
+end
+
 hook.Add("ShouldCollide", "zCollisionHook", function(ent1, ent2)
 	if ent1:GetClass() == "breakable_entry" and (nz.Config.ValidEnemies[ent2:GetClass()]) then
-		if ent1:IsValid() and ent1:GetNumPlanks() == 0 then
+		if IsValid(ent1) and !ent1:GetTriggerJumps() and ent1:GetNumPlanks() == 0 then
 			ent1:SetSolid(SOLID_NONE)
 			timer.Simple(0.1, function() if ent1:IsValid() then ent1:SetSolid(SOLID_VPHYSICS) end end)
 		end
 		return false
 	end
 	if ent2:GetClass() == "breakable_entry" and (nz.Config.ValidEnemies[ent1:GetClass()]) then
-		if ent2:IsValid() and ent2:GetNumPlanks() == 0 then
+		if IsValid(ent2) and !ent2:GetTriggerJumps() and ent2:GetNumPlanks() == 0 then
 			ent2:SetSolid(SOLID_NONE)
 			timer.Simple(0.1, function() if ent2:IsValid() then ent2:SetSolid(SOLID_VPHYSICS) end end)
 		end

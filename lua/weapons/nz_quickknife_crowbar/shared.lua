@@ -39,6 +39,8 @@ SWEP.Secondary.DefaultClip	= -1
 SWEP.Secondary.Automatic	= false
 SWEP.Secondary.Ammo			= "None"
 
+SWEP.NZPreventBox = true
+
 
 
 /*---------------------------------------------------------

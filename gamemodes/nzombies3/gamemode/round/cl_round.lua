@@ -29,3 +29,9 @@ function Round:OnRoundStart()
 		self:EnableSpecialFog(false)
 	end
 end
+
+net.Receive("nz_hellhoundround", function()
+	if net.ReadBool() then
+		surface.PlaySound("nz/round/dog_start.wav")
+	end
+end)

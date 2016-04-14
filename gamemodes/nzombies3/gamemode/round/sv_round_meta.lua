@@ -37,10 +37,17 @@ function Round:SetZombieHealth( num )
 end
 
 function Round:GetZombieData()
-	return self.ZombieData
+	if Round:IsSpecial() then
+		return self.SpecialZombieData
+	else
+		return self.ZombieData
+	end
 end
 function Round:SetZombieData( tbl )
 	self.ZombieData = tbl
+end
+function Round:SetSpecialZombieData( tbl )
+	self.SpecialZombieData = tbl
 end
 
 function Round:GetZombieSpeeds()
@@ -116,4 +123,11 @@ function Round:GetEndTime( time )
 
 	GetGlobalFloat( "nzEndTime" )
 
+end
+
+function Round:GetNextSpawnTime()
+	return self.NextSpawnTime or 0
+end
+function Round:SetNextSpawnTime( time )
+	self.NextSpawnTime = time
 end
