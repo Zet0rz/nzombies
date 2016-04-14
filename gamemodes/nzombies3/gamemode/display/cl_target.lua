@@ -150,8 +150,22 @@ local function GetText( ent )
 	local class = ent:GetClass()
 	local text = ""
 
-	if ent:GetNWString("NZText") != "" then
-		text = ent:GetNWString("NZText")
+	local neededcategory, deftext, hastext = ent:GetNWString("NZRequiredItem"), ent:GetNWString("NZText"), ent:GetNWString("NZHasText")
+	local itemcategory = ent:GetNWString("NZItemCategory")
+	
+	if neededcategory != "" then
+		local hasitem = LocalPlayer():HasCarryItem(neededcategory)
+		text = hasitem and hastext != "" and hastext or deftext
+	elseif deftext != "" then
+		text = deftext
+	elseif itemcategory != "" then
+		local item = ItemCarry.Items[itemcategory]
+		local hasitem = LocalPlayer():HasCarryItem(itemcategory)
+		if hasitem then
+			text = item.hastext or "You already have this."
+		else
+			text = item.text or "Press E to pick up."
+		end
 	elseif ent:IsPlayer() then
 		if ent:GetNotDowned() then
 			text = ent:Nick() .. " - " .. ent:Health() .. " HP"

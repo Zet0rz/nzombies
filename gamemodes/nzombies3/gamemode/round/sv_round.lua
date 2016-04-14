@@ -192,7 +192,7 @@ function Round:ResetGame()
 	nz.PowerUps.Functions.CleanUp()
 
 	--Reset easter eggs
-	nz.EE.Functions.Reset()
+	nzEE:Reset()
 
 	--Reset merged navigation groups
 	nz.Nav.ResetNavGroupMerges()

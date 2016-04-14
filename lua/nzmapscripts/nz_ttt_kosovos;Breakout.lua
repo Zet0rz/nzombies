@@ -27,6 +27,44 @@ local hasscriptgascan = false
 local scripthasusedelev = false
 local scriptnextexpltime
 
+local gascanobject = ItemCarry:CreateCategory("gascan")
+gascanobject:SetIcon("spawnicons/models/props_junk/gascan001a.png")
+gascanobject:SetText("Press E to pick up Gas Can.")
+gascanobject:SetDropOnDowned(true)
+
+gascanobject:SetDropFunction( function(self, ply)
+	if IsValid(scriptgascan) then scriptgascan:Remove() end
+	scriptgascan = ents.Create("nz_script_prop")
+	scriptgascan:SetModel("models/props_junk/gascan001a.mdl")
+	scriptgascan:SetPos(ply:GetPos())
+	scriptgascan:SetAngles(Angle(0,0,0))
+	scriptgascan:Spawn()
+	self:RegisterEntity( scriptgascan )
+end)
+
+gascanobject:SetResetFunction( function(self)
+	hasscriptgascan = false
+	if IsValid(scriptgascan) then scriptgascan:Remove() end
+	local ran = scriptgascanpositions[math.random(table.Count(scriptgascanpositions))]
+	if ran and ran.pos and ran.ang then
+		scriptgascan = ents.Create("nz_script_prop")
+		scriptgascan:SetModel("models/props_junk/gascan001a.mdl")
+		scriptgascan:SetPos(ran.pos)
+		scriptgascan:SetAngles(ran.ang)
+		scriptgascan:Spawn()
+		self:RegisterEntity( scriptgascan )
+	end
+end)
+
+gascanobject:SetPickupFunction( function(self, ply, ent)
+	hasscriptgascan = true
+	ply:GiveCarryItem(self.id)
+	ent:Remove()
+end)
+
+-- Call this to update the info to clients!
+gascanobject:Update()
+
 function mapscript.ScriptLoad()
 end
 
@@ -60,6 +98,7 @@ function mapscript.OnGameBegin()
 						local spawn = ents.FindByClass("player_spawns")[v:EntIndex()]
 						e = EffectData()
 						e:SetOrigin(spawn:GetPos())
+						e:SetEntity(nil)
 						util.Effect("lightning_prespawn", e)
 					end
 				end
@@ -91,12 +130,15 @@ function mapscript.OnGameBegin()
 	scriptgenerator:SetAngles(Angle(0, 90, 0))
 	scriptgenerator:SetModel("models/props_vehicles/generatortrailer01.mdl")
 	scriptgenerator:SetNWString("NZText", "You need a gas can to power the elevator.")
+	scriptgenerator:SetNWString("NZRequiredItem", "gascan")
+	scriptgenerator:SetNWString("NZHasText", "Press E to fuel generator with Gas Can.")
 	scriptgenerator:Spawn()
 	scriptgenerator:Activate()
 	-- Function when it is used (E)
-	scriptgenerator.OnUsed = function()
-		if hasscriptgascan then -- Only if we picked up the gascan
+	scriptgenerator.OnUsed = function( self, ply )
+		if ply:HasCarryItem("gascan") then -- Only if we picked up the gascan
 			hasscriptgascan = false -- Reset gascan status
+			ply:RemoveCarryItem("gascan")
 			if button3:GetPos().z < -1000 then
 				button3:Fire("Unlock") -- Call the elevator up
 				button3:Fire("Press")
@@ -104,8 +146,6 @@ function mapscript.OnGameBegin()
 			end
 		end
 	end
-	--print(scriptgenerator, scriptgenerator:GetPos(), Vector(3275, -254, -275), scriptgenerator:GetAngles(), Angle(0, 0, 0))
-	--print(scriptgenerator:GetNWString("NZText", "nothing"))
 	
 	local door = ents.GetMapCreatedEntity(1836)
 	if IsValid(door) then door:SetNWString("NZText", "You need to disable security.") end
@@ -122,24 +162,7 @@ end
 -- This one will be called at the start of each round
 function mapscript.OnRoundStart()
 	if !IsValid(scriptgascan) and !hasscriptgascan and !scripthasusedelev then
-		local ran = scriptgascanpositions[math.random(table.Count(scriptgascanpositions))]
-		if ran and ran.pos and ran.ang then
-			scriptgascan = ents.Create("nz_script_prop")
-			scriptgascan:SetModel("models/props_junk/gascan001a.mdl")
-			scriptgascan:SetPos(ran.pos)
-			scriptgascan:SetAngles(ran.ang)
-			scriptgascan:SetNWString("NZText", "Press E to pick up Gas Can")
-			scriptgascan:Spawn()
-			scriptgascan.OnUsed = function(self)
-				if !self.grabbed then
-					self.grabbed = true
-					hasscriptgascan = true
-					scriptgenerator:SetNWString("NZText", "Press E to fuel the elevator.")
-					self:Remove()
-				end
-			end
-			--print(scriptgascan)
-		end
+		gascanobject:Reset() -- Makes it respawn
 	end
 end
 

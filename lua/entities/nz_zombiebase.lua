@@ -865,7 +865,7 @@ function ENT:Attack( data )
 	--if self:Health() <= 0 then coroutine.yield() return end
 
 	data = data or {}
-	data.attackseq = data.attackseq or self.AttackSequences[ math.random( #self.AttackSequences ) ] or "swing"
+	data.attackseq = data.attackseq or self.AttackSequences[ math.random( #self.AttackSequences ) ].seq or "swing"
 	data.attacksound = data.attacksound or self.AttackSounds[ math.random( #self.AttackSounds) ] or Sound( "npc/vort/claw_swing1.wav" )
 	data.hitsound = data.hitsound or self.AttackHitSounds[ math.random( #self.AttackHitSounds ) ]Sound( "npc/zombie/zombie_hit.wav" )
 	data.viewpunch = data.viewpunch or VectorRand():Angle() * 0.05
@@ -1219,7 +1219,7 @@ function ENT:RespawnAtSpawnpoint( ent )
 end
 
 function ENT:RespawnAtRandom( cur )
-	local valids = nz.Enemies.Functions.ValidRespawns( cur )
+	local valids = nz.Enemies.Functions.ValidRespawns( cur, self:GetClass() )
 	if valids[1] == nil then
 		print("No valid spawns were found - Couldn't respawn!")
 		self:TimeOut(1) -- Timeout for 1 second if it didn't work

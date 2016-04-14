@@ -17,7 +17,7 @@ if CLIENT then
 		valz["Row2"] = 500
 		
 		if data.ent then
-			valz["Row1"] = data.ent:GetEntName()
+			valz["Row1"] = data.ent:GetWepClass()
 			valz["Row2"] = data.ent:GetPrice()
 		end
 

@@ -84,6 +84,12 @@ nz.Tools.Functions.CreateTool("navedit", {
 			["Ladder"] = {
 				Primary = "nav_build_ladder",
 				PrimaryDesc = "Build a navmesh for a ladder"
+			},
+			["Splice"] = {
+				Primary = "nav_splice",
+				PrimaryDesc = "Splice 2 areas together",
+				Secondary = "nav_split",
+				SecondaryDesc = "Split an area at the white line",
 			}
 		}
 

@@ -73,6 +73,23 @@ local PLAYER_LINE = {
 		self.Points:SetFont( "ScoreboardDefault" )
 		self.Points:SetTextColor( self.TextColor or Color(255, 255, 255) )
 		self.Points:SetContentAlignment( 5 )
+		
+		self.Items = self:Add( "DPanel" )
+		self.Items:Dock( RIGHT )
+		self.Items:SetWidth( 175 )
+		self.Items.Paint = function(pnl)
+			surface.SetDrawColor(255, 255, 255)
+			local num = 0
+			for k,v in pairs(self.Player:GetCarryItems()) do
+				local item = ItemCarry.Items[v]
+				if item and item.icon and item.icon != "" then
+					local x, y = pnl:GetPos()
+					surface.SetMaterial(item.icon)
+					surface.DrawTexturedRect(x - num*26, y + 6, 24, 24)
+					num = num + 1
+				end
+			end
+		end
 
 		self:Dock( TOP )
 		self:SetSize( 32, 32)

@@ -13,9 +13,9 @@ ENT.DamageLow = 30
 ENT.DamageHigh = 40
 
 ENT.AttackSequences = {
-	"nz_attack1",
-	"nz_attack2",
-	"nz_attack3",
+	{seq = "nz_attack1"},
+	{seq = "nz_attack2"},
+	{seq = "nz_attack3"},
 }
 
 ENT.DeathSequences = {
@@ -102,20 +102,21 @@ ENT.ActStages = {
 
 function ENT:StatsInitialize()
 	if SERVER then
-		self:SetNoDraw(true) -- Start off invisible while in the prespawn effect
-		self:SetCollisionGroup(COLLISION_GROUP_DEBRIS) -- Don't collide in this state
-		self:Stop() -- Also don't do anything
-
 		self:SetRunSpeed(250)
 		self:SetHealth( 100 )
 	end
-	self:SetCollisionBounds(Vector(-16,-16, 0), Vector(16, 16, 48))
+	self:SetCollisionBounds(Vector(-14,-14, 0), Vector(14, 14, 48))
 	self:SetSolid(SOLID_VPHYSICS)
 
 	--PrintTable(self:GetSequenceList())
 end
 
 function ENT:OnSpawn()
+
+	self:SetNoDraw(true) -- Start off invisible while in the prespawn effect
+	self:SetCollisionGroup(COLLISION_GROUP_DEBRIS) -- Don't collide in this state
+	self:Stop() -- Also don't do anything
+
 	local effectData = EffectData()
 	effectData:SetOrigin( self:GetPos() )
 	effectData:SetMagnitude( 2 )

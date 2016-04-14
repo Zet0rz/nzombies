@@ -1,7 +1,7 @@
 //Main Tables
-nz.EE = {}
-nz.EE.Functions = {}
-nz.EE.Data = {}
+nzEE = nzEE or {}
+nzEE.Data = nzEE.Data or {}
+nzEE.Major = nzEE.Major or {}
 
-nz.EE.Data.EggCount = 0
-nz.EE.Data.MaxEggCount = 0
+nzEE.Data.EggCount = 0
+nzEE.Data.MaxEggCount = 0

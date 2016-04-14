@@ -70,6 +70,9 @@ if SERVER then
 
 		self.ScriptHooks = nil
 		
+		-- Clean up all items
+		ItemCarry:CleanUp()
+		
 	end
 	
 	hook.Add("PlayerInitialSpawn", "SendMapScriptSpawn", function(ply)

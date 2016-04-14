@@ -26,11 +26,11 @@ function nz.Enemies.Functions.ValidSpawns(zclass)
 	if nz.Config.ValidEnemies[zclass] and nz.Config.ValidEnemies[zclass].SpecialSpawn then
 		spawntype = "zed_special_spawns"
 	end
-
+	
 	-- Make a table of spawns
 	for _, ply in pairs(player.GetAllPlayingAndAlive()) do
 		-- Get all spawns in the range
-		for _,v2 in pairs(ents.FindInSphere(ply:GetPos(), 1500)) do
+		for _,v2 in pairs(ents.FindInSphere(ply:GetPos(), 2500)) do
 			if v2:GetClass() == spawntype and (v2.spawnable == nil or tobool(v2.spawnable)) then
 				-- If enable, then if the player is in the same area group as the spawnpoint
 				if !GetConVar("nz_nav_grouptargeting"):GetBool() or nz.Nav.Functions.IsInSameNavGroup(ply, v2) then
@@ -94,6 +94,7 @@ function nz.Enemies.Functions.ZombieSpawner()
 			local zclass = nz.Misc.Functions.WeightedRandom( Round:GetZombieData(), "chance")
 			print(zclass)
 			local valids = nz.Enemies.Functions.ValidSpawns(zclass)
+			PrintTable(valids)
 
 			if #valids == 0  then
 				print("No valid spawns were found!")
@@ -115,8 +116,8 @@ end
 
 hook.Add("Think", "ZombieSpawnThink", nz.Enemies.Functions.ZombieSpawner)
 
-function nz.Enemies.Functions.ValidRespawns(cur)
-	local spawns = nz.Enemies.Functions.ValidSpawns()
+function nz.Enemies.Functions.ValidRespawns(cur, zclass)
+	local spawns = nz.Enemies.Functions.ValidSpawns(zclass)
 	table.RemoveByValue(spawns, cur)
 
 	return spawns
