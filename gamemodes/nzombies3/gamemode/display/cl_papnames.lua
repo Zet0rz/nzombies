@@ -38,24 +38,22 @@ nz.Display_PaPNames = {
 	["fas2_sr25"] = "SR3KT",
 	
 	-- CW 2 weapons
-	["cw_ak74"] = "AK-4TW",
-	["cw_ar15"] = "All-Right15",
-	["cw_auggsm"] = "AUG-SOM3",
-	["cw_g3a3"] = "G3T-B3TTER",
-	["cw_mp5"] = "MP115",
-	["cw_deagle"] = "Desert Hawk",
-	["cw_l115"] = "L115 Isolater",
-	["cw_lr300"] = "Liberator 115x2",
-	["cw_mr96"] = "Mr.Rekker 96",
-	["UMP45"] = "Unified Material Penetrator 4D5",
-	["cw_c7a1"] = "C7-KILL7",
-	["cw_kimber_kw"] = "Kimber Knight Warlord",
-	["cw_mk11"] = "Mr.Kill 115",
-	["cw_ppsh-41"] = "The Reaper",
-	["cw_xm1014"] = "XTREME1015",
-	["cw_dz_ru556"] = "Codename Rul3R-5000",
-	
-	
+    ["cw_ak74"] = "AKS-74U",
+    ["cw_ar15"] = "AR-15 7.62x51mm NATO",
+    ["cw_deagle"] = "Deagle Mk XIX",
+    ["cw_g3a3"] = "G3A3A1",
+    ["cw_l115"] = "Element 115",
+    ["cw_mp5"] = "MP10",
+    ["cw_mr96"] = "MR73 Gendarmerie",
+    ["cw_fiveseven"] = "Five-Seven MK2",
+    ["cw_g36c"] = "G36A2",
+    ["cw_m3super90"] = "M3 Super Nova ",
+    ["cw_m14"] = "Mk 14 Mod 0",
+    ["cw_m1911"] = "Colt Mk. IV Series 80",
+    ["cw_mac11"] = "Vulcan M-11-9",
+    ["cw_p99"] = "P99 RAD",
+    ["cw_scarh"] = "SCAR-H FN40GL",
+    [""] = "",
 }
 
 function AddPackAPunchName(class, papname) -- The function also works with display names just like above
