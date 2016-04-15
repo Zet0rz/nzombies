@@ -38,8 +38,6 @@ nz.Display_PaPNames = {
 	["fas2_sr25"] = "SR3KT",
 	
 	-- CW 2 weapons
-<<<<<<< HEAD
-=======
 	["cw_ak74"] = "AK-4TW",
 	["cw_ar15"] = "All-Right15",
 	["cw_auggsm"] = "AUG-SOM3",
@@ -57,8 +55,20 @@ nz.Display_PaPNames = {
 	["cw_xm1014"] = "XTREME1015",
 	["cw_dz_ru556"] = "Codename Rul3R-5000",
 	
-	
->>>>>>> 772d73f4761c2b2028e709d286e32e8d14b2a2ae
+	["khr_hmg"] = "Death Machine",
+	["khr_m60"] = "M60E1",
+	["khr_pkm"] = "Kalashnikov's \"Party-Krashin'\" Machine",
+	["khr_cb4"] = "",
+	["khr_m82a3"] = "Elephant Gun",
+	["khr_mosin"] = "Mosin Obrez",
+	["khr_svt40"] = "SVT-40 Siminov",
+	["khr_t5000"] = "Osiris",
+	["khr_ak103"] = "AK-Bakelite",
+	["khr_cz858"] = "The Rimfire",
+	["khr_hcar"] = "HCAR R75A",
+	["khr_m1carbine"] = "M1 Ingram SAM",
+	["khr_sks"] = "OP-SKS",
+	["khr_m620"] = "24 Bore Long Range",
 }
 
 function AddPackAPunchName(class, papname) -- The function also works with display names just like above
