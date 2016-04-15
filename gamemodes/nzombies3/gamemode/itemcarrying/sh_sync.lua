@@ -46,6 +46,13 @@ if SERVER then
 		net.Start( "nzItemCarryClean" )
 		net.Broadcast()
 	end
+	
+	FullSyncModules["ItemCarry"] = function(ply)
+		for k,v in pairs(ItemCarry.Items) do
+			ItemCarry:SendObjectCreated(k, ply)
+		end
+		ItemCarry:SendPlayerItem(nil, ply) -- No specific target, all players
+	end
 
 end
 

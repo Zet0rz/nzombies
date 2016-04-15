@@ -7,15 +7,6 @@ if SERVER then
 			data.ent.link = data.link
 			data.ent.respawnable = data.respawnable
 			data.ent.spawnable = data.spawnable
-			if data.respawnable != 1 then
-				if table.HasValue(nz.Enemies.Data.RespawnableSpawnpoints, data.ent) then
-					table.RemoveByValue(nz.Enemies.Data.RespawnableSpawnpoints, data.ent)
-				end
-			else
-				if !table.HasValue(nz.Enemies.Data.RespawnableSpawnpoints, data.ent) then
-					table.insert(nz.Enemies.Data.RespawnableSpawnpoints, data.ent)
-				end
-			end
 			//For the link displayer
 			if data.link then
 				data.ent:SetLink(data.link)
@@ -96,4 +87,4 @@ if CLIENT then
 			DermaPanel:Close()
 		end
 	end
-end 
+end

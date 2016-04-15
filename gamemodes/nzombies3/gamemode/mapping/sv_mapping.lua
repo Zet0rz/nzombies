@@ -2,7 +2,7 @@
 
 function Mapping:ZedSpawn(pos, link, respawnable, ply)
 
-	local ent = ents.Create("zed_spawns")
+	local ent = ents.Create("nz_spawn_zombie_normal")
 	pos.z = pos.z - ent:OBBMaxs().z
 	ent:SetPos( pos )
 	ent:Spawn()
@@ -10,13 +10,6 @@ function Mapping:ZedSpawn(pos, link, respawnable, ply)
 	//For the link displayer
 	if link != nil then
 		ent:SetLink(link)
-	end
-	ent.respawnable = respawnable or 1 //Default to always be respawnable if not set
-
-	if tobool(ent.respawnable) then
-		table.insert(nz.Enemies.Data.RespawnableSpawnpoints, ent)
-	elseif table.HasValue(nz.Enemies.Data.RespawnableSpawnpoints, ent) then
-		table.RemoveByValue(nz.Enemies.Data.RespawnableSpawnpoints, ent)
 	end
 
 	if ply then
@@ -30,7 +23,7 @@ end
 
 function Mapping:ZedSpecialSpawn(pos, link, ply)
 
-	local ent = ents.Create("zed_special_spawns")
+	local ent = ents.Create("nz_spawn_zombie_special")
 	pos.z = pos.z - ent:OBBMaxs().z
 	ent:SetPos( pos )
 	ent:Spawn()
@@ -103,7 +96,7 @@ function Mapping:WallBuy(pos, gun, price, angle, oldent, ply, flipped)
 	if phys:IsValid() then
 		phys:EnableMotion(false)
 	end
-	
+
 	if flipped != nil then
 		ent:SetFlipped(flipped)
 	end
@@ -288,8 +281,9 @@ function Mapping:CleanUpMap()
 		"random_box_spawns",
 		"wall_block",
 		"wall_buys",
-		"zed_spawns",
-		"zed_special_spawns",
+		"nz_spawn_zombie",
+		"nz_spawn_zombie_normal",
+		"nz_spawn_zombie_special",
 		"easter_egg",
 		"edit_fog",
 		"edit_fog_special",
@@ -318,7 +312,7 @@ function Mapping:CleanUpMap()
 	for k,v in pairs(ents.FindByClass("wall_buys")) do
 		v:SetBought(false)
 	end
-	
+
 	if self.MarkedProps then
 		if !Round:InState( ROUND_CREATE ) then
 			for k,v in pairs(self.MarkedProps) do
@@ -360,7 +354,7 @@ function Mapping:CreateInvisibleWall(vec1, vec2, ply)
 	wall:SetMaxBound(vec2)
 	wall:Spawn()
 	wall:PhysicsInitBox( Vector(0,0,0), vec2 )
-	
+
 	local phys = wall:GetPhysicsObject()
 	if IsValid(phys) then
 		phys:EnableMotion(false)

@@ -5,6 +5,10 @@ ENT.PrintName = "Walker"
 ENT.Category = "Brainz"
 ENT.Author = "Lolle"
 
+function ENT:SetupDataTables()
+	self:NetworkVar("Int", 0, "EmergeSequenceIndex")
+end
+
 ENT.Models = {
 	"models/nz_zombie/zombie_rerig_animated.mdl",
 }
@@ -173,7 +177,7 @@ ENT.RunSounds = {
 function ENT:StatsInitialize()
 	if SERVER then
 		--self:SetRunSpeed( nz.Curves.Data.Speed[nz.Rounds.Data.CurrentRound] )
-		local speeds = Round:GetZombieData() and Round:GetZombieData().nz_zombie_walker and Round:GetZombieData().nz_zombie_walker.speeds or Round:GetZombieSpeeds()
+		local speeds = Round:GetZombieSpeeds()
 		if speeds then
 			self:SetRunSpeed( nz.Misc.Functions.WeightedRandom(speeds) )
 		else
@@ -247,6 +251,7 @@ function ENT:OnZombieDeath(dmgInfo)
 		local seq, dur = self:LookupSequence(self.ElectrocutionSequences[math.random(#self.ElectrocutionSequences)])
 		self:ResetSequence(seq)
 		self:SetCycle(0)
+		self:SetCollisionGroup(COLLISION_GROUP_DEBRIS)
 		-- Emit electrocution scream here when added
 		timer.Simple(dur, function()
 			if IsValid(self) then

@@ -15,15 +15,6 @@ nz.Tools.Functions.CreateTool("zspawn", {
 		end
 		ent.respawnable = data.respawnable
 		ent.spawnable = data.spawnable
-		if data.respawnable != 1 then
-			if table.HasValue(nz.Enemies.Data.RespawnableSpawnpoints, ent) then
-				table.RemoveByValue(nz.Enemies.Data.RespawnableSpawnpoints, ent)
-			end
-		else
-			if !table.HasValue(nz.Enemies.Data.RespawnableSpawnpoints, ent) then
-				table.insert(nz.Enemies.Data.RespawnableSpawnpoints, ent)
-			end
-		end
 
 		//For the link displayer
 		if data.link then
@@ -32,26 +23,18 @@ nz.Tools.Functions.CreateTool("zspawn", {
 	end,
 	SecondaryAttack = function(wep, ply, tr, data)
 		//Remove entity if it is a zombie spawnpoint
-		if IsValid(tr.Entity) and tr.Entity:GetClass() == "zed_spawns" then
+		if IsValid(tr.Entity) and tr.Entity:GetClass() == "nz_spawn_zombie_normal" then
 			tr.Entity:Remove()
 		end
 	end,
 	Reload = function(wep, ply, tr, data)
 		//Target the entity and change its data
 		local ent = tr.Entity
-		if IsValid(ent) and ent:GetClass() == "zed_spawns" then
+		if IsValid(ent) and ent:GetClass() == "nz_spawn_zombie_normal" then
 			ent.link = data.link
 			ent.respawnable = data.respawnable
 			ent.spawnable = data.spawnable
-			if data.respawnable != 1 then
-				if table.HasValue(nz.Enemies.Data.RespawnableSpawnpoints, ent) then
-					table.RemoveByValue(nz.Enemies.Data.RespawnableSpawnpoints, ent)
-				end
-			else
-				if !table.HasValue(nz.Enemies.Data.RespawnableSpawnpoints, ent) then
-					table.insert(nz.Enemies.Data.RespawnableSpawnpoints, ent)
-				end
-			end
+
 			//For the link displayer
 			if data.link then
 				ent:SetLink(data.link)

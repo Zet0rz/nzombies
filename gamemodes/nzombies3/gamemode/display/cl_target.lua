@@ -9,7 +9,7 @@ local traceents = {
 		local name = wep.PrintName
 		local ammo_price = math.Round((price - (price % 10))/2)
 		local text = ""
-		
+
 		if !LocalPlayer():HasWeapon( wepclass ) then
 			text = "Press E to buy " .. name .." for " .. price .. " points."
 		elseif string.lower(wep.Primary.Ammo) != "none" then
@@ -21,7 +21,7 @@ local traceents = {
 		else
 			text = "You already have this weapon."
 		end
-		
+
 		return text
 	end,
 	["breakable_entry"] = function(ent)
@@ -46,7 +46,7 @@ local traceents = {
 			end
 			if name == nil then name = wepclass end
 			name = "Press E to take " .. name .. " from the box."
-			
+
 			return name
 		end
 	end,
@@ -78,11 +78,12 @@ local traceents = {
 				end
 			end
 		end
-		
+
 		return text
 	end,
 	["player_spawns"] = function() if Round:InState( ROUND_CREATE ) then return "Player Spawn" end end,
-	["zed_spawns"] = function() if Round:InState( ROUND_CREATE ) then return "Zombie Spawn" end end,
+	["nz_spawn_zombie_normal"] = function() if Round:InState( ROUND_CREATE ) then return "Zombie Spawn" end end,
+	["nz_spawn_zombie_special"] = function() if Round:InState( ROUND_CREATE ) then return "Zombie Special Spawn" end end,
 	["pap_weapon_trigger"] = function(ent)
 		local wepclass = ent:GetWepClass()
 		local wep = weapons.Get(wepclass)
@@ -91,7 +92,7 @@ local traceents = {
 			name = nz.Display_PaPNames[wepclass] or nz.Display_PaPNames[name] or "Upgraded "..wep.PrintName
 		end
 		name = "Press E to take " .. name .. " from the machine."
-		
+
 		return name
 	end,
 }
@@ -113,9 +114,9 @@ end
 local function GetDoorText( ent )
 	local door_data = ent:GetDoorData()
 	local text = ""
-	
+
 	if door_data and tonumber(door_data.price) == 0 and Round:InState(ROUND_CREATE) then
-		if tobool(door_data.elec) then 
+		if tobool(door_data.elec) then
 			text = "This door will open when electricity is turned on."
 		else
 			text = "This door will open on game start."
@@ -124,7 +125,7 @@ local function GetDoorText( ent )
 		local price = tonumber(door_data.price)
 		local req_elec = tobool(door_data.elec)
 		local link = door_data.link
-		
+
 		if ent:IsLocked() then
 			if req_elec and !IsElec() then
 				text = "You must turn on the electricity first!"
@@ -139,7 +140,7 @@ local function GetDoorText( ent )
 		text = "This door is locked and cannot be bought in-game."
 		--PrintTable(door_data)
 	end
-	
+
 	return text
 end
 
@@ -152,7 +153,7 @@ local function GetText( ent )
 
 	local neededcategory, deftext, hastext = ent:GetNWString("NZRequiredItem"), ent:GetNWString("NZText"), ent:GetNWString("NZHasText")
 	local itemcategory = ent:GetNWString("NZItemCategory")
-	
+
 	if neededcategory != "" then
 		local hasitem = LocalPlayer():HasCarryItem(neededcategory)
 		text = hasitem and hastext != "" and hastext or deftext
@@ -162,9 +163,9 @@ local function GetText( ent )
 		local item = ItemCarry.Items[itemcategory]
 		local hasitem = LocalPlayer():HasCarryItem(itemcategory)
 		if hasitem then
-			text = item.hastext or "You already have this."
+			text = item and item.hastext or "You already have this."
 		else
-			text = item.text or "Press E to pick up."
+			text = item and item.text or "Press E to pick up."
 		end
 	elseif ent:IsPlayer() then
 		if ent:GetNotDowned() then
@@ -183,7 +184,7 @@ end
 
 local function GetMapScriptEntityText()
 	local text = ""
-	
+
 	for k,v in pairs(ents.FindByClass("nz_script_triggerzone")) do
 		local dist = v:NearestPoint(EyePos()):Distance(EyePos())
 		if dist <= 1 then
@@ -191,7 +192,7 @@ local function GetMapScriptEntityText()
 			break
 		end
 	end
-	
+
 	return text
 end
 

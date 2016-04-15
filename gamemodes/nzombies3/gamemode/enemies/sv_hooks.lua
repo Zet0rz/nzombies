@@ -1,4 +1,4 @@
-function nz.Enemies.Functions.OnEnemyKilled(enemy, attacker, dmginfo, hitgroup)
+function Enemies:OnEnemyKilled(enemy, attacker, dmginfo, hitgroup)
 	--  Prevent multiple "dyings" by making sure the zombie has not already been "killed"
 	if enemy.MarkedForDeath then return end
 
@@ -63,14 +63,14 @@ function GM:EntityTakeDamage(zombie, dmginfo)
 			--  Prevent multiple damages in one tick (FA:S 2 Bullet penetration makes them hit 1 zombie 2-3 times per bullet)
 			timer.Simple(0, function() if IsValid(zombie) then zombie.HasTakenDamageThisTick = false end end)
 		else
-			nz.Enemies.Functions.OnEnemyKilled(zombie, dmginfo:GetAttacker(), dmginfo, hitgroup)
+			Enemies:OnEnemyKilled(zombie, dmginfo:GetAttacker(), dmginfo, hitgroup)
 		end
 	end
 end
 
-function nz.Enemies.Functions.OnEntityCreated( ent )
+local function OnRagdollCreated( ent )
 	if ( ent:GetClass() == "prop_ragdoll" ) then
 		ent:SetCollisionGroup(COLLISION_GROUP_DEBRIS)
 	end
 end
-hook.Add("OnEntityCreated", "nz.Enemies.OnEntityCreated", nz.Enemies.Functions.OnEntityCreated)
+hook.Add("OnEntityCreated", "nz.Enemies.OnEntityCreated", OnRagdollCreated)

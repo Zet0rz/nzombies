@@ -6,7 +6,7 @@ local function DrawItemCarryHud()
 	local num = 0
 	for k,v in pairs(ply:GetCarryItems()) do
 		local item = ItemCarry.Items[v]
-		if item.icon then
+		if item and item.icon then
 			surface.SetMaterial(item.icon)
 			surface.DrawTexturedRect(ScrW() - 400*scale - num*32*scale, ScrH() - 90*scale, 30*scale, 30*scale)
 			num = num + 1

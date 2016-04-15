@@ -6,7 +6,7 @@ function Mapping:CheckSpawns()
 	end
 
 	--Check Zombie Spawns
-	if #ents.FindByClass("zed_spawns") == 0 then
+	if #ents.FindByClass("nz_spawn_zombie_*") == 0 then
 		return false
 	end
 

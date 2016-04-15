@@ -12,16 +12,6 @@ function Round:SetZombiesKilled( num )
 	self.ZombiesKilled = num
 end
 
-function Round:GetZombiesSpawned()
-	return self.ZombiesSpawned
-end
-function Round:SetZombiesSpawned( num )
-	self.ZombiesSpawned = num
-end
-function Round:IncrementZombiesSpawned()
-	self:SetZombiesSpawned( self:GetZombiesSpawned() + 1 )
-end
-
 function Round:GetZombiesMax()
 	return self.ZombiesMax
 end
@@ -36,18 +26,20 @@ function Round:SetZombieHealth( num )
 	self.ZombieHealth = num
 end
 
-function Round:GetZombieData()
-	if Round:IsSpecial() then
-		return self.SpecialZombieData
-	else
-		return self.ZombieData
-	end
+function Round:GetNormalSpawner()
+	return self.hNormalSpawner
 end
-function Round:SetZombieData( tbl )
-	self.ZombieData = tbl
+
+function Round:SetNormalSpawner(spawner)
+	self.hNormalSpawner = spawner
 end
-function Round:SetSpecialZombieData( tbl )
-	self.SpecialZombieData = tbl
+
+function Round:GetSpecialSpawner()
+	return self.hSpecialSpawner
+end
+
+function Round:SetSpecialSpawner(spawner)
+	self.hSpecialSpawner = spawner
 end
 
 function Round:GetZombieSpeeds()

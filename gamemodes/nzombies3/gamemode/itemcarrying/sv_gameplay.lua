@@ -15,9 +15,17 @@ function ItemCarry.OnPlayerPickItemUp( ply, ent )
 	if category != "" then
 		local item = ItemCarry.Items[category]
 		if item.pickupfunction and item:condition(ply) then -- If it has a pickup function and it is allowed in this case
-			print("allowed")
+			--print("allowed")
 			item:pickupfunction(ply, ent)
 		end
 	end
 end
 hook.Add( "PlayerUse", "nzPlayerPickupItems", ItemCarry.OnPlayerPickItemUp )
+
+function ItemCarry.RemoveItemsOnRemoved( ent )
+	local item = ItemCarry.Items[ent:GetNWString("NZItemCategory")]
+	if item and item.items and table.HasValue(item.items, ent) then
+		table.RemoveByValue(item.items, ent)
+	end
+end
+hook.Add( "EntityRemoved", "nzItemCarryRemoveItems", ItemCarry.RemoveItemsOnRemoved )

@@ -143,37 +143,60 @@ nz.Config.WeaponWhiteList = {
 
 if SERVER then
 
-	-- Enemies
-	nz.Config.SpecialRoundData = {
-		types = {
-			["nz_zombie_special_burning"] = {
-				chance = 100,
-			}
-		},
-		modifycount = function(original) -- Modify the count of zombies on special rounds
-			return original * 0.5
-		end
-	}
-
 	nz.Config.EnemyTypes = {}
 	--nz.Config.EnemyTypes[1] = {["nz_zombie_walker"] = 100}
 
+	--[[
+	-- EXAMPLE of a round zombie config:
+	nz.Config.EnemyTypes[ROUNDNUMBER] = {
+		-- define normal zombies and theri spawn chances
+		normalTypes = {
+			["nz_zombie_walker"] = {
+				chance = 100,
+			},
+		},
+		-- (optional) how many normal zombies will spawn this wil overwrite the default curves
+		normalCount = 50,
+
+		-- (optional) modify teh count witha  function ratehr than a fixed amount
+		-- if both normalCount and normalCountMod are set the gamemode will ignore normalCount
+		normalCountMod = function(original) return orignal / 2 end,
+
+		-- (optional) spawn delay
+		-- this will spawn the zombies in a 3 second intervall
+		normalDelay = 3,
+
+		-- special zombies (different spawnpoint usually in front of barricades)
+		-- this will spawn 10 hellhounds in additon to the normal zombies
+		specialTypes = {
+			["nz_zombie_special_dog"] = {
+				chance = 100,
+			},
+
+		},
+		-- (optional) not required but recommended if this is not set teh zombie amount will be doubled
+		specialCount = 10
+		-- (optional) flag this round as special (this will trigger fog etc.)
+		special = true
+	}
+	]]--
+
 	nz.Config.EnemyTypes[1] = {
-		types = {
+		normalTypes = {
 			["nz_zombie_walker"] = {
 				chance = 100,
 			},
 		},
 	}
 	nz.Config.EnemyTypes[2] = {
-		types = {
+		normalTypes = {
 			["nz_zombie_walker"] = {
 				chance = 100,
 			},
 		},
 	}
 	nz.Config.EnemyTypes[13] = {
-		types = {
+		normalTypes = {
 			["nz_zombie_walker"] = {
 				chance = 80,
 			},
@@ -183,14 +206,14 @@ if SERVER then
 		},
 	}
 	nz.Config.EnemyTypes[14] = {
-		types = {
+		normalTypes = {
 			["nz_zombie_walker"] = {
 				chance = 100,
 			},
 		},
 	}
 	nz.Config.EnemyTypes[23] = {
-		types = {
+		normalTypes = {
 			["nz_zombie_walker"] = {
 				chance = 90,
 			},
@@ -199,14 +222,6 @@ if SERVER then
 			},
 		},
 	}
-
-	--[[nz.Config.EnemyTypes[6] = {["nz_zombie_special_burning"] = 100, count = 20}
-	nz.Config.EnemyTypes[7] = {["nz_zombie_walker"] = 100}
-	nz.Config.EnemyTypes[13] = {["nz_zombie_walker"] = 80, ["nz_zombie_special_burning"] = 20}
-	nz.Config.EnemyTypes[18] = {["nz_zombie_special_burning"] = 100}
-	nz.Config.EnemyTypes[19] = {["nz_zombie_walker"] = 70, ["nz_zombie_special_burning"] = 30}
-	-- nz.Config.EnemyTypes[4] = {["hellhounds"] = 100}
-	-- nz.Config.EnemyTypes[4] = {["nz_zombie_walker"] = 80, ["hellhounds"] = 20}]]
 
 	-- Player Class
 	nz.Config.BaseStartingWeapons = {"fas2_glock20"} -- "fas2_p226", "fas2_ots33", "fas2_glock20" "weapon_pistol"

@@ -163,7 +163,7 @@ function nzDisplay.DrawLinks( ent, link )
 					table.insert(tbl, v)
 				end
 			end
-		elseif v:GetClass() == "zed_spawns" then
+		elseif v:GetClass() == "nz_spawn_zombie_normal" then
 			if v:GetLink() == link then
 				table.insert(tbl, v)
 			end

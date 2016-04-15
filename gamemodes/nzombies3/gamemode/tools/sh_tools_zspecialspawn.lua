@@ -21,14 +21,14 @@ nz.Tools.Functions.CreateTool("zspecialspawn", {
 	end,
 	SecondaryAttack = function(wep, ply, tr, data)
 		-- Remove entity if it is a zombie spawnpoint
-		if IsValid(tr.Entity) and tr.Entity:GetClass() == "zed_special_spawns" then
+		if IsValid(tr.Entity) and tr.Entity:GetClass() == "nz_spawn_zombie_special" then
 			tr.Entity:Remove()
 		end
 	end,
 	Reload = function(wep, ply, tr, data)
 		-- Target the entity and change its data
 		local ent = tr.Entity
-		if IsValid(ent) and ent:GetClass() == "zed_special_spawns" then
+		if IsValid(ent) and ent:GetClass() == "nz_spawn_zombie_special" then
 			ent.link = data.link
 			-- For the link displayer
 			if data.link then
@@ -83,14 +83,14 @@ nz.Tools.Functions.CreateTool("zspecialspawn", {
 		Row2:Setup( "Integer" )
 		Row2:SetValue( valz["Row2"] )
 		Row2.DataChanged = function( _, val ) valz["Row2"] = val UpdateData() end
-		
+
 		local text = vgui.Create("DLabel", DProperties)
 		text:SetText("Special Spawnpoints apply to Hellhounds")
 		text:SetFont("Trebuchet18")
 		text:SetTextColor( Color(50, 50, 50) )
 		text:SizeToContents()
 		text:Center()
-		
+
 		local text2 = vgui.Create("DLabel", DProperties)
 		text2:SetText("and for respawning with Who's Who")
 		text2:SetFont("Trebuchet18")

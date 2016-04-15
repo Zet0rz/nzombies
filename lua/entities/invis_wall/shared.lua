@@ -23,26 +23,18 @@ function ENT:Initialize()
 end
 
 
-if CLIENT then
-	function ENT:Draw()
-		-- Drawn together in the hook below
-	end
-end
+if not ConVarExists("nz_drawinviswalls") then CreateClientConVar("nz_drawinviswalls", "1") end
 
 local mat = Material("color")
 local white = Color(255,150,0,30)
 
-if not ConVarExists("nz_drawinviswalls") then CreateClientConVar("nz_drawinviswalls", "1") end
-
-if engine.ActiveGamemode() == "nzombies3" then 
-	hook.Add("PostDrawOpaqueRenderables", "DrawInvisWalls", function()
+if CLIENT then
+	function ENT:Draw()
 		if ConVarExists("nz_drawinviswalls") and GetConVar("nz_drawinviswalls"):GetBool() and Round:InState( ROUND_CREATE ) then
 			cam.Start3D()
 				render.SetMaterial(mat)
-				for k,v in pairs(ents.FindByClass("invis_wall")) do
-					render.DrawBox(v:GetPos(), v:GetAngles(), Vector(0,0,0), v:GetMaxBound(), white, true)
-				end
+				render.DrawBox(self:GetPos(), self:GetAngles(), Vector(0,0,0), self:GetMaxBound(), white, true)
 			cam.End3D()
 		end
-	end)
+	end
 end

@@ -31,6 +31,16 @@ if SERVER then
 		-- Adds an entity so it can be picked up
 		RegisterEntity = function(self, ent)
 			if !table.HasValue(self.items, ent) then
+				-- First check if it already belongs somewhere
+				local id = ent:GetNWString("NZItemCategory")
+				if id != "" then
+					local item = ItemCarry.Items[id]
+					-- If so, remove it from there
+					if item and item.items and table.HasValue(item.items, ent) then
+						table.RemoveByValue(item.items, ent)
+					end
+				end
+				-- Now add it to the new category
 				ent:SetNWString("NZItemCategory", self.id)
 				table.insert(self.items, ent)
 			end

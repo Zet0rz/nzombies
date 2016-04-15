@@ -46,6 +46,9 @@ AccessorFunc( ENT, "fLastPush", "LastPush", FORCE_NUMBER)
 AccessorFunc( ENT, "iStuckCounter", "StuckCounter", FORCE_NUMBER)
 AccessorFunc( ENT, "vStuckAt", "StuckAt")
 
+-- spawner accessor
+AccessorFunc(ENT, "hSpawner", "Spawner")
+
 AccessorFunc( ENT, "bJumping", "Jumping", FORCE_BOOL)
 AccessorFunc( ENT, "bAttacking", "Attacking", FORCE_BOOL)
 AccessorFunc( ENT, "bClimbing", "Climbing", FORCE_BOOL)
@@ -72,10 +75,6 @@ ENT.ActStages = {
 		minspeed = 160,
 	},
 }
-
-function ENT:SetupDataTables()
-	self:NetworkVar("Int", 0, "EmergeSequenceIndex")
-end
 
 function ENT:Precache()
 
@@ -144,6 +143,9 @@ function ENT:Initialize()
 	self:SetLastAttack( CurTime() )
 	self:SetAttackRange( self.AttackRange )
 	self:SetTargetCheckRange(0) -- 0 for no distance restriction (infinite)
+
+	--target ignore
+	self:ResetIgnores()
 
 	self:SetHealth( 75 ) --fallback
 
@@ -244,7 +246,7 @@ function ENT:Think()
 					effectData:SetMagnitude(1)
 					util.Effect("zombie_spawn_dust", effectData)
 
-					self:RespawnAtRandom()
+					self:RespawnZombie()
 					self:SetStuckCounter( 0 )
 				end
 
@@ -264,7 +266,7 @@ function ENT:Think()
 				if self:GetStuckCounter() > 5 then
 					--Worst case:
 					--respawn the zombie after 32 seconds with no postion change
-					self:RespawnAtRandom()
+					self:RespawnZombie()
 					self:SetStuckCounter( 0 )
 					if GetConVar( "nz_zombie_debug" ):GetBool() then
 						print(self, "Respawned because stuck counter is over 5.")
@@ -280,7 +282,7 @@ function ENT:Think()
 		self:SoundThink()
 
 		if self:ZombieWaterLevel() == 3 then
-			self:RespawnAtRandom()
+			self:RespawnZombie()
 			if GetConVar( "nz_zombie_debug" ):GetBool() then
 				print(self, "Respawning because submerged in water.")
 			end
@@ -388,7 +390,7 @@ function ENT:SpawnZombie()
 	local nav = navmesh.GetNearestNavArea( self:GetPos() )
 	if !self:IsInWorld() or !IsValid(nav) or nav:GetClosestPointOnArea( self:GetPos() ):DistToSqr( self:GetPos() ) >= 10000 then
 		ErrorNoHalt("Zombie ["..self:GetClass().."]["..self:EntIndex().."] spawned too far away from a navmesh!")
-		self:Remove()
+		self:RespawnZombie()
 	end
 
 	self:OnSpawn()
@@ -421,7 +423,7 @@ function ENT:OnBarricadeBlocking( barricade )
 
 			self:PlaySequenceAndWait( self.AttackSequences[ math.random( #self.AttackSequences ) ].seq , 1)
 			self:SetAttacking(true)
-			
+
 			self:TimedEvent(1, function()
 				self:SetAttacking(false)
 				self:SetLastAttack(CurTime())
@@ -453,48 +455,18 @@ function ENT:OnNoTarget()
 			maxage = 2
 		})
 	else
+		self:TimeOut(0.5)
 		-- Start off by checking for a new target
 		local newtarget = self:GetPriorityTarget()
 		if self:IsValidTarget(newtarget) then
 			self:SetTarget(newtarget)
 		else
-			if GetConVar( "nz_zombie_debug" ):GetBool() then
-				print(self, "Tried to retarget in OnNoTarget, but got no valid target.")
-			end
-			local sPoint = self:GetClosestAvailableRespawnPoint()
-			if !sPoint then
-				-- Something is wrong remove this zombie
-				self:MoveToPos(self:GetPos() + Vector(math.random(-256, 256), math.random(-256, 256), 0), {
-					repath = 3,
-					maxage = 2
-				})
-
-				-- Wander a bit, then check again
-				if !self:GetClosestAvailableRespawnPoint() then
-					if GetConVar( "nz_zombie_debug" ):GetBool() then
-						print(self, "Removing because no valid target.")
-					end
-					self:Remove()
+			--if not visible to players respawn immediately
+			if !self:IsInSight() then
+				if GetConVar( "nz_zombie_debug" ):GetBool() then
+					print(self, "Respawning from no valid target and not in sight.")
 				end
-			else
-				--if not visible to players respawn immediately
-				if !self:IsInSight() then
-					if GetConVar( "nz_zombie_debug" ):GetBool() then
-						print(self, "Respawning from no valid target and not in sight.")
-					end
-					self:RespawnAtRandom( sPoint )
-				else
-					self:ChaseTarget( {
-						maxage = 20,
-						draw = false,
-						target = sPoint,
-						tolerance = self:GetAttackRange() / 10
-					})
-					if GetConVar( "nz_zombie_debug" ):GetBool() then
-						print(self, "Respawning from no valid target and having walked around.")
-					end
-					self:RespawnAtRandom( sPoint )
-				end
+				self:RespawnZombie()
 			end
 		end
 	end
@@ -624,7 +596,7 @@ function ENT:GetPriorityTarget()
 	--local possibleTargets = ents.FindInSphere( self:GetPos(), self:GetTargetCheckRange())
 
 	for _, target in pairs(allEnts) do
-		if self:IsValidTarget(target) then
+		if self:IsValidTarget(target) and !self:IsIgnoredTarget(target) then
 			if target:GetTargetPriority() == TARGET_PRIORITY_ALWAYS then return target end
 			local dist = self:GetRangeSquaredTo( target:GetPos() )
 			if maxdistsqr <= 0 or dist <= maxdistsqr then -- 0 distance is no distance restrictions
@@ -667,10 +639,12 @@ function ENT:ChaseTarget( options )
 		if ( path:GetAge() > options.maxage ) then
 			return "timeout"
 		end
+
 		path:Update( self )	-- This function moves the bot along the path
 		if options.draw or GetConVar( "nz_zombie_debug" ):GetBool() then
 			path:Draw()
 		end
+
 		--the jumping part simple and buggy
 		--local scanDist = (self.loco:GetVelocity():Length()^2)/(2*900) + 15
 		local scanDist
@@ -812,7 +786,27 @@ function ENT:ChaseTargetPath( options )
 		end
 	end)
 
+	-- this will replace nav groups
+	-- we do this after pathing to know when this happens
+	local lastSeg = path:LastSegment()
+
+	-- a little more complicated that i thought but it should do the trick
+
+	if self:GetTargetNavArea() and lastSeg.area:GetID() != self:GetTargetNavArea():GetID() then
+		if !nz.Nav.Data[self:GetTargetNavArea():GetID()] or nz.Nav.Data[self:GetTargetNavArea():GetID()].locked then
+			self:IgnoreTarget(self:GetTarget())
+			-- trigger a retarget
+			self:SetLastTargetCheck(CurTime() - 1)
+			self:TimeOut(0.5)
+			return nil
+		end
+	else
+		self:ResetIgnores()
+		return path
+	end
+
 	return path
+
 end
 
 function ENT:GetLadderTop( ladder )
@@ -1011,6 +1005,16 @@ function ENT:Kill()
 	self:TakeDamage( 10000, self, self )
 end
 
+function ENT:RespawnZombie()
+	if SERVER then
+		if self:GetSpawner() then
+			self:GetSpawner():IncrementZombiesToSpawn()
+		end
+
+		self:Remove()
+	end
+end
+
 function ENT:IsInSight()
 	for _, ply in pairs( player.GetAllPlaying() ) do
 		--can player see us or the teleport location
@@ -1184,57 +1188,6 @@ function ENT:GetShootPos()
 
 end
 
-function ENT:GetClosestAvailableRespawnPoint()
-	local pos = self:GetPos()
-	local min_dist, closest_target = -1, nil
-	for k,v in pairs(nz.Enemies.Data.RespawnableSpawnpoints) do
-		if IsValid(v) and (!GetConVar("nz_nav_grouptargeting"):GetBool() or nz.Nav.Functions.IsInSameNavGroup(self, v)) then
-			local dist = self:GetRangeTo( v:GetPos() )
-			if ((dist < min_dist or min_dist == -1)) then
-				closest_target = v
-				min_dist = dist
-			end
-		end
-	end
-	return closest_target or nil
-end
-
-function ENT:RespawnAtPos( point )
-	if nz.Enemies.Functions.CheckIfSuitable( point ) then
-		self:SetPos( point )
-		self:SpawnZombie()
-		return true
-	end
-	return false
-end
-
-function ENT:RespawnAtSpawnpoint( ent )
-	--if ent:GetClass() != "zed_spawns" then return end
-	if nz.Enemies.Functions.CheckIfSuitable( ent:GetPos() ) then
-		self:SetPos( ent:GetPos() )
-		self:SpawnZombie()
-		return true
-	end
-	return false
-end
-
-function ENT:RespawnAtRandom( cur )
-	local valids = nz.Enemies.Functions.ValidRespawns( cur, self:GetClass() )
-	if valids[1] == nil then
-		print("No valid spawns were found - Couldn't respawn!")
-		self:TimeOut(1) -- Timeout for 1 second if it didn't work
-		return
-	end
-	local spawnpoint = valids[ math.random(#valids) ]
-	if IsValid(spawnpoint) and nz.Enemies.Functions.CheckIfSuitable(spawnpoint:GetPos()) then
-		self:SetPos(spawnpoint:GetPos())
-		self:SpawnZombie()
-		return true
-	end
-	self:TimeOut(1) -- Woah! This shouldn't happen
-	return false
-end
-
 --Helper function
 function ENT:TimedEvent(time, callback)
 	timer.Simple(time, function()
@@ -1278,6 +1231,10 @@ function ENT:GetTarget()
 	return self.Target
 end
 
+function ENT:GetTargetNavArea()
+	return self:HasTarget() and navmesh.GetNearestNavArea( self:GetTarget():GetPos(), false, 100)
+end
+
 function ENT:SetTarget( target )
 	self.Target = target
 	if self.Target != target then
@@ -1296,6 +1253,22 @@ end
 function ENT:IsValidTarget( ent )
 	if !ent then return false end
 	return IsValid( ent ) and ent:GetTargetPriority() != TARGET_PRIORITY_NONE
+end
+
+function ENT:GetIgnoredTargets()
+	return self.tIgnoreList
+end
+
+function ENT:IgnoreTarget( target )
+	table.insert(self.tIgnoreList, target)
+end
+
+function ENT:IsIgnoredTarget( ent )
+	table.HasValue(self.tIgnoreList, ent)
+end
+
+function ENT:ResetIgnores()
+	self.tIgnoreList = {}
 end
 
 --AccessorFuncs

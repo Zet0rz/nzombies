@@ -7,7 +7,7 @@ function plyMeta:SelectWeapon( class )
 	print(self.DoWeaponSwitch)
 end
 
-hook.Add( "CreateMove", "nz_WeaponSwitch", function( cmd )
+function GM:CreateMove( cmd )
 	if ( IsValid( LocalPlayer().DoWeaponSwitch ) ) then
 		cmd:SelectWeapon( LocalPlayer().DoWeaponSwitch )
 
@@ -16,7 +16,7 @@ hook.Add( "CreateMove", "nz_WeaponSwitch", function( cmd )
 			LocalPlayer().DoWeaponSwitch = nil
 		end
 	end
-end )
+end
 
 function GM:PlayerBindPress( ply, bind, pressed )
 	if Round:InProgress() then
