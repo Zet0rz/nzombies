@@ -242,7 +242,7 @@ nz.Perks.Functions.NewPerk("pap", {
 
 nz.Perks.Functions.NewPerk("dtap2", {
 	name = "Double Tap II",
-	off_model = "models/alig96/perks/doubletap2/doubletap2.mdl",
+	off_model = "models/alig96/perks/doubletap2/doubletap2_off.mdl",
 	on_model = "models/alig96/perks/doubletap2/doubletap2.mdl",
 	price = 2000,
 	func = function(self, ply, machine)
@@ -278,7 +278,7 @@ nz.Perks.Functions.NewPerk("dtap2", {
 
 nz.Perks.Functions.NewPerk("staminup", {
 	name = "Stamin-Up",
-	off_model = "models/alig96/perks/staminup/staminup.mdl",
+	off_model = "models/alig96/perks/staminup/staminup_off.mdl",
 	on_model = "models/alig96/perks/staminup/staminup.mdl",
 	price = 2000,
 	func = function(self, ply, machine)
@@ -298,7 +298,7 @@ nz.Perks.Functions.NewPerk("staminup", {
 
 nz.Perks.Functions.NewPerk("phd", {
 	name = "PhD Flopper",
-	off_model = "models/alig96/perks/phd/phdflopper.mdl",
+	off_model = "models/alig96/perks/phd/phdflopper_off.mdl",
 	on_model = "models/alig96/perks/phd/phdflopper.mdl",
 	price = 2000,
 	func = function(self, ply, machine)
@@ -310,7 +310,7 @@ nz.Perks.Functions.NewPerk("phd", {
 
 nz.Perks.Functions.NewPerk("deadshot", {
 	name = "Deadshot Daiquiri",
-	off_model = "models/alig96/perks/deadshot/deadshot.mdl",
+	off_model = "models/alig96/perks/deadshot/deadshot_off.mdl",
 	on_model = "models/alig96/perks/deadshot/deadshot.mdl",
 	price = 2000,
 	func = function(self, ply, machine)
@@ -322,7 +322,7 @@ nz.Perks.Functions.NewPerk("deadshot", {
 
 nz.Perks.Functions.NewPerk("mulekick", {
 	name = "Mule Kick",
-	off_model = "models/alig96/perks/mulekick/mulekick.mdl",
+	off_model = "models/alig96/perks/mulekick/mulekick_off.mdl",
 	on_model = "models/alig96/perks/mulekick/mulekick.mdl",
 	price = 4000,
 	func = function(self, ply, machine)
@@ -339,7 +339,7 @@ nz.Perks.Functions.NewPerk("mulekick", {
 
 nz.Perks.Functions.NewPerk("tombstone", {
 	name = "Tombstone Soda",
-	off_model = "models/alig96/perks/tombstone/tombstone.mdl",
+	off_model = "models/alig96/perks/tombstone/tombstone_off.mdl",
 	on_model = "models/alig96/perks/tombstone/tombstone.mdl",
 	price = 2000,
 	func = function(self, ply, machine)
@@ -351,7 +351,7 @@ nz.Perks.Functions.NewPerk("tombstone", {
 
 nz.Perks.Functions.NewPerk("whoswho", {
 	name = "Who's Who",
-	off_model = "models/alig96/perks/whoswho/whoswho.mdl",
+	off_model = "models/alig96/perks/whoswho/whoswho_off.mdl",
 	on_model = "models/alig96/perks/whoswho/whoswho.mdl",
 	price = 2000,
 	func = function(self, ply, machine)
@@ -363,7 +363,7 @@ nz.Perks.Functions.NewPerk("whoswho", {
 
 nz.Perks.Functions.NewPerk("cherry", {
 	name = "Electric Cherry",
-	off_model = "models/alig96/perks/cherry/cherry.mdl",
+	off_model = "models/alig96/perks/cherry/cherry_off.mdl",
 	on_model = "models/alig96/perks/cherry/cherry.mdl",
 	price = 2000,
 	func = function(self, ply, machine)
@@ -375,7 +375,7 @@ nz.Perks.Functions.NewPerk("cherry", {
 
 nz.Perks.Functions.NewPerk("vulture", {
 	name = "Vulture Aid Elixir",
-	off_model = "models/alig96/perks/vulture/vultureaid.mdl",
+	off_model = "models/alig96/perks/vulture/vultureaid_off.mdl",
 	on_model = "models/alig96/perks/vulture/vultureaid.mdl",
 	price = 3000,
 	func = function(self, ply, machine)
