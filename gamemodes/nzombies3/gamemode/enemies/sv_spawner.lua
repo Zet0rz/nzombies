@@ -51,6 +51,10 @@ function Spawner:GetZombiesToSpawn()
 	return self.iZombiesToSpawn
 end
 
+function Spawner:SetZombiesToSpawn(value)
+	self.iZombiesToSpawn = value
+end
+
 function Spawner:GetSpawns()
 	return self.tSpawns
 end
