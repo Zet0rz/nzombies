@@ -1,6 +1,6 @@
 //
 
-function Elec:Activate(nochat)
+function nzElec:Activate(nochat)
 
 	self.Active = true
 	self:SendSync()
@@ -11,7 +11,7 @@ function Elec:Activate(nochat)
 			local data = v:GetDoorData()
 			if data then
 				if tonumber(data.price) == 0 and tobool(data.elec) == true then
-					Doors:OpenDoor( v )
+					nzDoors:OpenDoor( v )
 				end
 			end
 		end
@@ -25,7 +25,7 @@ function Elec:Activate(nochat)
 	-- Inform players
 	if !nochat then
 		PrintMessage(HUD_PRINTTALK, "[NZ] Electricity is on!")
-		net.Start("nz.Elec.Sound")
+		net.Start("nz.nzElec.Sound")
 			net.WriteBool(true)
 		net.Broadcast()
 	end
@@ -34,7 +34,7 @@ function Elec:Activate(nochat)
 	
 end
 
-function Elec:Reset(nochat)
+function nzElec:Reset(nochat)
 	
 	self.Active = false
 	-- Reset the button aswell
@@ -46,7 +46,7 @@ function Elec:Reset(nochat)
 	self:SendSync()
 	
 	if !nochat then
-		net.Start("nz.Elec.Sound")
+		net.Start("nz.nzElec.Sound")
 			net.WriteBool(false)
 		net.Broadcast()
 	end

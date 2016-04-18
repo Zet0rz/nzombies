@@ -1,8 +1,6 @@
 -- Setup Doors module
 nzSpecialWeapons = nzSpecialWeapons or {}
--- Nice little alias to use
-SpecialWeapons = nzSpecialWeapons
 
-SpecialWeapons.Categories = SpecialWeapons.Categories or {}
-SpecialWeapons.Weapons = SpecialWeapons.Weapons or {}
-SpecialWeapons.Keys = SpecialWeapons.Keys or {}
+nzSpecialWeapons.Categories = nzSpecialWeapons.Categories or {}
+nzSpecialWeapons.Weapons = nzSpecialWeapons.Weapons or {}
+nzSpecialWeapons.Keys = nzSpecialWeapons.Keys or {}

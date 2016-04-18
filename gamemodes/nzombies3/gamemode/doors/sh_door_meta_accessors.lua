@@ -1,24 +1,24 @@
 local meta = FindMetaTable("Entity")
 
-Doors.MapDoors = Doors.MapDoors or {}
-Doors.PropDoors = Doors.PropDoors or {}
-Doors.OpenedLinks = Doors.OpenedLinks or {}
+nzDoors.MapDoors = nzDoors.MapDoors or {}
+nzDoors.PropDoors = nzDoors.PropDoors or {}
+nzDoors.OpenedLinks = nzDoors.OpenedLinks or {}
 
 function meta:IsLocked() 
 	if self:IsBuyableProp() or self:IsScriptBuyable() then
-		return Doors.PropDoors[self:EntIndex()] and Doors.PropDoors[self:EntIndex()].locked or false
+		return nzDoors.PropDoors[self:EntIndex()] and nzDoors.PropDoors[self:EntIndex()].locked or false
 	else
-		return Doors.MapDoors[self:DoorIndex()] and Doors.MapDoors[self:DoorIndex()].locked or false
+		return nzDoors.MapDoors[self:DoorIndex()] and nzDoors.MapDoors[self:DoorIndex()].locked or false
 	end
 end
 
 function meta:SetLocked( bool )
 	if self:IsBuyableProp() or self:IsScriptBuyable() then
-		if !Doors.PropDoors[self:EntIndex()] then Doors.PropDoors[self:EntIndex()] = {} end
-		Doors.PropDoors[self:EntIndex()].locked = bool
+		if !nzDoors.PropDoors[self:EntIndex()] then nzDoors.PropDoors[self:EntIndex()] = {} end
+		nzDoors.PropDoors[self:EntIndex()].locked = bool
 	else
-		if !Doors.MapDoors[self:DoorIndex()] then Doors.MapDoors[self:DoorIndex()] = {} end
-		Doors.MapDoors[self:DoorIndex()].locked = bool
+		if !nzDoors.MapDoors[self:DoorIndex()] then nzDoors.MapDoors[self:DoorIndex()] = {} end
+		nzDoors.MapDoors[self:DoorIndex()].locked = bool
 	end
 end
 
@@ -80,41 +80,41 @@ function meta:DoorIndex()
 		return self:CreatedByMap() and self:MapCreationID() or nil
 	else
 		-- Check the ED table
-		return Doors.MapCreationIndexTable[self:EntIndex()] or 0
+		return nzDoors.MapCreationIndexTable[self:EntIndex()] or 0
 	end
 end
 
 function meta:GetDoorData()
 	if self:IsBuyableProp() or self:IsScriptBuyable() then
-		if !Doors.PropDoors[self:EntIndex()] then return nil end
-		return Doors.PropDoors[self:EntIndex()].flags
+		if !nzDoors.PropDoors[self:EntIndex()] then return nil end
+		return nzDoors.PropDoors[self:EntIndex()].flags
 	else
-		if !Doors.MapDoors[self:DoorIndex()] then return nil end
-		return Doors.MapDoors[self:DoorIndex()].flags
+		if !nzDoors.MapDoors[self:DoorIndex()] then return nil end
+		return nzDoors.MapDoors[self:DoorIndex()].flags
 	end
 end
 
 function meta:SetDoorData( tbl )
 	if self:IsBuyableProp() or self:IsScriptBuyable() then
-		if !Doors.PropDoors[self:EntIndex()] then Doors.PropDoors[self:EntIndex()] = {} end
-		Doors.PropDoors[self:EntIndex()].flags = tbl
+		if !nzDoors.PropDoors[self:EntIndex()] then nzDoors.PropDoors[self:EntIndex()] = {} end
+		nzDoors.PropDoors[self:EntIndex()].flags = tbl
 	else
-		if !Doors.MapDoors[self:DoorIndex()] then Doors.MapDoors[self:DoorIndex()] = {} end
-		Doors.MapDoors[self:DoorIndex()].flags = tbl
+		if !nzDoors.MapDoors[self:DoorIndex()] then nzDoors.MapDoors[self:DoorIndex()] = {} end
+		nzDoors.MapDoors[self:DoorIndex()].flags = tbl
 	end
 end
 
-function Doors:DoorIndexByID( id )
+function nzDoors:DoorIndexByID( id )
 	if SERVER then
 		local ent = Entity(id)
 		return ent:CreatedByMap() and ent:MapCreationID() or nil
 	else
 		-- Check the ED table
-		return Doors.MapCreationIndexTable[id] or 0
+		return nzDoors.MapCreationIndexTable[id] or 0
 	end
 end
 
-function Doors:SetDoorDataByID( id, prop, tbl )
+function nzDoors:SetDoorDataByID( id, prop, tbl )
 	if !tbl then return end
 	if prop then
 		if !self.PropDoors[id] then self.PropDoors[id] = {} end
@@ -125,13 +125,13 @@ function Doors:SetDoorDataByID( id, prop, tbl )
 	end
 end
 
-function Doors:SetLockedByID( id, prop, bool )
+function nzDoors:SetLockedByID( id, prop, bool )
 	if prop then
-		if !Doors.PropDoors[id] then Doors.PropDoors[id] = {} end
+		if !nzDoors.PropDoors[id] then nzDoors.PropDoors[id] = {} end
 		self.PropDoors[id].locked = bool
 	else
-		local index = Doors:DoorIndexByID( id )
-		if !Doors.MapDoors[index] then Doors.MapDoors[index] = {} end
+		local index = nzDoors:DoorIndexByID( id )
+		if !nzDoors.MapDoors[index] then nzDoors.MapDoors[index] = {} end
 		self.MapDoors[index].locked = bool
 	end
 end

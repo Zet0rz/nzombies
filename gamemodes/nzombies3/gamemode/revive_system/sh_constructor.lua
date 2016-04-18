@@ -1,8 +1,7 @@
-//Main Tables
-nzRevive = {}
-Revive = nzRevive
+-- Main Tables
+Revive = Revive or {}
 
-//_ Variables
+-- Variables
 Revive.Players = {}
 
 if CLIENT then

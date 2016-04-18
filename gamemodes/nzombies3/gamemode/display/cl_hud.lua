@@ -23,12 +23,12 @@ local function StatesHud()
 		local text = ""
 		local font = "nz.display.hud.main"
 		local w = ScrW() / 2
-		if Round:InState( ROUND_WAITING ) then
+		if nzRound:InState( ROUND_WAITING ) then
 			text = "Waiting for players. Type /ready to ready up."
 			font = "nz.display.hud.small"
-		elseif Round:InState( ROUND_CREATE ) then
+		elseif nzRound:InState( ROUND_CREATE ) then
 			text = "Creative Mode"
-		elseif Round:InState( ROUND_GO ) then
+		elseif nzRound:InState( ROUND_GO ) then
 			text = "Game Over"
 		end
 		draw.SimpleText(text, font, w, ScrH() * 0.85, Color(200, 0, 0,255), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
@@ -39,7 +39,7 @@ local tbl = {Entity(3), Entity(1), Entity(3), Entity(4), Entity(5),}
 
 local function ScoreHud()
 	if GetConVar("cl_drawhud"):GetBool() then
-		if Round:InProgress() then
+		if nzRound:InProgress() then
 
 			local scale = (ScrW() / 1920 + 1) / 2
 			local offset = 0
@@ -130,7 +130,7 @@ local function GunHud()
 end
 
 local function PowerUpsHud()
-	if Round:InProgress() then
+	if nzRound:InProgress() then
 		local font = "nz.display.hud.main"
 		local w = ScrW() / 2
 		local offset = 40
@@ -152,14 +152,14 @@ function nzDisplay.DrawLinks( ent, link )
 	//Check for zombie spawns
 	for k, v in pairs(ents.GetAll()) do
 		if v:IsBuyableProp()  then
-			if nz.Doors.Data.BuyableProps[k] != nil then
+			if nz.nzDoors.Data.BuyableProps[k] != nil then
 				if v.link == link then
 					table.insert(tbl, Entity(k))
 				end
 			end
 		elseif v:IsDoor() then
-			if nz.Doors.Data.LinkFlags[v:doorIndex()] != nil then
-				if nz.Doors.Data.LinkFlags[v:doorIndex()].link == link then
+			if nz.nzDoors.Data.LinkFlags[v:doorIndex()] != nil then
+				if nz.nzDoors.Data.LinkFlags[v:doorIndex()].link == link then
 					table.insert(tbl, v)
 				end
 			end
@@ -320,9 +320,9 @@ local roundchangeending = false
 local prevroundspecial = false
 local function StartChangeRound()
 
-	print(Round:GetNumber(), Round:IsSpecial())
+	print(nzRound:GetNumber(), nzRound:IsSpecial())
 
-	if Round:GetNumber() >= 1 then
+	if nzRound:GetNumber() >= 1 then
 		if prevroundspecial then
 			surface.PlaySound("nz/round/special_round_end.wav")
 		else
@@ -357,9 +357,9 @@ local function StartChangeRound()
 				end
 			elseif round_alpha <= 0 then
 				if roundchangeending then
-					round_num = Round:GetNumber()
+					round_num = nzRound:GetNumber()
 					round_charger = 0.5
-					if Round:IsSpecial() then
+					if nzRound:IsSpecial() then
 						surface.PlaySound("nz/round/special_round_start.wav")
 						prevroundspecial = true
 					else

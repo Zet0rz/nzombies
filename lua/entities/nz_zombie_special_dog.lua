@@ -144,7 +144,7 @@ function ENT:OnSpawn()
 		end
 	end)
 
-	Round:SetNextSpawnTime(CurTime() + 2) -- This one spawning delays others by 3 seconds
+	nzRound:SetNextSpawnTime(CurTime() + 2) -- This one spawning delays others by 3 seconds
 end
 
 function ENT:OnZombieDeath(dmgInfo)

@@ -7,7 +7,7 @@ nz.Tools.Functions.CreateTool("zspecialspawn", {
 	end,
 	PrimaryAttack = function(wep, ply, tr, data)
 		-- Create a new spawnpoint and set its data to the guns properties
-		local ent = Mapping:ZedSpecialSpawn(tr.HitPos, nil, ply)
+		local ent = nzMapping:ZedSpecialSpawn(tr.HitPos, nil, ply)
 
 		ent.flag = data.flag
 		if tobool(data.flag) and ent.link != "" then

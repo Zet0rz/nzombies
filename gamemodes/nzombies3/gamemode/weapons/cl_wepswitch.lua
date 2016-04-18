@@ -19,7 +19,7 @@ function GM:CreateMove( cmd )
 end
 
 function GM:PlayerBindPress( ply, bind, pressed )
-	if Round:InProgress() then
+	if nzRound:InProgress() then
 		if !ply:GetCurrentWeaponSlot() then ply:SetCurrentWeaponSlot(ply:GetActiveWeapon():GetNWInt("SwitchSlot", 1)) end
 		local slot
 		local curslot = ply:GetCurrentWeaponSlot() or 1
@@ -38,7 +38,7 @@ function GM:PlayerBindPress( ply, bind, pressed )
 				slot = ply:HasPerk("mulekick") and 3 or 2
 			end
 		end
-		if !Round:InState(ROUND_CREATE) and (bind == "+menu" and pressed ) then slot = ply:GetLastWeaponSlot() or 1 end
+		if !nzRound:InState(ROUND_CREATE) and (bind == "+menu" and pressed ) then slot = ply:GetLastWeaponSlot() or 1 end
 		if slot then
 			ply:SetLastWeaponSlot( ply:GetActiveWeapon():GetNWInt( "SwitchSlot", 1) )
 			if slot == 3 then

@@ -40,10 +40,10 @@ end
 function ENT:Use( activator )
 
 	if ( !activator:IsPlayer() ) then return end
-	if !IsElec() and Round:InProgress() then
+	if !IsElec() and nzRound:InProgress() then
 		self:SetSwitch(true)
 		self.Switched = 0
-		Elec:Activate()
+		nzElec:Activate()
 	end
 
 end

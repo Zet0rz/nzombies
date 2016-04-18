@@ -2,7 +2,7 @@
 
 function nz.PowerUps.Functions.Nuke(nopoints)
 	-- Kill them all
-	for k,v in pairs(nz.Config.ValidEnemies) do
+	for k,v in pairs(nzConfig.ValidEnemies) do
 		for k2,enemy in pairs(ents.FindByClass(k)) do
 			if IsValid(enemy) then
 				local insta = DamageInfo()

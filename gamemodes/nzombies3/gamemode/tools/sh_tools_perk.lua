@@ -6,7 +6,7 @@ nz.Tools.Functions.CreateTool("perk", {
 	end,
 
 	PrimaryAttack = function(wep, ply, tr, data)
-		Mapping:PerkMachine(tr.HitPos, Angle(0,(ply:GetPos() - tr.HitPos):Angle()[2],0), data.perk, ply)
+		nzMapping:PerkMachine(tr.HitPos, Angle(0,(ply:GetPos() - tr.HitPos):Angle()[2],0), data.perk, ply)
 	end,
 
 	SecondaryAttack = function(wep, ply, tr, data)

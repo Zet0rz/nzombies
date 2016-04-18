@@ -26,7 +26,7 @@ end
 
 function ENT:OnRemove()
 	if SERVER then
-		Doors:RemoveLink( self )
+		nzDoors:RemoveLink( self )
 	else
 		self:SetLocked(false)
 	end
@@ -51,7 +51,7 @@ end
 
 if CLIENT then
 	function ENT:Draw() 
-		if Round:InState( ROUND_CREATE ) then
+		if nzRound:InState( ROUND_CREATE ) then
 			self:DrawModel()
 		end
 	end

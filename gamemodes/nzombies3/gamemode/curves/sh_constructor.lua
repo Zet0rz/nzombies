@@ -1,24 +1,16 @@
-//We only need this on the server
 if SERVER then
-	//Main Tables
-	nz.Curves = {}
-	nz.Curves.Functions = {}
-	nz.Curves.Data = {}
+	-- Main Tables
+	nzCurves = nzCurves or {}
 
-	//Difficulty Curves
-	nz.Curves.Data.SpawnRate = {}
-	nz.Curves.Data.Health = {}
-	nz.Curves.Data.Speed = {}
-
-	function nz.Curves.Functions.GenerateHealthCurve(round)
+	function nzCurves.GenerateHealthCurve(round)
 		return math.Round(GetConVar("nz_difficulty_zombie_health_base"):GetFloat()*math.pow(GetConVar("nz_difficulty_zombie_health_scale"):GetFloat(),round - 1))
 	end
 
-	function nz.Curves.Functions.GenerateMaxZombies(round)
+	function nzCurves.GenerateMaxZombies(round)
 		return math.Round(GetConVar("nz_difficulty_zombie_amount_base"):GetInt()*math.pow(round,GetConVar("nz_difficulty_zombie_amount_scale"):GetFloat()))
 	end
 
-	function nz.Curves.Functions.GenerateSpeedTable(round)
+	function nzCurves.GenerateSpeedTable(round)
 		if !round then return {[50] = 100} end -- Default speed for any invalid round (Say, creative mode test zombies)
 		local tbl = {}
 		local range = 3 -- The range on either side of the tip (current round) of speeds in steps of "steps"

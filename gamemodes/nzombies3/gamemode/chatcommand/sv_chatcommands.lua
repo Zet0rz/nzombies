@@ -17,7 +17,7 @@ chatcommand.Add("/dropout", function(ply, text)
 end, true)
 
 chatcommand.Add("/create", function(ply, text)
-	Round:Create()
+	nzRound:Create()
 end)
 
 chatcommand.Add("/generate", function(ply, text)
@@ -51,8 +51,8 @@ end)
 
 util.AddNetworkString("nz_SaveConfig")
 chatcommand.Add("/save", function(ply, text)
-	if Round:InState( ROUND_CREATE ) then
-		-- Mapping:SaveConfig()
+	if nzRound:InState( ROUND_CREATE ) then
+		-- nzMapping:SaveConfig()
 		net.Start("nz_SaveConfig")
 		net.Send(ply)
 	else
@@ -68,7 +68,7 @@ chatcommand.Add("/forcegenerate", function(ply, text)
 end)
 
 chatcommand.Add("/load", function(ply, text)
-	if Round:InState( ROUND_CREATE) or Round:InState( ROUND_WAITING ) then
+	if nzRound:InState( ROUND_CREATE) or nzRound:InState( ROUND_WAITING ) then
 		nz.Interfaces.Functions.SendInterface(ply, "ConfigLoader", {configs = file.Find( "nz/nz_*", "DATA" ), workshopconfigs = file.Find( "nz/nz_*", "LUA" ), officialconfigs = file.Find("gamemodes/nzombies3/officialconfigs/*", "GAME")})
 	else
 		ply:PrintMessage( HUD_PRINTTALK, "[NZ] You can't load while playing!" )
@@ -76,8 +76,8 @@ chatcommand.Add("/load", function(ply, text)
 end)
 
 chatcommand.Add("/clean", function(ply, text)
-	if Round:InState( ROUND_CREATE) or Round:InState( ROUND_WAITING ) then
-		Mapping:ClearConfig()
+	if nzRound:InState( ROUND_CREATE) or nzRound:InState( ROUND_WAITING ) then
+		nzMapping:ClearConfig()
 	else
 		ply:PrintMessage( HUD_PRINTTALK, "[NZ] You can't clean while playing!" )
 	end
@@ -86,7 +86,7 @@ end)
 -- Tests
 
 chatcommand.Add("/spectate", function(ply, text)
-	if !Round:InProgress() or Round:InState( ROUND_INIT ) then
+	if !nzRound:InProgress() or nzRound:InState( ROUND_INIT ) then
 		ply:PrintMessage( HUD_PRINTTALK, "No round in progress, couldnt set you to spectator!" )
 	elseif ply:IsReady() then
 		ply:UnReady()
@@ -130,7 +130,7 @@ chatcommand.Add("/givepoints", function(ply, text)
 		points = tonumber(text[2])
 	end
 
-	if IsValid(plyToGiv) and plyToGiv:Alive() and (plyToGiv:IsPlaying() or Round:InState(ROUND_CREATE)) then
+	if IsValid(plyToGiv) and plyToGiv:Alive() and (plyToGiv:IsPlaying() or nzRound:InState(ROUND_CREATE)) then
 		if points then
 			plyToGiv:GivePoints(points)
 		else
@@ -152,7 +152,7 @@ chatcommand.Add("/giveweapon", function(ply, text)
 	else
 		wep = weapons.Get(text[2])
 	end
-	if IsValid(plyToGiv) and plyToGiv:Alive() and (plyToGiv:IsPlaying() or Round:InState(ROUND_CREATE)) then
+	if IsValid(plyToGiv) and plyToGiv:Alive() and (plyToGiv:IsPlaying() or nzRound:InState(ROUND_CREATE)) then
 		if wep then
 			plyToGiv:Give(wep.ClassName)
 		else
@@ -174,7 +174,7 @@ chatcommand.Add("/giveperk", function(ply, text)
 	else
 		perk = text[2]
 	end
-	if IsValid(plyToGiv) and plyToGiv:Alive() and (plyToGiv:IsPlaying() or Round:InState(ROUND_CREATE)) then
+	if IsValid(plyToGiv) and plyToGiv:Alive() and (plyToGiv:IsPlaying() or nzRound:InState(ROUND_CREATE)) then
 		if nz.Perks.Functions.Get(perk) then
 			plyToGiv:GivePerk(perk)
 		else
@@ -206,7 +206,7 @@ chatcommand.Add("/targetpriority", function(ply, text)
 	else
 		priority = tonumber(text[2])
 	end
-	if IsValid(plyToGiv) and plyToGiv:Alive() and (plyToGiv:IsPlaying() or Round:InState(ROUND_CREATE)) then
+	if IsValid(plyToGiv) and plyToGiv:Alive() and (plyToGiv:IsPlaying() or nzRound:InState(ROUND_CREATE)) then
 		if priority then
 			plyToGiv:SetTargetPriority(priority)
 		else
@@ -218,7 +218,7 @@ chatcommand.Add("/targetpriority", function(ply, text)
 end)
 
 chatcommand.Add("/activateelec", function(ply, text)
-	Elec:Activate()
+	nzElec:Activate()
 end)
 
 chatcommand.Add("/navflush", function(ply, text)

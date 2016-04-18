@@ -8,7 +8,7 @@ nz.Tools.Functions.CreateTool("wallbuy", {
 	PrimaryAttack = function(wep, ply, tr, data)
 		local ang = tr.HitNormal:Angle()
 		ang:RotateAroundAxis(tr.HitNormal:Angle():Up()*-1, 90)
-		Mapping:WallBuy(tr.HitPos + tr.HitNormal*0.5, data.class, tonumber(data.price), ang, nil, ply)
+		nzMapping:WallBuy(tr.HitPos + tr.HitNormal*0.5, data.class, tonumber(data.price), ang, nil, ply)
 	end,
 
 	SecondaryAttack = function(wep, ply, tr, data)

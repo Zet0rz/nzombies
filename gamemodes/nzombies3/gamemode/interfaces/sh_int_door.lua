@@ -4,7 +4,7 @@ if SERVER then
 	function nz.Interfaces.Functions.DoorPropsHandler( ply, data )
 		if ply:IsSuperAdmin() then
 			PrintTable(data)
-			Doors:CreateLink( data.ent, data.flags )
+			nzDoors:CreateLink( data.ent, data.flags )
 		end
 	end
 end
@@ -28,9 +28,9 @@ if CLIENT then
 
 		//Check if the ent has flags already
 		if ent:IsDoor() or ent:IsButton() then
-			door_data = Doors.MapDoors[ent:DoorIndex()].flags
+			door_data = nzDoors.MapDoors[ent:DoorIndex()].flags
 		elseif ent:IsBuyableProp() then
-			door_data = Doors.PropDoors[ent:EntIndex()].flags
+			door_data = nzDoors.PropDoors[ent:EntIndex()].flags
 		end
 		//If we do then;
 		if door_data != nil then

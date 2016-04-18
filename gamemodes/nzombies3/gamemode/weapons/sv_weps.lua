@@ -385,7 +385,7 @@ local function OnWeaponAdded( weapon )
 		-- 0 seconds timer for the next tick, where the weapon's owner will be valid
 		timer.Simple(0, function()
 			local ply = weapon:GetOwner()
-			if !Round:InState( ROUND_CREATE ) then
+			if !nzRound:InState( ROUND_CREATE ) then
 
 				--[[if ply:HasPerk("mulekick") then
 					if GetNumberNonSpecialWeapons(ply) > 3 then

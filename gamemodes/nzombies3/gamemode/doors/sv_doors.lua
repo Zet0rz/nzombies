@@ -1,15 +1,15 @@
-function Doors:DoorToEntIndex(num)
+function nzDoors:DoorToEntIndex(num)
 	local ent = ents.GetMapCreatedEntity(num)
 
 	return IsValid(ent) and ent:EntIndex() or nil
 end
 
-function Doors:DoorIndexToEnt(num)
+function nzDoors:DoorIndexToEnt(num)
 	if !num then return nil end
 	return ents.GetMapCreatedEntity(num) or NULL
 end
 
-function Doors:ParseFlagString( flagsStr )
+function nzDoors:ParseFlagString( flagsStr )
 
 	local tbl = {}
 	
@@ -32,7 +32,7 @@ function Doors:ParseFlagString( flagsStr )
 	
 end
 
-function Doors:CreateLink( ent, flagsStr )
+function nzDoors:CreateLink( ent, flagsStr )
 	-- First remove all links
 	--self:RemoveLink( ent )
 	if ent:IsDoor() or ent:IsButton() then
@@ -42,7 +42,7 @@ function Doors:CreateLink( ent, flagsStr )
 	end
 end
 
-function Doors:RemoveLink( ent, nohook )
+function nzDoors:RemoveLink( ent, nohook )
 	if ent:IsDoor() or ent:IsButton() then
 		self:RemoveMapDoorLink( ent:DoorIndex() )
 	elseif ent:IsBuyableProp() then
@@ -53,7 +53,7 @@ function Doors:RemoveLink( ent, nohook )
 	end
 end
 
-function Doors:CreateMapDoorLink( doorID, flagsStr )
+function nzDoors:CreateMapDoorLink( doorID, flagsStr )
 
 	local door = self:DoorIndexToEnt(doorID)
 	if !flagsStr then ErrorNoHalt("Door "..doorID.." doesn't have a flagsStr saved!") return end
@@ -72,7 +72,7 @@ function Doors:CreateMapDoorLink( doorID, flagsStr )
 	
 end
 
-function Doors:RemoveMapDoorLink( doorID )
+function nzDoors:RemoveMapDoorLink( doorID )
 
 	local door = self:DoorIndexToEnt(doorID)
 	
@@ -88,7 +88,7 @@ function Doors:RemoveMapDoorLink( doorID )
 	
 end
 
-function Doors:CreatePropDoorLink( ent, flagsStr )
+function nzDoors:CreatePropDoorLink( ent, flagsStr )
 
 	local flagsTbl = self:ParseFlagString( flagsStr )
 	
@@ -104,7 +104,7 @@ function Doors:CreatePropDoorLink( ent, flagsStr )
 	
 end
 
-function Doors:RemovePropDoorLink( ent )
+function nzDoors:RemovePropDoorLink( ent )
 	
 	if IsValid(ent) and ent:IsBuyableProp() then
 		-- Total clear of the table
@@ -116,7 +116,7 @@ function Doors:RemovePropDoorLink( ent )
 	end
 end
 
-function Doors:DisplayDoorLinks( ent )
+function nzDoors:DisplayDoorLinks( ent )
 	if ent.link == nil then self.DisplayLinks[ent] = nil return end
 	
 	if self.DisplayLinks[ent] == nil then

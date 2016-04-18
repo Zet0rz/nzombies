@@ -35,8 +35,8 @@ function EasterEggData.ParseSong(play)
 		return
 	end
 
-	if !Mapping.Settings.eeurl then return end
-	local url = string.lower(Mapping.Settings.eeurl)
+	if !nzMapping.Settings.eeurl then return end
+	local url = string.lower(nzMapping.Settings.eeurl)
 	if url == nil or url == "" then return end
 		
 	local soundcloud = string.find(url, "soundcloud.com/")

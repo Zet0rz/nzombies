@@ -6,7 +6,7 @@ function GM:OnReloaded( )
 		if v:IsDoor() or v:IsBuyableProp() then
 			local data = v.Data
 			if data != nil then
-				nz.Doors.Functions.CreateLink(v, data)
+				nz.nzDoors.Functions.CreateLink(v, data)
 			end
 		end
 	end

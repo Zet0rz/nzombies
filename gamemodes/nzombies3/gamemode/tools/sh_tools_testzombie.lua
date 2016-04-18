@@ -79,7 +79,7 @@ nz.Tools.Functions.CreateTool("testzombie", {
 		local drop = vgui.Create("DComboBox", pnl)
 		drop:SetPos(50, 110)
 		drop:SetSize(200, 20)
-		for k,v in pairs(nz.Config.ValidEnemies) do
+		for k,v in pairs(nzConfig.ValidEnemies) do
 			drop:AddChoice(k, k, data.type == k and true or false)
 		end
 		

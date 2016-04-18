@@ -49,7 +49,7 @@ end
 
 function ENT:OnRemove()
 	if SERVER then
-		Doors:RemoveLink( self, true )
+		nzDoors:RemoveLink( self, true )
 	else
 		self:SetLocked(false)
 	end
@@ -57,16 +57,16 @@ end
 
 if CLIENT then
 	function ENT:Draw()
-		if Round:InProgress() then
+		if nzRound:InProgress() then
 			--if self:IsLocked() then
 				self:DrawModel()
 			--end
 		else
 			self:DrawModel()
 		end
-		if Round:InState( ROUND_CREATE ) then
-			if Doors.DisplayLinks[self] then
-				nzDisplay.DrawLinks(self, Doors.PropDoors[self:EntIndex()].link)
+		if nzRound:InState( ROUND_CREATE ) then
+			if nzDoors.DisplayLinks[self] then
+				nzDisplay.DrawLinks(self, nzDoors.PropDoors[self:EntIndex()].link)
 			end
 		end
 	end

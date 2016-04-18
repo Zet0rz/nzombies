@@ -1,27 +1,27 @@
-function Doors:OnPlayerBuyDoor( ply, door )
+function nzDoors:OnPlayerBuyDoor( ply, door )
 	
 end
 
-function Doors:OnAllDoorsLocked( )
+function nzDoors:OnAllDoorsLocked( )
 	self:SendAllDoorsLocked()
 end
 
-function Doors:OnDoorUnlocked( door, link, rebuyable, ply )
+function nzDoors:OnDoorUnlocked( door, link, rebuyable, ply )
 	self:SendDoorOpened( door, rebuyable )
 end
 
-function Doors:OnMapDoorLinkCreated( door, flags, id )
+function nzDoors:OnMapDoorLinkCreated( door, flags, id )
 	self:SendMapDoorCreation(door, flags, id)
 end
 
-function Doors:OnMapDoorLinkRemoved( door, id )
+function nzDoors:OnMapDoorLinkRemoved( door, id )
 	self:SendMapDoorRemoval(door)
 end
 
-function Doors:OnPropDoorLinkCreated( ent, flags )
+function nzDoors:OnPropDoorLinkCreated( ent, flags )
 	self:SendPropDoorCreation( ent, flags )
 end
 
-function Doors:OnPropDoorLinkRemoved( ent )
+function nzDoors:OnPropDoorLinkRemoved( ent )
 	self:SendPropDoorRemoval( ent )
 end

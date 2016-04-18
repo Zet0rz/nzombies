@@ -7,27 +7,27 @@ function plyMeta:ReadyUp()
 		return false
 	end
 
-	if Mapping:CheckSpawns() == false then
+	if nzMapping:CheckSpawns() == false then
 		PrintMessage( HUD_PRINTTALK, "Can't ready you up, because no Zombie/Player spawns have been set.")
 		return false
 	end
 
 	--Check if we have enough player spawns
-	if Mapping:CheckEnoughPlayerSpawns() == false then
+	if nzMapping:CheckEnoughPlayerSpawns() == false then
 		PrintMessage( HUD_PRINTTALK, "Can't ready you up, because not enough player spawns have been set. We need " .. #player.GetAll() .. " but only have " .. #ents.FindByClass("player_spawns") .. "." )
 		return false
 	end
 
-	if Round:InState( ROUND_WAITING ) or Round:InState( ROUND_INIT ) then
+	if nzRound:InState( ROUND_WAITING ) or nzRound:InState( ROUND_INIT ) then
 		if !self:IsReady() then
 			PrintMessage( HUD_PRINTTALK, self:Nick() .. " is ready!" )
 			self:SetReady( true )
 			self:SetTeam(TEAM_PLAYERS)
-			hook.Call( "OnPlayerReady", Round, self )
+			hook.Call( "OnPlayerReady", nzRound, self )
 		else
 			self:PrintMessage( HUD_PRINTTALK, "You are already ready!" )
 		end
-	elseif Round:InProgress() then
+	elseif nzRound:InProgress() then
 		if self:IsPlaying() then
 			self:PrintMessage( HUD_PRINTTALK, "You are already playing!" )
 		else
@@ -41,14 +41,14 @@ function plyMeta:ReadyUp()
 end
 
 function plyMeta:UnReady()
-	if Round:InState( ROUND_WAITING ) then
+	if nzRound:InState( ROUND_WAITING ) then
 		if self:IsReady() then
 			PrintMessage( HUD_PRINTTALK, self:Nick() .. " is no longer ready!" )
 			self:SetReady( false )
-			hook.Call( "OnPlayerUnReady", Round, self )
+			hook.Call( "OnPlayerUnReady", nzRound, self )
 		end
 	end
-	if Round:InProgress() then
+	if nzRound:InProgress() then
 		self:DropOut()
 	end
 end
@@ -58,8 +58,8 @@ function plyMeta:DropIn()
 		self:SetReady( true )
 		self:SetPlaying( true )
 		self:SetTeam( TEAM_PLAYERS )
-		hook.Call( "OnPlayerDropIn", Round, self )
-		if Round:GetNumber() == 1 and Round:InState(ROUND_PREP) then
+		hook.Call( "OnPlayerDropIn", nzRound, self )
+		if nzRound:GetNumber() == 1 and nzRound:InState(ROUND_PREP) then
 			PrintMessage( HUD_PRINTTALK, self:Nick() .. " is dropping in!" )
 			self:ReSpawn()
 		else
@@ -78,7 +78,7 @@ function plyMeta:DropOut()
 		self:RevivePlayer()
 		self:KillSilent()
 		self:SetTargetPriority(TARGET_PRIORITY_NONE)
-		hook.Call( "OnPlayerDropOut", Round, self )
+		hook.Call( "OnPlayerDropOut", nzRound, self )
 	end
 end
 

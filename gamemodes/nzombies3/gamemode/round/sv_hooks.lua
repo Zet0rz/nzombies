@@ -1,4 +1,4 @@
-function Round:OnPlayerReady( ply )
+function nzRound:OnPlayerReady( ply )
 
 	self:SendReadyState( ply, true )
 
@@ -9,20 +9,20 @@ function Round:OnPlayerReady( ply )
 
 end
 
-function Round:OnPlayerUnReady( ply )
+function nzRound:OnPlayerUnReady( ply )
 
 	self:SendReadyState( ply, false )
 
 end
 
-function Round:OnPlayerDropIn( ply )
+function nzRound:OnPlayerDropIn( ply )
 
 	self:SendPlayingState( ply, true )
 	self:SendReadyState( ply, true )
 
 end
 
-function Round:OnPlayerDropOut( ply )
+function nzRound:OnPlayerDropOut( ply )
 
 	self:SendPlayingState( ply, false )
 	self:SendReadyState( ply, false )

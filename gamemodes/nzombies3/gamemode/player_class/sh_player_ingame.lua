@@ -22,11 +22,11 @@ end
 function PLAYER:Loadout()
 	-- Give ammo and guns
 
-	if Mapping.Settings.startwep then
-		self.Player:Give( Mapping.Settings.startwep )
+	if nzMapping.Settings.startwep then
+		self.Player:Give( nzMapping.Settings.startwep )
 	else
 		-- A setting does not exist, give default starting weapons
-		for k,v in pairs(nz.Config.BaseStartingWeapons) do
+		for k,v in pairs(nzConfig.BaseStartingWeapons) do
 			self.Player:Give( v )
 		end
 	end
@@ -43,9 +43,9 @@ function PLAYER:Loadout()
 end
 function PLAYER:Spawn()
 
-	if Mapping.Settings.startpoints then
-		if !self.Player:CanAfford(Mapping.Settings.startpoints) then
-			self.Player:SetPoints(Mapping.Settings.startpoints)
+	if nzMapping.Settings.startpoints then
+		if !self.Player:CanAfford(nzMapping.Settings.startpoints) then
+			self.Player:SetPoints(nzMapping.Settings.startpoints)
 		end
 	else
 		if !self.Player:CanAfford(500) then -- Has less than 500 points

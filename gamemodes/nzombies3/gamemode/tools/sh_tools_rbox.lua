@@ -6,7 +6,7 @@ nz.Tools.Functions.CreateTool("rbox", {
 	end,
 
 	PrimaryAttack = function(wep, ply, tr, data)
-		Mapping:BoxSpawn(tr.HitPos, Angle(0,(tr.HitPos - ply:GetPos()):Angle()[2] - 90,0), ply)
+		nzMapping:BoxSpawn(tr.HitPos, Angle(0,(tr.HitPos - ply:GetPos()):Angle()[2] - 90,0), ply)
 	end,
 
 	SecondaryAttack = function(wep, ply, tr, data)

@@ -5,7 +5,7 @@ nz.Tools.Functions.CreateTool("block", {
 		return true
 	end,
 	PrimaryAttack = function(wep, ply, tr, data)
-		Mapping:BlockSpawn(tr.HitPos,Angle(90,(tr.HitPos - ply:GetPos()):Angle()[2] + 90,90), data.model, ply)
+		nzMapping:BlockSpawn(tr.HitPos,Angle(90,(tr.HitPos - ply:GetPos()):Angle()[2] + 90,90), data.model, ply)
 	end,
 	SecondaryAttack = function(wep, ply, tr, data)
 		if IsValid(tr.Entity) and tr.Entity:GetClass() == "wall_block" then

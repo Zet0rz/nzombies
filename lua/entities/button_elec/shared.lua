@@ -29,9 +29,9 @@ end
 function ENT:Use( activator )
 
 	if ( !activator:IsPlayer() ) then return end
-	if !IsElec() and Round:InProgress() then
+	if !IsElec() and nzRound:InProgress() then
 		self:SetSwitch(true)
-		nz.Elec.Functions.Activate()
+		nz.nzElec.Functions.Activate()
 	end
 
 end

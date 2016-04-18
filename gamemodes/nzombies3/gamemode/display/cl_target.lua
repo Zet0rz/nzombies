@@ -81,9 +81,9 @@ local traceents = {
 
 		return text
 	end,
-	["player_spawns"] = function() if Round:InState( ROUND_CREATE ) then return "Player Spawn" end end,
-	["nz_spawn_zombie_normal"] = function() if Round:InState( ROUND_CREATE ) then return "Zombie Spawn" end end,
-	["nz_spawn_zombie_special"] = function() if Round:InState( ROUND_CREATE ) then return "Zombie Special Spawn" end end,
+	["player_spawns"] = function() if nzRound:InState( ROUND_CREATE ) then return "Player Spawn" end end,
+	["nz_spawn_zombie_normal"] = function() if nzRound:InState( ROUND_CREATE ) then return "Zombie Spawn" end end,
+	["nz_spawn_zombie_special"] = function() if nzRound:InState( ROUND_CREATE ) then return "Zombie Special Spawn" end end,
 	["pap_weapon_trigger"] = function(ent)
 		local wepclass = ent:GetWepClass()
 		local wep = weapons.Get(wepclass)
@@ -115,7 +115,7 @@ local function GetDoorText( ent )
 	local door_data = ent:GetDoorData()
 	local text = ""
 
-	if door_data and tonumber(door_data.price) == 0 and Round:InState(ROUND_CREATE) then
+	if door_data and tonumber(door_data.price) == 0 and nzRound:InState(ROUND_CREATE) then
 		if tobool(door_data.elec) then
 			text = "This door will open when electricity is turned on."
 		else
@@ -132,11 +132,11 @@ local function GetDoorText( ent )
 			elseif door_data.text then
 				text = door_data.text
 			elseif price != 0 then
-				--print("Still here", nz.Doors.Data.OpenedLinks[tonumber(link)])
+				--print("Still here", nz.nzDoors.Data.OpenedLinks[tonumber(link)])
 				text = "Press E to open for " .. price .. " points."
 			end
 		end
-	elseif door_data and tonumber(door_data.buyable) != 1 and Round:InState( ROUND_CREATE ) then
+	elseif door_data and tonumber(door_data.buyable) != 1 and nzRound:InState( ROUND_CREATE ) then
 		text = "This door is locked and cannot be bought in-game."
 		--PrintTable(door_data)
 	end
@@ -160,7 +160,7 @@ local function GetText( ent )
 	elseif deftext != "" then
 		text = deftext
 	elseif itemcategory != "" then
-		local item = ItemCarry.Items[itemcategory]
+		local item = nzItemCarry.Items[itemcategory]
 		local hasitem = LocalPlayer():HasCarryItem(itemcategory)
 		if hasitem then
 			text = item and item.hastext or "You already have this."

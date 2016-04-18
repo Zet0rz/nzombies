@@ -76,8 +76,8 @@ end
 
 function ENT:WindUp( )
 	local gun
-	if Mapping.Settings.rboxweps then
-		gun = weapons.Get(Mapping.Settings.rboxweps[math.random(#Mapping.Settings.rboxweps)])
+	if nzMapping.Settings.rboxweps then
+		gun = weapons.Get(nzMapping.Settings.rboxweps[math.random(#nzMapping.Settings.rboxweps)])
 	else
 		gun = table.Random(weapons.GetList())
 	end

@@ -187,7 +187,7 @@ function SWEP:Deploy()
 end
 
 if engine.ActiveGamemode() == "nzombies3" then 
-	SpecialWeapons:AddWeapon( "nz_one_inch_punch", "knife", function(ply, wep)
+	nzSpecialWeapons:AddWeapon( "nz_one_inch_punch", "knife", function(ply, wep)
 		if SERVER then
 			ply:SetUsingSpecialWeapon(true)
 			ply:SetActiveWeapon(nil)

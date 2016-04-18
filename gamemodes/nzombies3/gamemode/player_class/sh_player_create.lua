@@ -29,7 +29,7 @@ end
 
 function PLAYER:Spawn()
 	-- if we are in create or debuging make zombies target us
-	if Round:InState(ROUND_CREATE) or GetConVar( "nz_zombie_debug" ):GetBool() then --TODO this is bullshit?
+	if nzRound:InState(ROUND_CREATE) or GetConVar( "nz_zombie_debug" ):GetBool() then --TODO this is bullshit?
 		self.Player:SetTargetPriority(TARGET_PRIORITY_PLAYER)
 	end
 	self.Player:SetUsingSpecialWeapon(false)

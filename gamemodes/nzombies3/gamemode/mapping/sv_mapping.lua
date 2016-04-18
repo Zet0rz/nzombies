@@ -1,6 +1,6 @@
 //
 
-function Mapping:ZedSpawn(pos, link, respawnable, ply)
+function nzMapping:ZedSpawn(pos, link, respawnable, ply)
 
 	local ent = ents.Create("nz_spawn_zombie_normal")
 	pos.z = pos.z - ent:OBBMaxs().z
@@ -21,7 +21,7 @@ function Mapping:ZedSpawn(pos, link, respawnable, ply)
 	return ent
 end
 
-function Mapping:ZedSpecialSpawn(pos, link, ply)
+function nzMapping:ZedSpecialSpawn(pos, link, ply)
 
 	local ent = ents.Create("nz_spawn_zombie_special")
 	pos.z = pos.z - ent:OBBMaxs().z
@@ -42,7 +42,7 @@ function Mapping:ZedSpecialSpawn(pos, link, ply)
 	return ent
 end
 
-function Mapping:PlayerSpawn(pos, ply)
+function nzMapping:PlayerSpawn(pos, ply)
 
 	local ent = ents.Create("player_spawns")
 	pos.z = pos.z - ent:OBBMaxs().z
@@ -59,7 +59,7 @@ function Mapping:PlayerSpawn(pos, ply)
 
 end
 
-function Mapping:EasterEgg(pos, ang, model, ply)
+function nzMapping:EasterEgg(pos, ang, model, ply)
 	local egg = ents.Create( "easter_egg" )
 	egg:SetModel( model )
 	egg:SetPos( pos )
@@ -80,7 +80,7 @@ function Mapping:EasterEgg(pos, ang, model, ply)
 	return egg
 end
 
-function Mapping:WallBuy(pos, gun, price, angle, oldent, ply, flipped)
+function nzMapping:WallBuy(pos, gun, price, angle, oldent, ply, flipped)
 
 	if IsValid(oldent) then oldent:Remove() end
 
@@ -111,7 +111,7 @@ function Mapping:WallBuy(pos, gun, price, angle, oldent, ply, flipped)
 
 end
 
-function Mapping:PropBuy(pos, ang, model, flags, ply)
+function nzMapping:PropBuy(pos, ang, model, flags, ply)
 	local prop = ents.Create( "prop_buys" )
 	prop:SetModel( model )
 	prop:SetPos( pos )
@@ -121,7 +121,7 @@ function Mapping:PropBuy(pos, ang, model, flags, ply)
 
 	//REMINDER APPY FLAGS
 	if flags != nil then
-		Doors:CreateLink( prop, flags )
+		nzDoors:CreateLink( prop, flags )
 	end
 
 	local phys = prop:GetPhysicsObject()
@@ -138,7 +138,7 @@ function Mapping:PropBuy(pos, ang, model, flags, ply)
 	return prop
 end
 
-function Mapping:Electric(pos, ang, model, ply)
+function nzMapping:Electric(pos, ang, model, ply)
 	--THERE CAN ONLY BE ONE TRUE HERO
 	local prevs = ents.FindByClass("power_box")
 	if prevs[1] != nil then
@@ -165,7 +165,7 @@ function Mapping:Electric(pos, ang, model, ply)
 	return ent
 end
 
-function Mapping:BlockSpawn(pos, ang, model, ply)
+function nzMapping:BlockSpawn(pos, ang, model, ply)
 	local block = ents.Create( "wall_block" )
 	block:SetModel( model )
 	block:SetPos( pos )
@@ -187,7 +187,7 @@ function Mapping:BlockSpawn(pos, ang, model, ply)
 	return block
 end
 
-function Mapping:BoxSpawn(pos, ang, ply)
+function nzMapping:BoxSpawn(pos, ang, ply)
 	local box = ents.Create( "random_box_spawns" )
 	box:SetPos( pos )
 	box:SetAngles( ang )
@@ -203,7 +203,7 @@ function Mapping:BoxSpawn(pos, ang, ply)
 	return box
 end
 
-function Mapping:PerkMachine(pos, ang, id, ply)
+function nzMapping:PerkMachine(pos, ang, id, ply)
 	local perkData = nz.Perks.Functions.Get(id)
 
 	local perk = ents.Create("perk_machine")
@@ -229,7 +229,7 @@ function Mapping:PerkMachine(pos, ang, id, ply)
 	return perk
 end
 
-function Mapping:BreakEntry(pos,ang,ply)
+function nzMapping:BreakEntry(pos,ang,ply)
 	local entry = ents.Create( "breakable_entry" )
 	entry:SetPos( pos )
 	entry:SetAngles( ang )
@@ -250,7 +250,7 @@ function Mapping:BreakEntry(pos,ang,ply)
 	return entry
 end
 
-function Mapping:SpawnEffect( pos, ang, model, ply )
+function nzMapping:SpawnEffect( pos, ang, model, ply )
 
 	local e = ents.Create("nz_prop_effect")
 	e:SetModel(model)
@@ -270,7 +270,7 @@ function Mapping:SpawnEffect( pos, ang, model, ply )
 
 end
 
-function Mapping:CleanUpMap()
+function nzMapping:CleanUpMap()
 	game.CleanUpMap(false, {
 		"breakable_entry",
 		"breakable_entry_plank",
@@ -298,8 +298,8 @@ function Mapping:CleanUpMap()
 	})
 
 	-- Gotta reset the doors and other entites' values!
-	for k,v in pairs(Doors.MapDoors) do
-		local door = Doors:DoorIndexToEnt(k)
+	for k,v in pairs(nzDoors.MapDoors) do
+		local door = nzDoors:DoorIndexToEnt(k)
 		door:SetLocked(true)
 		if door:IsDoor() then
 			door:LockDoor()
@@ -314,7 +314,7 @@ function Mapping:CleanUpMap()
 	end
 
 	if self.MarkedProps then
-		if !Round:InState( ROUND_CREATE ) then
+		if !nzRound:InState( ROUND_CREATE ) then
 			for k,v in pairs(self.MarkedProps) do
 				local ent = ents.GetMapCreatedEntity(k)
 				if IsValid(ent) then ent:Remove() end
@@ -328,7 +328,7 @@ function Mapping:CleanUpMap()
 	end
 end
 
-function Mapping:SpawnEntity(pos, ang, ent, ply)
+function nzMapping:SpawnEntity(pos, ang, ent, ply)
 	local entity = ents.Create( ent )
 	entity:SetPos( pos )
 	entity:SetAngles( ang )
@@ -346,7 +346,7 @@ function Mapping:SpawnEntity(pos, ang, ent, ply)
 	return entity
 end
 
-function Mapping:CreateInvisibleWall(vec1, vec2, ply)
+function nzMapping:CreateInvisibleWall(vec1, vec2, ply)
 	local wall = ents.Create( "invis_wall" )
 	wall:SetPos( vec1 ) -- Later we might make the position the center
 	--wall:SetAngles( ang )

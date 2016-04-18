@@ -1,4 +1,4 @@
-function Doors:OpenDoor( ent, ply )
+function nzDoors:OpenDoor( ent, ply )
 	local data = ent:GetDoorData()
 	local link = data.link
 	local rebuyable = data.rebuyable
@@ -30,7 +30,7 @@ function Doors:OpenDoor( ent, ply )
 	hook.Call("OnDoorUnlocked", self, ent, link, rebuyable, ply)
 end
 
-function Doors:OpenLinkedDoors( link, ply )
+function nzDoors:OpenLinkedDoors( link, ply )
 	-- Go through all the doors
 	for k,v in pairs(self.MapDoors) do
 		if v.flags then
@@ -53,7 +53,7 @@ function Doors:OpenLinkedDoors( link, ply )
 	self.OpenedLinks[tonumber(link)] = true
 end
 
-function Doors:LockAllDoors()
+function nzDoors:LockAllDoors()
 	-- Force all doors to lock and stay open when opened
 	for k,v in pairs(ents.GetAll()) do
 		if (v:IsDoor() or v:IsBuyableProp()) then
@@ -80,7 +80,7 @@ function Doors:LockAllDoors()
 	hook.Call("OnAllDoorsLocked", self)
 end
 
-function Doors:BuyDoor( ply, ent )
+function nzDoors:BuyDoor( ply, ent )
 	if ent.lasttime and ent.lasttime + 2 > CurTime() then return end
 	
 	local flags = ent:GetDoorData()
@@ -115,7 +115,7 @@ end
 
 //Hooks
 
-function Doors.OnUseDoor( ply, ent )
+function nzDoors.OnUseDoor( ply, ent )
 	-- Downed players can't use anything!
 	if !ply:GetNotDowned() then return false end
 	
@@ -124,13 +124,13 @@ function Doors.OnUseDoor( ply, ent )
 	
 	if ent:IsBuyableEntity() then
 		if ent.buyable == nil or tobool(ent.buyable) then
-			Doors:BuyDoor( ply, ent )
+			nzDoors:BuyDoor( ply, ent )
 		end
 	end
 end
-hook.Add( "PlayerUse", "nzPlayerBuyDoor", Doors.OnUseDoor )
+hook.Add( "PlayerUse", "nzPlayerBuyDoor", nzDoors.OnUseDoor )
 
-function Doors.CheckUseDoor(ply, ent)
+function nzDoors.CheckUseDoor(ply, ent)
 	--print(ply, ent)
 
 	local tr = util.QuickTrace(ply:EyePos(), ply:GetAimVector()*100, ply)
@@ -148,4 +148,4 @@ function Doors.CheckUseDoor(ply, ent)
 	end
 	
 end
-hook.Add("FindUseEntity", "nzCheckDoor", Doors.CheckUseDoor)
+hook.Add("FindUseEntity", "nzCheckDoor", nzDoors.CheckUseDoor)

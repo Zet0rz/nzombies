@@ -12,7 +12,7 @@ end
 function GM:PlayerDeathThink( ply )
 
 	-- Allow players in creative mode to respawn
-	if ply:IsSuperAdmin() and Round:InState( ROUND_CREATE ) then
+	if ply:IsSuperAdmin() and nzRound:InState( ROUND_CREATE ) then
 		if ply:KeyDown(IN_JUMP) or ply:KeyDown(IN_ATTACK) then
 			ply:Spawn()
 			return true

@@ -95,7 +95,7 @@ function SWEP:GetViewModelPosition( pos, ang )
 end
 
 if engine.ActiveGamemode() == "nzombies3" then 
-	SpecialWeapons:AddWeapon( "nz_revive_morphine", "display", nil, function(ply, wep)
+	nzSpecialWeapons:AddWeapon( "nz_revive_morphine", "display", nil, function(ply, wep)
 		if SERVER then
 			ply:SetUsingSpecialWeapon(true)
 			ply:SelectWeapon("nz_revive_morphine")

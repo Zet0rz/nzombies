@@ -36,7 +36,7 @@ if SERVER then
 	function UpdateAllZombieTargets(target)
 		if IsValid(target) then
 			for k,v in pairs(ents.GetAll()) do
-				if nz.Config.ValidEnemies[v:GetClass()] then
+				if nzConfig.ValidEnemies[v:GetClass()] then
 					v:SetTarget(target)
 				end
 			end

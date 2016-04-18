@@ -1,61 +1,46 @@
-//Chat Commands
+-- Actual Commands
 
-//Setup
-nz.Misc.Data.ConsoleCommands = {}
-
-//Functions
-function nz.Misc.Functions.NewConsoleCommand(text, func)
-	//For Future Use
-	--table.insert(nz.Misc.Data.ConsoleCommands, {text, func})
-	//Console Command usage
-	concommand.Add( text, func )
-end
-
-//Quick Function
-NewConsoleCommand = nz.Misc.Functions.NewConsoleCommand
-
-// Actual Commands
-
-//Quick reload for dedicated severs
-NewConsoleCommand("qr", function() 
+-- Quick reload for dedicated severs
+concommand.Add("nz_qr", function()
 	RunConsoleCommand("changelevel", game.GetMap())
 end)
 
-NewConsoleCommand("PrintWeps", function() 
-	for k,v in pairs( weapons.GetList() ) do 
+concommand.Add( "nz_print_weps", function()
+	for k,v in pairs( weapons.GetList() ) do
 		print( v.ClassName )
-	end 
+	end
 end)
 
-NewConsoleCommand("doorId", function() 
+concommand.Add("nz_door_id", function()
 	local tr = util.TraceLine( util.GetPlayerTrace( player.GetByID(1) ) )
 	if IsValid( tr.Entity ) then print( tr.Entity:doorIndex() ) end
 end)
 
-NewConsoleCommand("test1", function() 
-	nz.Doors.Functions.CreateMapDoorLink( 1236, "price=500,elec=0,link=1" )
-	
-	timer.Simple(5, function() nz.Doors.Functions.RemoveMapDoorLink( 1236 ) end)
+concommand.Add("nz_test1", function()
+	nz.nzDoors.Functions.CreateMapDoorLink( 1236, "price=500,elec=0,link=1" )
+
+	timer.Simple(5, function() nz.nzDoors.Functions.RemoveMapDoorLink( 1236 ) end)
 end)
 
 concommand.Add("nz_forceround", function(ply, cmd, args, argStr)
 	if !IsValid(ply) or ply:IsSuperAdmin() then
 		local round = args[1] and tonumber(args[1]) or nil
 		local nokill = args[2] and tobool(args[2]) or false
-		
+
 		if !nokill then
 			nz.PowerUps.Functions.Nuke(true) -- Nuke kills them all, no points
 		end
-		
+
 		if round then
-			Round:SetNumber( round - 1 )
+			nzRound:SetNumber( round - 1 )
 			local specint = GetConVar("nz_round_special_interval"):GetInt() or 6
-			Round:SetNextSpecialRound( math.ceil(round/specint)*specint)
+			nzRound:SetNextSpecialRound( math.ceil(round/specint)*specint)
 		end
-		Round:Prepare()
+		nzRound:Prepare()
 	end
 end)
 
+-- Isn't used anywhere, marked for removal
 function lmne(name, find, listall)
 	if !IsValid(ply) or ply:IsSuperAdmin() then
 		if name then

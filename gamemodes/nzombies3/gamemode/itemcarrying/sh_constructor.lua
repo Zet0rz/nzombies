@@ -1,8 +1,7 @@
 //Main Tables
 nzItemCarry = nzItemCarry or {}
-ItemCarry = nzItemCarry
-ItemCarry.Items = ItemCarry.Items or {}
-ItemCarry.Players = ItemCarry.Players or {}
+nzItemCarry.Items = nzItemCarry.Items or {}
+nzItemCarry.Players = nzItemCarry.Players or {}
 
 if SERVER then
 	local baseitem = {
@@ -34,7 +33,7 @@ if SERVER then
 				-- First check if it already belongs somewhere
 				local id = ent:GetNWString("NZItemCategory")
 				if id != "" then
-					local item = ItemCarry.Items[id]
+					local item = nzItemCarry.Items[id]
 					-- If so, remove it from there
 					if item and item.items and table.HasValue(item.items, ent) then
 						table.RemoveByValue(item.items, ent)
@@ -92,17 +91,17 @@ if SERVER then
 		end,
 		-- Call this to send the info to clients; do this after all changes
 		Update = function(self)
-			ItemCarry:SendObjectCreated(self.id)
+			nzItemCarry:SendObjectCreated(self.id)
 		end,
 	}
 	nzItemMeta.__index = nzItemMeta
 
-	function ItemCarry:CreateCategory(id)
+	function nzItemCarry:CreateCategory(id)
 		local tbl = table.Copy(baseitem)
 		tbl.id = id
 		setmetatable(tbl, nzItemMeta)
 		self.Items[id] = tbl
-		
+
 		return self.Items[id]
 	end
 end

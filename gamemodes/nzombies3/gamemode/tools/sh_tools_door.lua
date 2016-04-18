@@ -9,7 +9,7 @@ nz.Tools.Functions.CreateTool("door", {
 		local ent = tr.Entity
 		if !IsValid(ent) then return end
 		if ent:IsDoor() or ent:IsBuyableProp() or ent:IsButton() then
-			Doors:CreateLink(ent, data.flags)
+			nzDoors:CreateLink(ent, data.flags)
 		else
 			ply:ChatPrint("That is not a valid door.")
 		end
@@ -19,14 +19,14 @@ nz.Tools.Functions.CreateTool("door", {
 		if !IsValid(ent) then return end
 		if ent:IsDoor() or ent:IsBuyableProp() or ent:IsButton() then
 			nz.Nav.Functions.UnlinkAutoMergeLink(ent)
-			Doors:RemoveLink(ent)
+			nzDoors:RemoveLink(ent)
 		end
 	end,
 	Reload = function(wep, ply, tr, data)
 		local ent = tr.Entity
 		if !IsValid(ent) then return end
 		if ent:IsDoor() or ent:IsBuyableProp() or ent:IsButton() then
-			Doors:DisplayDoorLinks(ent)
+			nzDoors:DisplayDoorLinks(ent)
 		end
 	end,
 	OnEquip = function(wep, ply, data)

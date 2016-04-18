@@ -48,10 +48,10 @@ end
 
 function ENT:Think()
 	if SERVER then
-	    if Round:InState( ROUND_PROG ) and self:GetZombiesToSpawn() > 0 then
+	    if nzRound:InState( ROUND_PROG ) and self:GetZombiesToSpawn() > 0 then
 			if self:GetSpawner() and self:GetSpawner():GetNextSpawn() < CurTime() and self:GetNextSpawn() < CurTime() then
 				if self:IsSuitable() then
-					local class = nz.Misc.Functions.WeightedRandom(self:GetZombieData(), "chance")
+					local class = nzMisc.WeightedRandom(self:GetZombieData(), "chance")
 					local zombie = ents.Create(class)
 					zombie:SetPos(self:GetPos())
 					zombie:Spawn()
@@ -72,7 +72,7 @@ end
 
 if CLIENT then
 	function ENT:Draw()
-		if Round:InState( ROUND_CREATE ) then
+		if nzRound:InState( ROUND_CREATE ) then
 			self:DrawModel()
 		end
 	end

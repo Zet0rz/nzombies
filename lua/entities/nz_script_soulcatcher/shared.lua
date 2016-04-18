@@ -58,9 +58,7 @@ function ENT:Reset()
 end
 
 function ENT:ReleaseSoul( z )
-	print("Releasing", z)
 	if self.ReleaseOverride then
-		print("Overridden")
 		self:ReleaseOverride(z) -- You can override the effect and count logic with this
 	else
 		if self.CurrentAmount >= self.TargetAmount then return end

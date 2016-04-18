@@ -1,5 +1,5 @@
-Mapping.Mismatch = Mapping.Mismatch or {}
-Mapping.MismatchData = Mapping.MismatchData or {}
+nzMapping.Mismatch = nzMapping.Mismatch or {}
+nzMapping.MismatchData = nzMapping.MismatchData or {}
 
 if SERVER then
 	util.AddNetworkString("nzMappingMismatchData")
@@ -12,14 +12,14 @@ if SERVER then
 		end
 		local id = net.ReadString()
 		local data = net.ReadTable()
-		Mapping.Mismatch[id].Correct(data)
+		nzMapping.Mismatch[id].Correct(data)
 	end)
 
 else
 	net.Receive("nzMappingMismatchData", function()
 		local id = net.ReadString()
 		local data = net.ReadTable()
-		Mapping.MismatchData[id] = data
+		nzMapping.MismatchData[id] = data
 	end)
 
 	net.Receive("nzMappingMismatchEnd", function()
@@ -49,9 +49,9 @@ else
 			end
 		end
 
-		for k,v in pairs(Mapping.MismatchData) do
+		for k,v in pairs(nzMapping.MismatchData) do
 			if table.Count(v) > 0 then
-				local panel = Mapping.Mismatch[k].Interface(sheet)
+				local panel = nzMapping.Mismatch[k].Interface(sheet)
 				local info = sheet:AddSheet(k, panel)
 				--table.insert(sheet.sheets, {tab = info.Tab, panel = info.Panel, name = tab.Name})
 				sheet.sheets[info.Tab] = info.Panel
@@ -96,18 +96,18 @@ end
 
 function CreateMismatchCheck(id, sv_check, cl_interface, sv_correct)
 	-- Create tables for storing it
-	Mapping.Mismatch[id] = Mapping.Mismatch[id] or {}
-	Mapping.MismatchData[id] = Mapping.MismatchData[id] or {}
+	nzMapping.Mismatch[id] = nzMapping.Mismatch[id] or {}
+	nzMapping.MismatchData[id] = nzMapping.MismatchData[id] or {}
 
 	if SERVER then
-		Mapping.Mismatch[id].Check = sv_check
-		Mapping.Mismatch[id].Correct = sv_correct
+		nzMapping.Mismatch[id].Check = sv_check
+		nzMapping.Mismatch[id].Correct = sv_correct
 	else
-		Mapping.Mismatch[id].Interface = cl_interface
+		nzMapping.Mismatch[id].Interface = cl_interface
 	end
 end
 
-function Mapping:CheckMismatch( loader )
+function nzMapping:CheckMismatch( loader )
 	if !IsValid(loader) then return end
 	local faults = nil
 	
@@ -149,11 +149,11 @@ end, function(frame)
 	properties:SetPos(0, 0)
 	properties:SetSize(380, 420)
 
-	for k,v in pairs(Mapping.MismatchData["Wall Buys"]) do
+	for k,v in pairs(nzMapping.MismatchData["Wall Buys"]) do
 		local choice = properties:CreateRow( "Missing Weapons", k )
 		choice:Setup( "Combo", {} )
 		choice:AddChoice( " Remove ...", "nz_removeweapon", true )
-		Mapping.MismatchData["Wall Buys"][k] = "nz_removeweapon"
+		nzMapping.MismatchData["Wall Buys"][k] = "nz_removeweapon"
 		for _, v2 in pairs(weapons.GetList()) do
 			if v2.Category and v2.Category != "" then
 				choice:AddChoice(v2.PrintName and v2.PrintName != "" and v2.Category.. " - "..v2.PrintName or v2.ClassName, v2.ClassName, false)
@@ -162,16 +162,16 @@ end, function(frame)
 			end
 		end
 		choice.DataChanged = function(self, val)
-			Mapping.MismatchData["Wall Buys"][k] = val
+			nzMapping.MismatchData["Wall Buys"][k] = val
 		end
 	end
 
 	pnl.ReturnCorrectedData = function() -- Add the function to the returned panel so we can access it outside
 		net.Start("nzMappingMismatchData")
 			net.WriteString("Wall Buys")
-			net.WriteTable(Mapping.MismatchData["Wall Buys"])
+			net.WriteTable(nzMapping.MismatchData["Wall Buys"])
 		net.SendToServer()
-		Mapping.MismatchData["Wall Buys"] = nil -- Clear the data
+		nzMapping.MismatchData["Wall Buys"] = nil -- Clear the data
 	end
 
 	return pnl -- Return it to add it the the sheets
@@ -188,7 +188,7 @@ end, function( data )
 		end
 	end
 
-	Mapping.MismatchData["Wall Buys"] = nil -- Clear the data
+	nzMapping.MismatchData["Wall Buys"] = nil -- Clear the data
 end)
 
 CreateMismatchCheck("Perks", function()
@@ -212,25 +212,25 @@ end, function(frame)
 	properties:SetPos(0, 0)
 	properties:SetSize(380, 420)
 
-	for k,v in pairs(Mapping.MismatchData["Perks"]) do
+	for k,v in pairs(nzMapping.MismatchData["Perks"]) do
 		local choice = properties:CreateRow( "Invalid Perks", k )
 		choice:Setup( "Combo", {} )
 		choice:AddChoice( " Remove ...", "nz_removeperk", true )
-		Mapping.MismatchData["Perks"][k] = "nz_removeperk"
+		nzMapping.MismatchData["Perks"][k] = "nz_removeperk"
 		for k2, v2 in pairs(weapons.GetList()) do
 			choice:AddChoice(v2.name or k2, k2, false)
 		end
 		choice.DataChanged = function(self, val)
-			Mapping.MismatchData["Petks"][k] = val
+			nzMapping.MismatchData["Petks"][k] = val
 		end
 	end
 
 	pnl.ReturnCorrectedData = function()
 		net.Start("nzMappingMismatchData")
 			net.WriteString("Perks")
-			net.WriteTable(Mapping.MismatchData["Perks"])
+			net.WriteTable(nzMapping.MismatchData["Perks"])
 		net.SendToServer()
-		Mapping.MismatchData["Perks"] = nil -- Clear the data
+		nzMapping.MismatchData["Perks"] = nil -- Clear the data
 	end
 
 	return pnl
@@ -248,12 +248,12 @@ end, function( data )
 		end
 	end
 
-	Mapping.MismatchData["Perks"] = nil -- Clear the data
+	nzMapping.MismatchData["Perks"] = nil -- Clear the data
 end)
 
 CreateMismatchCheck("Map Settings", function()
 	local tbl = {}
-	local settings = Mapping.Settings
+	local settings = nzMapping.Settings
 
 	if !weapons.Get(settings.startwep) then tbl["startwep"] = settings.startwep end
 	-- Later add stuff like model packs, special round entity types etc.
@@ -270,7 +270,7 @@ CreateMismatchCheck("Map Settings", function()
 		properties:SetPos(0, 0)
 		properties:SetSize(380, 420)
 
-		local tbl = Mapping.MismatchData["Map Settings"]
+		local tbl = nzMapping.MismatchData["Map Settings"]
 
 		if tbl.startwep then
 			local choice = properties:CreateRow( "Invalid Map Settings", "Start Weapon" )
@@ -279,16 +279,16 @@ CreateMismatchCheck("Map Settings", function()
 				choice:AddChoice(v2.PrintName and v2.PrintName != "" and v2.PrintName or v2.ClassName, v2.ClassName, false)
 			end
 			choice.DataChanged = function(self, val)
-				Mapping.MismatchData["Map Settings"]["startwep"] = val
+				nzMapping.MismatchData["Map Settings"]["startwep"] = val
 			end
 		end
 
 		pnl.ReturnCorrectedData = function()
 			net.Start("nzMappingMismatchData")
 				net.WriteString("Map Settings")
-				net.WriteTable(Mapping.MismatchData["Map Settings"])
+				net.WriteTable(nzMapping.MismatchData["Map Settings"])
 			net.SendToServer()
-			Mapping.MismatchData["Map Settings"] = nil
+			nzMapping.MismatchData["Map Settings"] = nil
 		end
 
 		return pnl
@@ -296,19 +296,19 @@ CreateMismatchCheck("Map Settings", function()
 	end, function( data )
 
 		if data.startwep then
-			Mapping.Settings.startwep = data.startwep
+			nzMapping.Settings.startwep = data.startwep
 		end
 
 		for k,v in pairs(player.GetAll()) do
-			Mapping:SendMapData(ply) -- Update the data to players
+			nzMapping:SendMapData(ply) -- Update the data to players
 		end
 
-		Mapping.MismatchData["Map Settings"] = nil
+		nzMapping.MismatchData["Map Settings"] = nil
 end)
 
 CreateMismatchCheck("Map Script", function()
 	local tbl = {}
-	if tobool(Mapping.Settings.script) then tbl["script"] = true end
+	if tobool(nzMapping.Settings.script) then tbl["script"] = true end
 	--if true then tbl["script"] = true end
 	
 	return tbl
@@ -394,7 +394,7 @@ CreateMismatchCheck("Map Script", function()
 		local txt10 = vgui.Create("DLabel", pnl)
 		txt10:SetSize(350, 100)
 		txt10:SetWrap(true)
-		txt10:SetText(Mapping.Settings.scriptinfo or "- no description -")
+		txt10:SetText(nzMapping.Settings.scriptinfo or "- no description -")
 		txt10:SetTextColor(Color(75,175,75))
 		txt10:SetFont("Trebuchet18")
 		txt10:SetPos(0, 210)
@@ -417,7 +417,7 @@ CreateMismatchCheck("Map Script", function()
 				net.WriteString("Map Script")
 				net.WriteTable({load = true})
 			net.SendToServer()
-			Mapping.MismatchData["Map Script"] = nil
+			nzMapping.MismatchData["Map Script"] = nil
 			frame:CloseTabAndOpenNew()
 		end
 		
@@ -430,7 +430,7 @@ CreateMismatchCheck("Map Script", function()
 				net.WriteString("Map Script")
 				net.WriteTable({load = false})
 			net.SendToServer()
-			Mapping.MismatchData["Map Script"] = nil
+			nzMapping.MismatchData["Map Script"] = nil
 			frame:CloseTabAndOpenNew()
 		end
 		
@@ -447,7 +447,7 @@ CreateMismatchCheck("Map Script", function()
 				net.WriteString("Map Script")
 				net.WriteTable({load = false})
 			net.SendToServer()
-			Mapping.MismatchData["Map Script"] = nil
+			nzMapping.MismatchData["Map Script"] = nil
 		end
 
 		return pnl
@@ -455,16 +455,16 @@ CreateMismatchCheck("Map Script", function()
 	end, function( data )
 
 		if data.load then
-			Mapping:LoadScript(Mapping.CurrentConfig)
+			nzMapping:LoadScript(nzMapping.CurrentConfig)
 		end
 
-		Mapping.MismatchData["Map Script"] = nil
+		nzMapping.MismatchData["Map Script"] = nil
 end)
 
 CreateMismatchCheck("Random Box Weapons", function()
 	local tbl = {}
-	if Mapping.Settings.rboxweps and table.Count(Mapping.Settings.rboxweps) > 0 then
-		for k,v in pairs(Mapping.Settings.rboxweps) do
+	if nzMapping.Settings.rboxweps and table.Count(nzMapping.Settings.rboxweps) > 0 then
+		for k,v in pairs(nzMapping.Settings.rboxweps) do
 			if !weapons.Get(v) then
 				print("Random Box has non-existant weapon class: " .. v .. "!")
 				tbl[v] = true
@@ -484,11 +484,11 @@ end, function(frame)
 	properties:SetPos(0, 0)
 	properties:SetSize(380, 420)
 
-	for k,v in pairs(Mapping.MismatchData["Random Box Weapons"]) do
+	for k,v in pairs(nzMapping.MismatchData["Random Box Weapons"]) do
 		local choice = properties:CreateRow( "Missing Box Weapons", k )
 		choice:Setup( "Combo", {} )
 		choice:AddChoice( " Remove ...", "nz_removeweapon", true )
-		Mapping.MismatchData["Random Box Weapons"][k] = "nz_removeweapon"
+		nzMapping.MismatchData["Random Box Weapons"][k] = "nz_removeweapon"
 		for _, v2 in pairs(weapons.GetList()) do
 			if v2.Category and v2.Category != "" then
 				choice:AddChoice(v2.PrintName and v2.PrintName != "" and v2.Category.. " - "..v2.PrintName or v2.ClassName, v2.ClassName, false)
@@ -497,33 +497,33 @@ end, function(frame)
 			end
 		end
 		choice.DataChanged = function(self, val)
-			Mapping.MismatchData["Random Box Weapons"][k] = val
+			nzMapping.MismatchData["Random Box Weapons"][k] = val
 		end
 	end
 
 	pnl.ReturnCorrectedData = function() -- Add the function to the returned panel so we can access it outside
 		net.Start("nzMappingMismatchData")
 			net.WriteString("Random Box Weapons")
-			net.WriteTable(Mapping.MismatchData["Random Box Weapons"])
+			net.WriteTable(nzMapping.MismatchData["Random Box Weapons"])
 		net.SendToServer()
-		Mapping.MismatchData["Random Box Weapons"] = nil -- Clear the data
+		nzMapping.MismatchData["Random Box Weapons"] = nil -- Clear the data
 	end
 
 	return pnl -- Return it to add it the the sheets
 
 end, function( data )
-	if Mapping.Settings.rboxweps and table.Count(Mapping.Settings.rboxweps) > 0 then
-		for k,v in pairs(Mapping.Settings.rboxweps) do
+	if nzMapping.Settings.rboxweps and table.Count(nzMapping.Settings.rboxweps) > 0 then
+		for k,v in pairs(nzMapping.Settings.rboxweps) do
 			local new = data[v]
 			if new then
 				if new == "nz_removeweapon" then
-					table.RemoveByValue(Mapping.Settings.rboxweps, v)
+					table.RemoveByValue(nzMapping.Settings.rboxweps, v)
 				else
-					Mapping.Settings.rboxweps[table.KeyFromValue(Mapping.Settings.rboxweps, v)] = new
+					nzMapping.Settings.rboxweps[table.KeyFromValue(nzMapping.Settings.rboxweps, v)] = new
 				end
 			end
 		end
 	end
 
-	Mapping.MismatchData["Wall Buys"] = nil -- Clear the data
+	nzMapping.MismatchData["Wall Buys"] = nil -- Clear the data
 end)

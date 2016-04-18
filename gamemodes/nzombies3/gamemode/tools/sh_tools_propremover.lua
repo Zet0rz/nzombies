@@ -10,7 +10,7 @@ nz.Tools.Functions.CreateTool("propremover", {
 		if IsValid(ent) and ent != Entity(0) and id != -1 then
 			ply:ChatPrint("Marked "..ent:GetClass().." ["..ent:EntIndex().."] for removal.")
 			ent:SetColor(Color(200,0,0))
-			Mapping.MarkedProps[id] = true
+			nzMapping.MarkedProps[id] = true
 		end
 	end,
 	SecondaryAttack = function(wep, ply, tr, data)
@@ -19,7 +19,7 @@ nz.Tools.Functions.CreateTool("propremover", {
 		if IsValid(ent) and ent != Entity(0) and id != -1 then
 			ply:ChatPrint("Unarked "..ent:GetClass().." ["..ent:EntIndex().."] for removal.")
 			ent:SetColor(Color(255,255,255))
-			Mapping.MarkedProps[id] = nil
+			nzMapping.MarkedProps[id] = nil
 		end
 	end,
 	Reload = function(wep, ply, tr, data)

@@ -18,7 +18,7 @@ function ENT:Initialize()
 	if IsValid(ents.FindByClass("edit_fog")[1]) and ents.FindByClass("edit_fog")[1] != self then ents.FindByClass("edit_fog")[1]:Remove() end
 
 	if ( CLIENT ) then
-		Round:EnableSpecialFog( false )
+		nzRound:EnableSpecialFog( false )
 	end
 	
 end

@@ -2,11 +2,11 @@ local wep = FindMetaTable("Weapon")
 local ply = FindMetaTable("Player")
 
 function wep:IsSpecial()
-	return SpecialWeapons.Weapons[self:GetClass()] and true or false
+	return nzSpecialWeapons.Weapons[self:GetClass()] and true or false
 end
 
 function wep:GetSpecialCategory()
-	return SpecialWeapons.Weapons[self:GetClass()].id
+	return nzSpecialWeapons.Weapons[self:GetClass()].id
 end
 
 function ply:GetSpecialWeaponFromCategory( id )
@@ -46,9 +46,9 @@ if SERVER then
 		if !self.NZSpecialWeapons then self.NZSpecialWeapons = {} end
 		local id = wep:GetSpecialCategory()
 		self.NZSpecialWeapons[id] = wep
-		SpecialWeapons:SendSpecialWeaponAdded(self, wep, id)
-		if SpecialWeapons.Weapons[wep:GetClass()].equip then
-			SpecialWeapons.Weapons[wep:GetClass()].equip(self, wep)
+		nzSpecialWeapons:SendSpecialWeaponAdded(self, wep, id)
+		if nzSpecialWeapons.Weapons[wep:GetClass()].equip then
+			nzSpecialWeapons.Weapons[wep:GetClass()].equip(self, wep)
 		end
 	end
 

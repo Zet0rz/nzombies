@@ -3,7 +3,7 @@
 if SERVER then
 	function nz.Interfaces.Functions.PlayerHandlerHandler( ply, data )
 		if ply:IsSuperAdmin() then
-			Mapping:PlayerHandler(data.vec, data.ang, data.startwep, data.startpoints, data.numweps, data.eeurl, data.keep, ply)
+			nzMapping:PlayerHandler(data.vec, data.ang, data.startwep, data.startpoints, data.numweps, data.eeurl, data.keep, ply)
 		end
 	end
 end

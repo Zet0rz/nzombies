@@ -4,7 +4,7 @@ properties.Add( "nz_remove", {
 	MenuIcon = "icon16/delete.png",
 
 	Filter = function( self, ent, ply ) -- A function that determines whether an entity is valid for this property
-		if !Round:InState( ROUND_CREATE ) then return false end
+		if !nzRound:InState( ROUND_CREATE ) then return false end
 		if ( ent:IsPlayer() ) then return false end
 		if ( !ply:IsAdmin() ) then return false end
 
@@ -23,7 +23,7 @@ properties.Add( "nz_remove", {
 
 		if ( !IsValid( ent ) ) then return false end
 		if ( !IsValid( player ) ) then return false end
-		if !Round:InState( ROUND_CREATE ) then return false end
+		if !nzRound:InState( ROUND_CREATE ) then return false end
 		if ( !player:IsAdmin() ) then return false end
 		if ( ent:IsPlayer() ) then return false end
 		if ( !self:Filter( ent, player ) ) then return false end
@@ -56,7 +56,7 @@ properties.Add( "nz_editentity", {
 
 		if ( !IsValid( ent ) ) then return false end
 		if ( !ent.Editable ) then return false end
-		if !Round:InState( ROUND_CREATE ) then return false end
+		if !nzRound:InState( ROUND_CREATE ) then return false end
 		if ( ent:IsPlayer() ) then return false end
 		if ( !ply:IsAdmin() ) then return false end
 
@@ -94,7 +94,7 @@ properties.Add( "nz_lock", {
 
 		if ( !IsValid( ent ) ) then return false end
 		if !( ent:IsDoor() or ent:IsButton() or ent:IsBuyableProp() ) then return false end
-		if !Round:InState( ROUND_CREATE ) then return false end
+		if !nzRound:InState( ROUND_CREATE ) then return false end
 		if ( ent:IsPlayer() ) then return false end
 		if ( !ply:IsAdmin() ) then return false end
 
@@ -117,13 +117,13 @@ properties.Add( "nz_unlock", {
 
 		if ( !IsValid( ent ) ) then return false end
 		if !( ent:IsDoor() or ent:IsButton() or ent:IsBuyableProp() ) then return false end
-		if !Round:InState( ROUND_CREATE ) then return false end
+		if !nzRound:InState( ROUND_CREATE ) then return false end
 		if ( ent:IsPlayer() ) then return false end
 		if ( !ply:IsAdmin() ) then return false end
 		if ent:IsBuyableProp() then
-			if ( !Doors.PropDoors[ent:EntIndex()] ) then return false end
+			if ( !nzDoors.PropDoors[ent:EntIndex()] ) then return false end
 		else
-			if ( !Doors.MapDoors[ent:DoorIndex()] ) then return false end
+			if ( !nzDoors.MapDoors[ent:DoorIndex()] ) then return false end
 		end
 
 		return true
@@ -143,12 +143,12 @@ properties.Add( "nz_unlock", {
 
 		if ( !IsValid( ent ) ) then return false end
 		if ( !IsValid( player ) ) then return false end
-		if !Round:InState( ROUND_CREATE ) then return false end
+		if !nzRound:InState( ROUND_CREATE ) then return false end
 		if ( !player:IsAdmin() ) then return false end
 		if ( ent:IsPlayer() ) then return false end
 		if ( !self:Filter( ent, player ) ) then return false end
 
-		Doors:RemoveLink( ent )
+		nzDoors:RemoveLink( ent )
 
 	end
 } );
@@ -163,7 +163,7 @@ properties.Add( "nz_editzspawn", {
 
 		if ( !IsValid( ent ) ) then return false end
 		if ( ent:GetClass() != "nz_spawn_zombie_normal" ) then return false end
-		if !Round:InState( ROUND_CREATE ) then return false end
+		if !nzRound:InState( ROUND_CREATE ) then return false end
 		if ( ent:IsPlayer() ) then return false end
 		if ( !ply:IsAdmin() ) then return false end
 
@@ -182,7 +182,7 @@ properties.Add( "nz_editzspawn", {
 
 		if ( !IsValid( ent ) ) then return false end
 		if ( !IsValid( player ) ) then return false end
-		if !Round:InState( ROUND_CREATE ) then return false end
+		if !nzRound:InState( ROUND_CREATE ) then return false end
 		if ( !player:IsAdmin() ) then return false end
 		if ( ent:IsPlayer() ) then return false end
 		if ( !self:Filter( ent, player ) ) then return false end
@@ -202,7 +202,7 @@ properties.Add( "nz_wepbuy", {
 
 		if ( !IsValid( ent ) ) then return false end
 		if ( ent:GetClass() != "wall_buys" ) then return false end
-		if !Round:InState( ROUND_CREATE ) then return false end
+		if !nzRound:InState( ROUND_CREATE ) then return false end
 		if ( ent:IsPlayer() ) then return false end
 		if ( !ply:IsAdmin() ) then return false end
 
@@ -221,7 +221,7 @@ properties.Add( "nz_wepbuy", {
 
 		if ( !IsValid( ent ) ) then return false end
 		if ( !IsValid( player ) ) then return false end
-		if !Round:InState( ROUND_CREATE ) then return false end
+		if !nzRound:InState( ROUND_CREATE ) then return false end
 		if ( !player:IsAdmin() ) then return false end
 		if ( ent:IsPlayer() ) then return false end
 		if ( !self:Filter( ent, player ) ) then return false end
@@ -241,7 +241,7 @@ properties.Add( "nz_editperk", {
 
 		if ( !IsValid( ent ) ) then return false end
 		if ( ent:GetClass() != "perk_machine" ) then return false end
-		if !Round:InState( ROUND_CREATE ) then return false end
+		if !nzRound:InState( ROUND_CREATE ) then return false end
 		if ( ent:IsPlayer() ) then return false end
 		if ( !ply:IsAdmin() ) then return false end
 
@@ -260,7 +260,7 @@ properties.Add( "nz_editperk", {
 
 		if ( !IsValid( ent ) ) then return false end
 		if ( !IsValid( player ) ) then return false end
-		if !Round:InState( ROUND_CREATE ) then return false end
+		if !nzRound:InState( ROUND_CREATE ) then return false end
 		if ( !player:IsAdmin() ) then return false end
 		if ( ent:IsPlayer() ) then return false end
 		if ( !self:Filter( ent, player ) ) then return false end

@@ -22,7 +22,7 @@ if Spawner == nil then
 			self:SetZombieData(self.tData)
 			-- not really sure if this is 100% unique but for our purpose it will be enough
 			self.sUniqueName = self.sSpointClass .. "." .. CurTime()
-			self.iRoundNumber = roundNum or Round:GetNumber()
+			self.iRoundNumber = roundNum or nzRound:GetNumber()
 			self:Activate()
 		end
 	})
@@ -65,7 +65,7 @@ end
 
 function Spawner:Update()
 	-- garbage collect the spawner object if a round is over
-	if (self.iRoundNumber != Round:GetNumber() or Round:InState(ROUND_GO)) and timer.Exists("nzZombieSpawnThink" .. self.sUniqueName) then
+	if (self.iRoundNumber != nzRound:GetNumber() or nzRound:InState(ROUND_GO)) and timer.Exists("nzZombieSpawnThink" .. self.sUniqueName) then
 		self:Remove()
 	end
 
@@ -96,7 +96,7 @@ function Spawner:UpdateValidSpawns()
 		-- reset the zombiesToSpawn value on every Spawnpoint
 		spawn:SetZombiesToSpawn(0)
 		if spawn:GetSpawnWeight() <= average then
-			if spawn.link == nil or Doors.OpenedLinks[tonumber(spawn.link)] then
+			if spawn.link == nil or nzDoors.OpenedLinks[tonumber(spawn.link)] then
 				table.insert(self.tValidSpawns, spawn)
 			end
 		end

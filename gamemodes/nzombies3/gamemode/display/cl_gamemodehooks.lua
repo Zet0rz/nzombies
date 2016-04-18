@@ -1,5 +1,5 @@
 function GM:ContextMenuOpen()
-	return Round:InState( ROUND_CREATE ) and LocalPlayer():IsAdmin()
+	return nzRound:InState( ROUND_CREATE ) and LocalPlayer():IsAdmin()
 end
 
 function GM:PopulateMenuBar(panel)

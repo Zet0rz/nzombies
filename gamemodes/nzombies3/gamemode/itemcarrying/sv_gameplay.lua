@@ -1,5 +1,5 @@
 
-function ItemCarry.OnPlayerPickItemUp( ply, ent )
+function nzItemCarry.OnPlayerPickItemUp( ply, ent )
 	-- Downed players can't pick up anything!
 	if !ply:GetNotDowned() then return false end
 	
@@ -13,19 +13,19 @@ function ItemCarry.OnPlayerPickItemUp( ply, ent )
 	
 	local category = ent:GetNWString("NZItemCategory")
 	if category != "" then
-		local item = ItemCarry.Items[category]
+		local item = nzItemCarry.Items[category]
 		if item.pickupfunction and item:condition(ply) then -- If it has a pickup function and it is allowed in this case
 			--print("allowed")
 			item:pickupfunction(ply, ent)
 		end
 	end
 end
-hook.Add( "PlayerUse", "nzPlayerPickupItems", ItemCarry.OnPlayerPickItemUp )
+hook.Add( "PlayerUse", "nzPlayerPickupItems", nzItemCarry.OnPlayerPickItemUp )
 
-function ItemCarry.RemoveItemsOnRemoved( ent )
-	local item = ItemCarry.Items[ent:GetNWString("NZItemCategory")]
+function nzItemCarry.RemoveItemsOnRemoved( ent )
+	local item = nzItemCarry.Items[ent:GetNWString("NZItemCategory")]
 	if item and item.items and table.HasValue(item.items, ent) then
 		table.RemoveByValue(item.items, ent)
 	end
 end
-hook.Add( "EntityRemoved", "nzItemCarryRemoveItems", ItemCarry.RemoveItemsOnRemoved )
+hook.Add( "EntityRemoved", "nzItemCarryRemoveItems", nzItemCarry.RemoveItemsOnRemoved )

@@ -1,28 +1,28 @@
-function Round:GetEndTime()
+function nzRound:GetEndTime()
 	return GetGlobalFloat( "gwEndTime", 0 )
 end
 
-function Round:StateChange( old, new )
+function nzRound:StateChange( old, new )
 	if new == ROUND_WAITING then
-		hook.Call( "OnRoundWating", Round )
+		hook.Call( "OnRoundWating", nzRound )
 	elseif new == ROUND_INIT then
-		hook.Call( "OnRoundInit", Round )
+		hook.Call( "OnRoundInit", nzRound )
 	elseif new == ROUND_PREP then
-		hook.Call( "OnRoundPreperation", Round )
+		hook.Call( "OnRoundPreperation", nzRound )
 	elseif new == ROUND_PROG then
-		hook.Call( "OnRoundStart", Round )
+		hook.Call( "OnRoundStart", nzRound )
 	elseif new == ROUND_GO then
-		hook.Call( "OnRoundEnd", Round )
+		hook.Call( "OnRoundEnd", nzRound )
 	end
 end
 
-function Round:OnRoundPreperation()
+function nzRound:OnRoundPreperation()
 	if !self:IsSpecial() then
 		self:EnableSpecialFog(false)
 	end
 end
 
-function Round:OnRoundStart()
+function nzRound:OnRoundStart()
 	if self:IsSpecial() then
 		self:EnableSpecialFog(true)
 	else

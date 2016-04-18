@@ -81,7 +81,7 @@ local PLAYER_LINE = {
 			surface.SetDrawColor(255, 255, 255)
 			local num = 0
 			for k,v in pairs(self.Player:GetCarryItems()) do
-				local item = ItemCarry.Items[v]
+				local item = nzItemCarry.Items[v]
 				if item and item.icon and item.icon != "" then
 					local x, y = pnl:GetPos()
 					surface.SetMaterial(item.icon)

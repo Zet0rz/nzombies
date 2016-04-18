@@ -1,7 +1,7 @@
 if SERVER then
 	util.AddNetworkString("nzSendSpecialWeapon")
 
-	function SpecialWeapons:SendSpecialWeaponAdded(ply, wep, id)
+	function nzSpecialWeapons:SendSpecialWeaponAdded(ply, wep, id)
 		timer.Simple(0.1, function()
 			if IsValid(ply) then
 				net.Start("nzSendSpecialWeapon")
@@ -13,7 +13,7 @@ if SERVER then
 		end)
 	end
 	
-	function SpecialWeapons:SendSpecialWeaponRemoved(ply, id)
+	function nzSpecialWeapons:SendSpecialWeaponRemoved(ply, id)
 		timer.Simple(0.1, function()
 			if IsValid(ply) then
 				net.Start("nzSendSpecialWeapon")

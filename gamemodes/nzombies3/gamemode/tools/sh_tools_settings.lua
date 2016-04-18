@@ -24,7 +24,7 @@ nz.Tools.Functions.CreateTool("settings", {
 		return true
 	end,
 	interface = function(frame, data)
-		local data = table.Copy(Mapping.Settings)
+		local data = table.Copy(nzMapping.Settings)
 		local valz = {}
 		valz["Row1"] = data.startwep or "Select ..."
 		valz["Row2"] = data.startpoints or 500
@@ -54,7 +54,7 @@ nz.Tools.Functions.CreateTool("settings", {
 		end
 		if data.startwep then
 			local wep = weapons.Get(data.startwep)
-			if !wep then wep = weapons.Get(nz.Config.BaseStartingWeapons[1]) end
+			if !wep then wep = weapons.Get(nzConfig.BaseStartingWeapons[1]) end
 			if wep.Category and wep.Category != "" then
 				Row1:AddChoice(wep.PrintName and wep.PrintName != "" and wep.Category.. " - "..wep.PrintName or wep.ClassName, wep.ClassName, false)
 			else
@@ -104,7 +104,7 @@ nz.Tools.Functions.CreateTool("settings", {
 			if !valz["RBoxWeps"] or !valz["RBoxWeps"][1] then data.rboxweps = nil else data.rboxweps = valz["RBoxWeps"] end
 			PrintTable(data)
 
-			Mapping:SendMapData( data )
+			nzMapping:SendMapData( data )
 		end
 
 		local DermaButton = vgui.Create( "DButton", DProperties )
@@ -158,8 +158,8 @@ nz.Tools.Functions.CreateTool("settings", {
 				numweplist = numweplist + 1
 			end
 
-			if Mapping.Settings.rboxweps then
-				for k,v in pairs(Mapping.Settings.rboxweps) do
+			if nzMapping.Settings.rboxweps then
+				for k,v in pairs(nzMapping.Settings.rboxweps) do
 					local wep = weapons.Get(v)
 					if wep.Category and wep.Category != "" then
 						InsertWeaponToList(wep.PrintName and wep.PrintName != "" and wep.PrintName.." ["..wep.Category.."]" or v, v)
@@ -170,7 +170,7 @@ nz.Tools.Functions.CreateTool("settings", {
 			else
 				for k,v in pairs(weapons.GetList()) do
 					-- By default, add all weapons that have print names unless they are blacklisted
-					if v.PrintName and v.PrintName != "" and !nz.Config.WeaponBlackList[v.ClassName] and v.PrintName != "Scripted Weapon" and !v.NZPreventBox then
+					if v.PrintName and v.PrintName != "" and !nzConfig.WeaponBlackList[v.ClassName] and v.PrintName != "Scripted Weapon" and !v.NZPreventBox then
 						if v.Category and v.Category != "" then
 							InsertWeaponToList(v.PrintName and v.PrintName != "" and v.PrintName.." ["..v.Category.."]" or v.ClassName, v.ClassName)
 						else
@@ -183,7 +183,7 @@ nz.Tools.Functions.CreateTool("settings", {
 
 			local wepentry = vgui.Create( "DComboBox", rboxpanel )
 			wepentry:SetPos( 0, 155 )
-			wepentry:SetSize( 203, 20 )
+			wepentry:SetSize( 146, 20 )
 			wepentry:SetValue( "Weapon ..." )
 			for k,v in pairs(weapons.GetList()) do
 				if v.Category and v.Category != "" then
@@ -197,7 +197,7 @@ nz.Tools.Functions.CreateTool("settings", {
 
 			local wepadd = vgui.Create( "DButton", rboxpanel )
 			wepadd:SetText( "Add" )
-			wepadd:SetPos( 207, 155 )
+			wepadd:SetPos( 150, 155 )
 			wepadd:SetSize( 53, 20 )
 			wepadd.DoClick = function()
 				local v = weapons.Get(wepentry:GetOptionData(wepentry:GetSelectedID()))
@@ -207,6 +207,191 @@ nz.Tools.Functions.CreateTool("settings", {
 					InsertWeaponToList(v.PrintName and v.PrintName != "" and v.PrintName.." [No Category]" or v.ClassName, v.ClassName)
 				end
 				wepentry:SetValue( "Weapon..." )
+			end
+			
+			local wepmore = vgui.Create( "DButton", rboxpanel )
+			wepmore:SetText( "More ..." )
+			wepmore:SetPos( 207, 155 )
+			wepmore:SetSize( 53, 20 )
+			wepmore.DoClick = function()
+				local morepnl = vgui.Create("DFrame")
+				morepnl:SetSize(300, 170)
+				morepnl:SetTitle("More weapon options ...")
+				morepnl:Center()
+				morepnl:SetDraggable(true)
+				morepnl:ShowCloseButton(true)
+				morepnl:MakePopup()
+				
+				local morecat = vgui.Create("DComboBox", morepnl)
+				morecat:SetSize(150, 20)
+				morecat:SetPos(10, 30)
+				local cattbl = {}
+				for k,v in pairs(weapons.GetList()) do
+					if v.Category and v.Category != "" then
+						if !cattbl[v.Category] then
+							morecat:AddChoice(v.Category, v.Category, false)
+							cattbl[v.Category] = true
+						end
+					end
+				end
+				morecat:AddChoice(" Category ...", nil, true)
+					
+				local morecatadd = vgui.Create("DButton", morepnl)
+				morecatadd:SetText( "Add all" )
+				morecatadd:SetPos( 165, 30 )
+				morecatadd:SetSize( 60, 20 )
+				morecatadd.DoClick = function()
+					local cat = morecat:GetOptionData(morecat:GetSelectedID())
+					if cat and cat != "" then
+						for k,v in pairs(weapons.GetList()) do
+							if  v.Category and v.Category == cat and !nz.Config.WeaponBlackList[v.ClassName] and !v.NZPreventBox then
+								InsertWeaponToList(v.PrintName and v.PrintName != "" and v.PrintName.." ["..v.Category.."]" or v.ClassName, v.ClassName)
+							end
+						end
+					end
+				end
+				
+				local morecatdel = vgui.Create("DButton", morepnl)
+				morecatdel:SetText( "Remove all" )
+				morecatdel:SetPos( 230, 30 )
+				morecatdel:SetSize( 60, 20 )
+				morecatdel.DoClick = function()
+					local cat = morecat:GetOptionData(morecat:GetSelectedID())
+					if cat and cat != "" then
+						for k,v in pairs(weplist) do
+							local wep = weapons.Get(k)
+							if wep.Category and wep.Category == cat then
+								if table.HasValue(valz["RBoxWeps"], k) then table.RemoveByValue(valz["RBoxWeps"], k) end
+								weplist[k]:Remove()
+								weplist[k] = nil
+								local num = 0
+								for k,v in pairs(weplist) do
+									v:SetPos(0, num*16)
+									num = num + 1
+								end
+								numweplist = numweplist - 1
+							end
+						end
+					end
+				end
+				
+				local moreprefix = vgui.Create("DComboBox", morepnl)
+				moreprefix:SetSize(150, 20)
+				moreprefix:SetPos(10, 60)
+				local prefixtbl = {}
+				for k,v in pairs(weapons.GetList()) do
+					local prefix = string.sub(v.ClassName, 0, string.find(v.ClassName, "_"))
+					if prefix and !prefixtbl[prefix] then
+						moreprefix:AddChoice(prefix, prefix, false)
+						prefixtbl[prefix] = true
+					end
+				end
+				moreprefix:AddChoice(" Prefix ...", nil, true)
+					
+				local moreprefixadd = vgui.Create("DButton", morepnl)
+				moreprefixadd:SetText( "Add all" )
+				moreprefixadd:SetPos( 165, 60 )
+				moreprefixadd:SetSize( 60, 20 )
+				moreprefixadd.DoClick = function()
+					local prefix = moreprefix:GetOptionData(moreprefix:GetSelectedID())
+					if prefix and prefix != "" then
+						for k,v in pairs(weapons.GetList()) do
+							local wepprefix = string.sub(v.ClassName, 0, string.find(v.ClassName, "_"))
+							if wepprefix and wepprefix == prefix and !nz.Config.WeaponBlackList[v.ClassName] and !v.NZPreventBox then
+								if v.Category and v.Category != "" then
+									InsertWeaponToList(v.PrintName and v.PrintName != "" and v.PrintName.." ["..v.Category.."]" or v.ClassName, v.ClassName)
+								else
+									InsertWeaponToList(v.PrintName and v.PrintName != "" and v.PrintName.." [No Category]" or v.ClassName, v.ClassName)
+								end
+							end
+						end
+					end
+				end
+				
+				local moreprefixdel = vgui.Create("DButton", morepnl)
+				moreprefixdel:SetText( "Remove all" )
+				moreprefixdel:SetPos( 230, 60 )
+				moreprefixdel:SetSize( 60, 20 )
+				moreprefixdel.DoClick = function()
+					local prefix = moreprefix:GetOptionData(moreprefix:GetSelectedID())
+					if prefix and prefix != "" then
+						for k,v in pairs(weplist) do
+							local wepprefix = string.sub(k, 0, string.find(k, "_"))
+							if wepprefix and wepprefix == prefix then
+								if table.HasValue(valz["RBoxWeps"], k) then table.RemoveByValue(valz["RBoxWeps"], k) end
+								weplist[k]:Remove()
+								weplist[k] = nil
+								local num = 0
+								for k,v in pairs(weplist) do
+									v:SetPos(0, num*16)
+									num = num + 1
+								end
+								numweplist = numweplist - 1
+							end
+						end
+					end
+				end
+				
+				local removeall = vgui.Create("DButton", morepnl)
+				removeall:SetText( "Remove all" )
+				removeall:SetPos( 10, 100 )
+				removeall:SetSize( 140, 25 )
+				removeall.DoClick = function()
+					for k,v in pairs(weplist) do
+						if table.HasValue(valz["RBoxWeps"], k) then table.RemoveByValue(valz["RBoxWeps"], k) end
+						weplist[k]:Remove()
+						weplist[k] = nil
+						numweplist = 0
+					end
+				end
+				
+				local addall = vgui.Create("DButton", morepnl)
+				addall:SetText( "Add all" )
+				addall:SetPos( 150, 100 )
+				addall:SetSize( 140, 25 )
+				addall.DoClick = function()
+					for k,v in pairs(weplist) do
+						if table.HasValue(valz["RBoxWeps"], k) then table.RemoveByValue(valz["RBoxWeps"], k) end
+						weplist[k]:Remove()
+						weplist[k] = nil
+						numweplist = 0
+					end
+					for k,v in pairs(weapons.GetList()) do
+						-- By default, add all weapons that have print names unless they are blacklisted
+						if v.PrintName and v.PrintName != "" and !nz.Config.WeaponBlackList[v.ClassName] and v.PrintName != "Scripted Weapon" and !v.NZPreventBox then
+							if v.Category and v.Category != "" then
+								InsertWeaponToList(v.PrintName and v.PrintName != "" and v.PrintName.." ["..v.Category.."]" or v.ClassName, v.ClassName)
+							else
+								InsertWeaponToList(v.PrintName and v.PrintName != "" and v.PrintName.." [No Category]" or v.ClassName, v.ClassName)
+							end
+						end
+						-- The same reset as when no random box list exists on server
+					end
+				end
+				
+				local reload = vgui.Create("DButton", morepnl)
+				reload:SetText( "Reload from server" )
+				reload:SetPos( 10, 130 )
+				reload:SetSize( 280, 25 )
+				reload.DoClick = function()
+					-- Remove all and insert from random box list
+					for k,v in pairs(weplist) do
+						if table.HasValue(valz["RBoxWeps"], k) then table.RemoveByValue(valz["RBoxWeps"], k) end
+						weplist[k]:Remove()
+						weplist[k] = nil
+						numweplist = 0
+					end
+					if Mapping.Settings.rboxweps then
+						for k,v in pairs(Mapping.Settings.rboxweps) do
+							local wep = weapons.Get(v)
+							if wep.Category and wep.Category != "" then
+								InsertWeaponToList(wep.PrintName and wep.PrintName != "" and wep.PrintName.." ["..wep.Category.."]" or v, v)
+							else
+								InsertWeaponToList(wep.PrintName and wep.PrintName != "" and wep.PrintName.." [No Category]" or v, v)
+							end
+						end
+					end
+				end
 			end
 
 			local DermaButton2 = vgui.Create( "DButton", rboxpanel )

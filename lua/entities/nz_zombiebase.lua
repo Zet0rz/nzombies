@@ -447,7 +447,7 @@ end
 
 function ENT:OnNoTarget()
 	-- Game over! Walk around randomly and wave
-	if Round:InState( ROUND_GO ) then
+	if nzRound:InState( ROUND_GO ) then
 		self:StartActivity(ACT_WALK)
 		self.loco:SetDesiredSpeed(40)
 		self:MoveToPos(self:GetPos() + Vector(math.random(-256, 256), math.random(-256, 256), 0), {
@@ -513,7 +513,7 @@ function ENT:OnNavAreaChanged(old, new)
 end
 
 function ENT:OnContact( ent )
-	if nz.Config.ValidEnemies[ent:GetClass()] and nz.Config.ValidEnemies[self:GetClass()] then
+	if nzConfig.ValidEnemies[ent:GetClass()] and nzConfig.ValidEnemies[self:GetClass()] then
 		--this is a poor approach to unstuck them when walking into each other
 		self.loco:Approach( self:GetPos() + Vector( math.Rand( -1, 1 ), math.Rand( -1, 1 ), 0 ) * 2000,1000)
 		--important if the get stuck on top of each other!
@@ -742,7 +742,7 @@ function ENT:ChaseTargetPath( options )
 				--print("Has area")
 				if nz.Nav.Data[area:GetID()].link then
 					--print("Area has door link")
-					if !Doors.OpenedLinks[nz.Nav.Data[area:GetID()].link] then
+					if !nzDoors.OpenedLinks[nz.Nav.Data[area:GetID()].link] then
 						--print("Door link is not opened")
 						return -1
 					end

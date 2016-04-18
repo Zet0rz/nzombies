@@ -6,7 +6,7 @@ nz.Tools.Functions.CreateTool("elec", {
 	end,
 
 	PrimaryAttack = function(wep, ply, tr, data)
-		Mapping:Electric(tr.HitPos + tr.HitNormal*5, tr.HitNormal:Angle(), nil, ply)
+		nzMapping:Electric(tr.HitPos + tr.HitNormal*5, tr.HitNormal:Angle(), nil, ply)
 	end,
 
 	SecondaryAttack = function(wep, ply, tr, data)

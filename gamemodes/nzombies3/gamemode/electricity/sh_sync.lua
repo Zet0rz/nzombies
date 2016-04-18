@@ -3,17 +3,17 @@
 if SERVER then
 
 	//Server to client (Server)
-	util.AddNetworkString( "nz.Elec.Sync" )
-	util.AddNetworkString( "nz.Elec.Sound" )
+	util.AddNetworkString( "nz.nzElec.Sync" )
+	util.AddNetworkString( "nz.nzElec.Sound" )
 	
-	function Elec:SendSync(ply)
-		net.Start( "nz.Elec.Sync" )
+	function nzElec:SendSync(ply)
+		net.Start( "nz.nzElec.Sync" )
 			net.WriteBool(self.Active)
 		return IsValid(ply) and net.Send(ply) or net.Broadcast()
 	end
 	
 	FullSyncModules["Elec"] = function(ply)
-		Elec:SendSync(ply)
+		nzElec:SendSync(ply)
 	end
 
 end
@@ -23,7 +23,7 @@ if CLIENT then
 	//Server to client (Client)
 	local function ReceiveSync( length )
 		local active = net.ReadBool()
-		Elec.Active = active
+		nzElec.Active = active
 	end
 	
 	local function RecievePowerSound()
@@ -37,8 +37,8 @@ if CLIENT then
 	end
 	
 	//Receivers 
-	net.Receive( "nz.Elec.Sync", ReceiveSync )
-	net.Receive( "nz.Elec.Sound", RecievePowerSound )
+	net.Receive( "nz.nzElec.Sync", ReceiveSync )
+	net.Receive( "nz.nzElec.Sound", RecievePowerSound )
 
 
 end

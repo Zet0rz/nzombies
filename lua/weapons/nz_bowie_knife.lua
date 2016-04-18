@@ -174,7 +174,7 @@ function SWEP:GetViewModelPosition( pos, ang )
 end
 
 if engine.ActiveGamemode() == "nzombies3" then 
-	SpecialWeapons:AddWeapon( "nz_bowie_knife", "knife", function(ply, wep) -- Use function
+	nzSpecialWeapons:AddWeapon( "nz_bowie_knife", "knife", function(ply, wep) -- Use function
 		if SERVER then
 			ply:SetUsingSpecialWeapon(true)
 			ply:SetActiveWeapon(wep)

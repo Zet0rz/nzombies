@@ -40,7 +40,7 @@ hook.Add("ShouldCollide", "nzdsadwa_InvisibleBlockFilter", function(ent1, ent2)
 			else
 				return false
 			end
-		elseif nz.Config.ValidEnemies[ent2:GetClass()] then
+		elseif nzConfig.ValidEnemies[ent2:GetClass()] then
 			if ent1:GetBlockZombies() then
 				return true
 			else
@@ -54,7 +54,7 @@ hook.Add("ShouldCollide", "nzdsadwa_InvisibleBlockFilter", function(ent1, ent2)
 			else
 				return false
 			end
-		elseif nz.Config.ValidEnemies[ent1:GetClass()] then
+		elseif nzConfig.ValidEnemies[ent1:GetClass()] then
 			if ent2:GetBlockZombies() then
 				return true
 			else
@@ -75,14 +75,14 @@ end
 
 -- Doesn't work? :(
 --[[function ENT:TestCollision(startpos, delta, isbox, bounds)
-	--if !Round:InState( ROUND_CREATE ) then return end -- Makes traces ignore this entity
+	--if !nzRound:InState( ROUND_CREATE ) then return end -- Makes traces ignore this entity
 	print("HDUIAHD", startpos, delta, isbox, bounds)
 	return
 end]]
 
 if CLIENT then
 	function ENT:Draw()
-		if Round:InState( ROUND_CREATE ) then
+		if nzRound:InState( ROUND_CREATE ) then
 			self:DrawModel()
 		end
 	end

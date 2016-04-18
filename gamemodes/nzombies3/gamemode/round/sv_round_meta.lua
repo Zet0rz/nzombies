@@ -1,78 +1,78 @@
 --pool network strings
-util.AddNetworkString( "nzRoundNumber" )
-util.AddNetworkString( "nzRoundState" )
-util.AddNetworkString( "nzRoundSpecial" )
+util.AddNetworkString( ", nzRoundNumber" )
+util.AddNetworkString( ", nzRoundState" )
+util.AddNetworkString( ", nzRoundSpecial" )
 util.AddNetworkString( "nzPlayerReadyState" )
 util.AddNetworkString( "nzPlayerPlayingState" )
 
-function Round:GetZombiesKilled()
+function nzRound:GetZombiesKilled()
 	return self.ZombiesKilled
 end
-function Round:SetZombiesKilled( num )
+function nzRound:SetZombiesKilled( num )
 	self.ZombiesKilled = num
 end
 
-function Round:GetZombiesMax()
+function nzRound:GetZombiesMax()
 	return self.ZombiesMax
 end
-function Round:SetZombiesMax( num )
+function nzRound:SetZombiesMax( num )
 	self.ZombiesMax = num
 end
 
-function Round:GetZombieHealth()
+function nzRound:GetZombieHealth()
 	return self.ZombieHealth
 end
-function Round:SetZombieHealth( num )
+function nzRound:SetZombieHealth( num )
 	self.ZombieHealth = num
 end
 
-function Round:GetNormalSpawner()
+function nzRound:GetNormalSpawner()
 	return self.hNormalSpawner
 end
 
-function Round:SetNormalSpawner(spawner)
+function nzRound:SetNormalSpawner(spawner)
 	self.hNormalSpawner = spawner
 end
 
-function Round:GetSpecialSpawner()
+function nzRound:GetSpecialSpawner()
 	return self.hSpecialSpawner
 end
 
-function Round:SetSpecialSpawner(spawner)
+function nzRound:SetSpecialSpawner(spawner)
 	self.hSpecialSpawner = spawner
 end
 
-function Round:GetZombieSpeeds()
+function nzRound:GetZombieSpeeds()
 	return self.ZombieSpeeds
 end
-function Round:SetZombieSpeeds( tbl )
+function nzRound:SetZombieSpeeds( tbl )
 	self.ZombieSpeeds = tbl
 end
 
-function Round:SetGlobalZombieData( tbl )
+function nzRound:SetGlobalZombieData( tbl )
 	self:SetZombiesMax(tbl.maxzombies or 5)
 	self:SetZombieHealth(tbl.health or 75)
 	self:SetSpecial(tbl.special or false)
 end
 
-function Round:InState( state )
+function nzRound:InState( state )
 	return self:GetState() == state
 end
 
-function Round:IsSpecial()
+function nzRound:IsSpecial()
 	return self.SpecialRound or false
 end
 
-function Round:SetSpecial( bool )
+function nzRound:SetSpecial( bool )
 	self.SpecialRound = bool or false
 	self:SendSpecialRound( self.SpecialRound )
 end
 
-function Round:InProgress()
+function nzRound:InProgress()
 	return self:GetState() == ROUND_PREP or self:GetState() == ROUND_PROG
 end
 
-function Round:SetState( state )
+function nzRound:SetState( state )
 
 	self.RoundState = state
 
@@ -80,46 +80,46 @@ function Round:SetState( state )
 
 end
 
-function Round:GetState()
+function nzRound:GetState()
 
 	return self.RoundState
 
 end
 
-function Round:SetNumber( number )
+function nzRound:SetNumber( number )
 	self.Number = number
 
 	self:SendNumber( number )
 
 end
 
-function Round:IncrementNumber()
+function nzRound:IncrementNumber()
 
 	self:SetNumber( self:GetNumber() + 1 )
 
 end
 
-function Round:GetNumber()
+function nzRound:GetNumber()
 
 	return self.Number
 
 end
 
-function Round:SetEndTime( time )
+function nzRound:SetEndTime( time )
 
 	SetGlobalFloat( "nzEndTime", time )
 
 end
 
-function Round:GetEndTime( time )
+function nzRound:GetEndTime( time )
 
 	GetGlobalFloat( "nzEndTime" )
 
 end
 
-function Round:GetNextSpawnTime()
+function nzRound:GetNextSpawnTime()
 	return self.NextSpawnTime or 0
 end
-function Round:SetNextSpawnTime( time )
+function nzRound:SetNextSpawnTime( time )
 	self.NextSpawnTime = time
 end

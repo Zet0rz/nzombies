@@ -19,7 +19,7 @@ local ofogcolor = fogcolor
 local specialfog = false
 local foginit = false
 
-function Round:EnableSpecialFog( bool )
+function nzRound:EnableSpecialFog( bool )
 	local ent = ents.FindByClass("edit_fog")[1]
 	local ent_special = ents.FindByClass("edit_fog_special")[1]
 	

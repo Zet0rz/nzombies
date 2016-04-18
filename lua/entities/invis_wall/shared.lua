@@ -30,7 +30,7 @@ local white = Color(255,150,0,30)
 
 if CLIENT then
 	function ENT:Draw()
-		if ConVarExists("nz_drawinviswalls") and GetConVar("nz_drawinviswalls"):GetBool() and Round:InState( ROUND_CREATE ) then
+		if ConVarExists("nz_drawinviswalls") and GetConVar("nz_drawinviswalls"):GetBool() and nzRound:InState( ROUND_CREATE ) then
 			cam.Start3D()
 				render.SetMaterial(mat)
 				render.DrawBox(self:GetPos(), self:GetAngles(), Vector(0,0,0), self:GetMaxBound(), white, true)

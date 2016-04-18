@@ -34,7 +34,7 @@ if SERVER then
 			end
 		end
 
-		local id = specific and specific or nz.Misc.Functions.WeightedRandom(choices)
+		local id = specific and specific or nzMisc.WeightedRandom(choices)
 		if !id or id == "null" then return end // Back out
 
 		//Spawn it

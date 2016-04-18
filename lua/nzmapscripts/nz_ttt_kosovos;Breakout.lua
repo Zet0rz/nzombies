@@ -27,7 +27,7 @@ local hasscriptgascan = false
 local scripthasusedelev = false
 local scriptnextexpltime
 
-local gascanobject = ItemCarry:CreateCategory("gascan")
+local gascanobject = nzItemCarry:CreateCategory("gascan")
 gascanobject:SetIcon("spawnicons/models/props_junk/gascan001a.png")
 gascanobject:SetText("Press E to pick up Gas Can.")
 gascanobject:SetDropOnDowned(true)

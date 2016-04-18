@@ -5,7 +5,7 @@ local function DrawItemCarryHud()
 	surface.SetDrawColor(255,255,255)
 	local num = 0
 	for k,v in pairs(ply:GetCarryItems()) do
-		local item = ItemCarry.Items[v]
+		local item = nzItemCarry.Items[v]
 		if item and item.icon then
 			surface.SetMaterial(item.icon)
 			surface.DrawTexturedRect(ScrW() - 400*scale - num*32*scale, ScrH() - 90*scale, 30*scale, 30*scale)

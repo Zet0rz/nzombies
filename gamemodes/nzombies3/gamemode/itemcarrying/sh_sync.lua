@@ -8,9 +8,9 @@ if SERVER then
 	util.AddNetworkString( "nzItemCarryPlayersFull" )
 	util.AddNetworkString( "nzItemCarryClean" )
 	
-	function ItemCarry:SendObjectCreated(id, receiver)
+	function nzItemCarry:SendObjectCreated(id, receiver)
 		if !id then return end
-		local data = ItemCarry.Items[id]
+		local data = nzItemCarry.Items[id]
 		local tbl = {
 			id = data.id,
 			text = data.text,
@@ -24,34 +24,34 @@ if SERVER then
 		return receiver and net.Send(receiver) or net.Broadcast()
 	end
 	
-	function ItemCarry:SendPlayerItem(ply, receiver)
+	function nzItemCarry:SendPlayerItem(ply, receiver)
 		if IsValid(ply) then
-			local data = ItemCarry.Players[ply]
+			local data = nzItemCarry.Players[ply]
 			net.Start( "nzItemCarryPlayers" )
 				net.WriteEntity(ply)
 				net.WriteTable( data )
 			return receiver and net.Send(receiver) or net.Broadcast()
 		else
-			local data = ItemCarry.Players
+			local data = nzItemCarry.Players
 			net.Start( "nzItemCarryPlayersFull" )
 				net.WriteTable( data )
 			return receiver and net.Send(receiver) or net.Broadcast()
 		end
 	end
 	
-	function ItemCarry:CleanUp()
-		ItemCarry.Items = {}
-		ItemCarry.Players = {}
+	function nzItemCarry:CleanUp()
+		nzItemCarry.Items = {}
+		nzItemCarry.Players = {}
 		
 		net.Start( "nzItemCarryClean" )
 		net.Broadcast()
 	end
 	
 	FullSyncModules["ItemCarry"] = function(ply)
-		for k,v in pairs(ItemCarry.Items) do
-			ItemCarry:SendObjectCreated(k, ply)
+		for k,v in pairs(nzItemCarry.Items) do
+			nzItemCarry:SendObjectCreated(k, ply)
 		end
-		ItemCarry:SendPlayerItem(nil, ply) -- No specific target, all players
+		nzItemCarry:SendPlayerItem(nil, ply) -- No specific target, all players
 	end
 
 end
@@ -67,28 +67,28 @@ if CLIENT then
 		print(data.icon)
 		if data.icon and data.icon != "" then data.icon = Material(data.icon) end
 		
-		ItemCarry.Items[id] = data
-		PrintTable(ItemCarry.Items[id])
+		nzItemCarry.Items[id] = data
+		PrintTable(nzItemCarry.Items[id])
 	end
 	
 	local function ReceiveItemPlayer( length )
 		local plu = net.ReadEntity()
 		local data = net.ReadTable()
 		
-		ItemCarry.Players[ply] = data
-		PrintTable(ItemCarry.Players[ply])
+		nzItemCarry.Players[ply] = data
+		PrintTable(nzItemCarry.Players[ply])
 	end
 	
 	local function ReceiveItemPlayerFull( length )
 		local data = net.ReadTable()
 		
-		ItemCarry.Players = data
-		PrintTable(ItemCarry.Players)
+		nzItemCarry.Players = data
+		PrintTable(nzItemCarry.Players)
 	end
 	
 	local function ReceiveItemCleanup( length )
-		ItemCarry.Players = {}
-		ItemCarry.Items = {}
+		nzItemCarry.Players = {}
+		nzItemCarry.Items = {}
 	end
 	
 	-- Receivers 

@@ -87,7 +87,7 @@ if SERVER then
 			if wep.Owner:HasPerk("deadshot") then
 				local tr = wep.Owner:GetEyeTrace()
 				local ent = tr.Entity
-				if IsValid(ent) and nz.Config.ValidEnemies[ent:GetClass()] then
+				if IsValid(ent) and nzConfig.ValidEnemies[ent:GetClass()] then
 					local head = ent:LookupBone("ValveBiped.Bip01_Neck1")
 					local headpos,headang = ent:GetBonePosition(head)
 					wep.Owner:SetEyeAngles((headpos - wep.Owner:GetShootPos()):Angle())
@@ -105,7 +105,7 @@ if SERVER then
 				if IsValid(wep) and wep:Clip1() < wep:GetMaxClip1() then
 					local pct = 1 - (wep:Clip1()/wep:GetMaxClip1())
 					local pos, ang = ply:GetPos() + ply:GetAimVector()*10 + Vector(0,0,50), ply:GetAimVector()
-					Effects:Tesla( {
+					nzEffects:Tesla( {
 						pos = ply:GetPos() + Vector(0,0,50),
 						ent = ply,
 						turnOn = true,
@@ -124,7 +124,7 @@ if SERVER then
 					d:SetInflictor(ply)
 					
 					for k,v in pairs(zombies) do
-						if nz.Config.ValidEnemies[v:GetClass()] then
+						if nzConfig.ValidEnemies[v:GetClass()] then
 							v:TakeDamageInfo(d)
 						end
 					end
@@ -139,7 +139,7 @@ if SERVER then
 			if ply:Crouching() then
 				local zombies = ents.FindInSphere(ply:GetPos(), 250)
 				for k,v in pairs(zombies) do
-					if nz.Config.ValidEnemies[v:GetClass()] then
+					if nzConfig.ValidEnemies[v:GetClass()] then
 						v:TakeDamage(150, ply, ply)
 					end
 				end

@@ -1,6 +1,6 @@
-//http://snippets.luacode.org/snippets/Weighted_random_choice_104
+-- http://snippets.luacode.org/snippets/Weighted_random_choice_104
 
-//Modified to allow special weight keys
+-- Modified to allow special weight keys
 
 local function weighted_total( choices, weightkey )
 	local total = 0
@@ -15,7 +15,7 @@ local function weighted_total( choices, weightkey )
 	end
 	return total
 end
-							
+
 local function weighted_random_choice( choices, weightkey )
 	local threshold = math.random(0, weighted_total( choices, weightkey ))
 	local last_choice
@@ -35,6 +35,6 @@ local function weighted_random_choice( choices, weightkey )
 	return last_choice
 end
 
-function nz.Misc.Functions.WeightedRandom( choices, weightkey )
+function nzMisc.WeightedRandom( choices, weightkey )
 	return weighted_random_choice( choices, weightkey )
 end

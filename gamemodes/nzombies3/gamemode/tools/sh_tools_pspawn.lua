@@ -5,7 +5,7 @@ nz.Tools.Functions.CreateTool("pspawn", {
 		return true
 	end,
 	PrimaryAttack = function(wep, ply, tr, data)
-		Mapping:PlayerSpawn(tr.HitPos, ply)
+		nzMapping:PlayerSpawn(tr.HitPos, ply)
 	end,
 	SecondaryAttack = function(wep, ply, tr, data)
 		if IsValid(tr.Entity) and tr.Entity:GetClass() == "player_spawns" then

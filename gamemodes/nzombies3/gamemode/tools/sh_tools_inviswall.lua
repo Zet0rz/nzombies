@@ -10,7 +10,7 @@ if SERVER then
 		local vec1 = net.ReadVector()
 		local vec2 = net.ReadVector()
 		
-		Mapping:CreateInvisibleWall(vec1, vec2, ply)
+		nzMapping:CreateInvisibleWall(vec1, vec2, ply)
 	end)
 end
 

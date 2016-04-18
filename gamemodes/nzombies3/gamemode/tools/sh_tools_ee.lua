@@ -5,7 +5,7 @@ nz.Tools.Functions.CreateTool("ee", {
 		return true
 	end,
 	PrimaryAttack = function(wep, ply, tr, data)
-		Mapping:EasterEgg(tr.HitPos, Angle(0,0,0), "models/props_lab/huladoll.mdl", ply)
+		nzMapping:EasterEgg(tr.HitPos, Angle(0,0,0), "models/props_lab/huladoll.mdl", ply)
 	end,
 	SecondaryAttack = function(wep, ply, tr, data)
 		if IsValid(tr.Entity) and tr.Entity:GetClass() == "easter_egg" then

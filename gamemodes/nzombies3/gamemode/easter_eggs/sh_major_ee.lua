@@ -36,15 +36,15 @@ if SERVER then
 			net.Broadcast()
 		end
 		-- Set round state to Game Over
-		Round:SetState( ROUND_GO )
+		nzRound:SetState( ROUND_GO )
 		--Notify with chat message
 		PrintMessage( HUD_PRINTTALK, "GAME OVER!" )
 		PrintMessage( HUD_PRINTTALK, "Restarting in 10 seconds!" )
 		timer.Simple(10, function()
-			Round:ResetGame()
+			nzRound:ResetGame()
 		end)
 
-		hook.Call( "OnRoundEnd", Round )
+		hook.Call( "OnRoundEnd", nzRound )
 	end
 	
 	function nzEE.Major:Reset()
@@ -69,7 +69,7 @@ if CLIENT then
 		
 		hook.Add("HUDPaint", "DrawEEEndScreen", function()
 			draw.SimpleText(msg, font, w, h, Color(255,255,255,255), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
-			if !Round:InState( ROUND_GO ) then
+			if !nzRound:InState( ROUND_GO ) then
 				hook.Remove("HUDPaint", "DrawEEEndScreen")
 			end
 		end)

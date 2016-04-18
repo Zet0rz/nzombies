@@ -41,7 +41,7 @@
 --returns: boolean
 --
 
-function Effects:Tesla( data )
+function nzEffects:Tesla( data )
 
 	local tesla = ents.Create("point_tesla")
 

@@ -81,7 +81,7 @@ function MenuToolBar:Init()
 
 	local ready = self:AddEntry( "READY", "large", "say", "/ready" )
 	function ready:Think()
-		if Round:InProgress() then
+		if nzRound:InProgress() then
 			if LocalPlayer():Alive()  then
 				self:SetText( "DROPOUT" )
 				self:SetConsoleCommand( "say", "/dropout" )
@@ -355,7 +355,7 @@ function PlayerList:Paint(w, h)
 			surface.SetDrawColor(200,0,0)
 			surface.DrawTexturedRect(0, h / 2 - n * 17.5 + 35 * c, 300, 40)
 			if ply:IsReady() then text = "Ready" else
-				if Round:InState(ROUND_CREATE) and ply:Alive() then
+				if nzRound:InState(ROUND_CREATE) and ply:Alive() then
 					text = "In Creative"
 				else
 					text = "Not ready"

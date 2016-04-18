@@ -1,43 +1,43 @@
 function GM:InitPostEntity()
 
-	Round:Waiting()
+	nzRound:Waiting()
 
 end
 
-function Round:Waiting()
+function nzRound:Waiting()
 
 	self:SetState( ROUND_WAITING )
-	hook.Call( "OnRoundWating", Round )
+	hook.Call( "OnRoundWating", nzRound )
 
 end
 
-function Round:Init()
+function nzRound:Init()
 
 	timer.Simple( 5, function() self:SetupGame() self:Prepare() end )
 	self:SetState( ROUND_INIT )
 	self:SetEndTime( CurTime() + 5 )
 	PrintMessage( HUD_PRINTTALK, "5 seconds till start time." )
-	hook.Call( "OnRoundInit", Round )
+	hook.Call( "OnRoundInit", nzRound )
 
 end
 
-function Round:Prepare()
+function nzRound:Prepare()
 
 	-- Set special for the upcoming round during prep, that way clients have time to fade the fog in
 	self:SetSpecial( self:MarkedForSpecial( self:GetNumber() + 1 ) )
 	self:SetState( ROUND_PREP )
 	self:IncrementNumber()
 
-	self:SetZombieHealth( nz.Curves.Functions.GenerateHealthCurve(self:GetNumber()) )
-	self:SetZombiesMax( nz.Curves.Functions.GenerateMaxZombies(self:GetNumber()) )
+	self:SetZombieHealth( nzCurves.GenerateHealthCurve(self:GetNumber()) )
+	self:SetZombiesMax( nzCurves.GenerateMaxZombies(self:GetNumber()) )
 
-	self:SetZombieSpeeds( nz.Curves.Functions.GenerateSpeedTable(self:GetNumber()) )
+	self:SetZombieSpeeds( nzCurves.GenerateSpeedTable(self:GetNumber()) )
 
 	self:SetZombiesKilled( 0 )
 
 	--Notify
 	PrintMessage( HUD_PRINTTALK, "ROUND: " .. self:GetNumber() .. " preparing" )
-	hook.Call( "OnRoundPreperation", Round, self:GetNumber() )
+	hook.Call( "OnRoundPreperation", nzRound, self:GetNumber() )
 	--Play the sound
 
 	--Spawn all players
@@ -61,8 +61,8 @@ function Round:Prepare()
 	end
 
 	-- Prioritize any configs (useful for mapscripts)
-	if nz.Config.EnemyTypes[ self:GetNumber() ] then
-		local roundData = nz.Config.EnemyTypes[ self:GetNumber() ]
+	if nzConfig.RoundData[ self:GetNumber() ] then
+		local roundData = nzConfig.RoundData[ self:GetNumber() ]
 
 		--normal spawner
 		local normalCount = 0
@@ -156,7 +156,7 @@ end
 
 local CurRoundOverSpawned = false
 
-function Round:Start()
+function nzRound:Start()
 
 	self:SetState( ROUND_PROG )
 	self:SetNextSpawnTime( CurTime() + 3 ) -- Delay zombie spawning by 3 seconds
@@ -164,13 +164,13 @@ function Round:Start()
 	if self:IsSpecial() and GetConVar("nz_test_hellhounds"):GetBool() then -- The config always takes priority, however if nothing has been set for this round, assume special round settings
 		self:SetNextSpawnTime( CurTime() + 5 )
 		timer.Simple(3, function()
-			Round:CallHellhoundRound()
+			nzRound:CallHellhoundRound()
 		end)
 	end
 
 	--Notify
 	PrintMessage( HUD_PRINTTALK, "ROUND: " .. self:GetNumber() .. " started" )
-	hook.Call("OnRoundStart", Round, self:GetNumber() )
+	hook.Call("OnRoundStart", nzRound, self:GetNumber() )
 	--nz.Notifications.Functions.PlaySound("nz/round/round_start.mp3", 1)
 
 	timer.Create( "NZRoundThink", 0.1, 0, function() self:Think() end )
@@ -178,7 +178,7 @@ function Round:Start()
 	nz.Weps.DoRoundResupply()
 end
 
-function Round:Think()
+function nzRound:Think()
 	hook.Call( "OnRoundThink", self )
 	--If all players are dead, then end the game.
 	if #player.GetAllPlayingAndAlive() < 1 then
@@ -188,7 +188,7 @@ function Round:Think()
 	end
 
 	--If we've killed all the spawned zombies, then progress to the next level.
-	local numzombies = Enemies:TotalAlive()
+	local numzombies = nzEnemies:TotalAlive()
 
 	-- failsafe temporary until i can identify the issue (why are not all zombies spawned and registered)
 	local zombiesToSpawn
@@ -223,9 +223,9 @@ function Round:Think()
 	end
 end
 
-function Round:ResetGame()
+function nzRound:ResetGame()
 	--Main Behaviour
-	Doors:LockAllDoors()
+	nzDoors:LockAllDoors()
 	self:SetState( ROUND_WAITING )
 	--Notify
 	PrintMessage( HUD_PRINTTALK, "GAME READY!" )
@@ -247,7 +247,7 @@ function Round:ResetGame()
 	end
 
 	--Remove all enemies
-	for k,v in pairs( nz.Config.ValidEnemies ) do
+	for k,v in pairs( nzConfig.ValidEnemies ) do
 		for k2, v2 in pairs( ents.FindByClass( k ) ) do
 			v2:Remove()
 		end
@@ -259,10 +259,10 @@ function Round:ResetGame()
 	end
 
 	--Reset the electricity
-	Elec:Reset(true)
+	nzElec:Reset(true)
 
 	--Remove the random box
-	RandomBox:Remove()
+	nzRandomBox.Remove()
 
 	--Reset all perk machines
 	for k,v in pairs(ents.FindByClass("perk_machine")) do
@@ -286,7 +286,7 @@ function Round:ResetGame()
 
 end
 
-function Round:End()
+function nzRound:End()
 	--Main Behaviour
 	self:SetState( ROUND_GO )
 	--Notify
@@ -297,10 +297,10 @@ function Round:End()
 		self:ResetGame()
 	end)
 
-	hook.Call( "OnRoundEnd", Round )
+	hook.Call( "OnRoundEnd", nzRound )
 end
 
-function Round:Create()
+function nzRound:Create()
 
 	if self:InState( ROUND_WAITING ) then
 		PrintMessage( HUD_PRINTTALK, "The mode has been set to creative mode!" )
@@ -315,7 +315,7 @@ function Round:Create()
 			end
 		end
 
-		Mapping:CleanUpMap()
+		nzMapping:CleanUpMap()
 
 		--Re-enable navmesh visualization
 		for k,v in pairs(nz.Nav.Data) do
@@ -337,7 +337,7 @@ function Round:Create()
 	end
 end
 
-function Round:SetupGame()
+function nzRound:SetupGame()
 
 	self:SetNumber( 0 )
 
@@ -349,8 +349,8 @@ function Round:SetupGame()
 		ply:SetFrags( 0 ) --Reset all player kills
 	end
 
-	Mapping:CleanUpMap()
-	Doors:LockAllDoors()
+	nzMapping:CleanUpMap()
+	nzDoors:LockAllDoors()
 
 	-- Reset navigation attributes so they don't save into the actual .nav file.
 	for k,v in pairs(nz.Nav.Data) do
@@ -363,7 +363,7 @@ function Round:SetupGame()
 			local data = v:GetDoorData()
 			if data then
 				if tonumber(data.price) == 0 and tobool(data.elec) == false then
-					Doors:OpenDoor( v )
+					nzDoors:OpenDoor( v )
 				end
 			end
 		end
@@ -374,28 +374,28 @@ function Round:SetupGame()
 	end
 
 	-- Empty the link table
-	table.Empty(Doors.OpenedLinks)
+	table.Empty(nzDoors.OpenedLinks)
 
 	-- All doors with Link 0 (No Link)
-	Doors.OpenedLinks[0] = true
-	--nz.Doors.Functions.SendSync()
+	nzDoors.OpenedLinks[0] = true
+	--nz.nzDoors.Functions.SendSync()
 
 	-- Spawn a random box
-	RandomBox:Spawn()
+	nzRandomBox.Spawn()
 
 	local power = ents.FindByClass("power_box")
 	if !IsValid(power[1]) then -- No power switch D:
-		Elec:Activate(true) -- Silently turn on the power
+		nzElec:Activate(true) -- Silently turn on the power
 	else
-		Elec:Reset() -- Reset with no value to play the power down sound
+		nzElec:Reset() -- Reset with no value to play the power down sound
 	end
 
 	nz.Perks.Functions.UpdateQuickRevive()
 
-	Round:SetNextSpecialRound( GetConVar("nz_round_special_interval"):GetInt() )
-	
+	nzRound:SetNextSpecialRound( GetConVar("nz_round_special_interval"):GetInt() )
+
 	nzEE.Major:Reset()
-	
-	hook.Call( "OnGameBegin", Round )
+
+	hook.Call( "OnGameBegin", nzRound )
 
 end
