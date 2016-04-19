@@ -114,7 +114,7 @@ function nzRound:Prepare()
 	-- if the round is special use the gamemodes default special round (Hellhounds)
 	elseif self:IsSpecial() then
 		-- only setup a special spawner
-		self:SetZombiesMax(math.floor(self:GetZombiesMax() / 2))
+		self:SetZombiesMax(math.floor(self:GetZombiesMax() / 2)) -- Half the amount of special zombies
 		local specialSpawner = Spawner("nz_spawn_zombie_special", {["nz_zombie_special_dog"] = {chance = 100}}, self:GetZombiesMax(), 2)
 
 		-- save the spawner to access data
@@ -159,12 +159,16 @@ local CurRoundOverSpawned = false
 function nzRound:Start()
 
 	self:SetState( ROUND_PROG )
-	self:SetNextSpawnTime( CurTime() + 3 ) -- Delay zombie spawning by 3 seconds
+	local spawner = self:GetNormalSpawner()
+	if spawner then
+		spawner:SetNextSpawn( CurTime() + 3 ) -- Delay zombie spawning by 3 seconds
+	end
 
-	if self:IsSpecial() and GetConVar("nz_test_hellhounds"):GetBool() then -- The config always takes priority, however if nothing has been set for this round, assume special round settings
-		self:SetNextSpawnTime( CurTime() + 5 )
+	local specialspawner = self:GetSpecialSpawner()
+	if self:IsSpecial() and specialspawner and specialspawner:GetData()["nz_zombie_special_dog"] then -- If we got a dog special round
+		specialspawner:SetNextSpawn( CurTime() + 6 ) -- Delay spawning even furhter
 		timer.Simple(3, function()
-			nzRound:CallHellhoundRound()
+			nzRound:CallHellhoundRound() -- Play the sound
 		end)
 	end
 

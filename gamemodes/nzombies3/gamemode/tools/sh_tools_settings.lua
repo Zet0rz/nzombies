@@ -244,7 +244,7 @@ nz.Tools.Functions.CreateTool("settings", {
 					local cat = morecat:GetOptionData(morecat:GetSelectedID())
 					if cat and cat != "" then
 						for k,v in pairs(weapons.GetList()) do
-							if  v.Category and v.Category == cat and !nz.Config.WeaponBlackList[v.ClassName] and !v.NZPreventBox then
+							if  v.Category and v.Category == cat and !nzConfig.WeaponBlackList[v.ClassName] and !v.NZPreventBox then
 								InsertWeaponToList(v.PrintName and v.PrintName != "" and v.PrintName.." ["..v.Category.."]" or v.ClassName, v.ClassName)
 							end
 						end
@@ -297,7 +297,7 @@ nz.Tools.Functions.CreateTool("settings", {
 					if prefix and prefix != "" then
 						for k,v in pairs(weapons.GetList()) do
 							local wepprefix = string.sub(v.ClassName, 0, string.find(v.ClassName, "_"))
-							if wepprefix and wepprefix == prefix and !nz.Config.WeaponBlackList[v.ClassName] and !v.NZPreventBox then
+							if wepprefix and wepprefix == prefix and !nzConfig.WeaponBlackList[v.ClassName] and !v.NZPreventBox then
 								if v.Category and v.Category != "" then
 									InsertWeaponToList(v.PrintName and v.PrintName != "" and v.PrintName.." ["..v.Category.."]" or v.ClassName, v.ClassName)
 								else
@@ -358,7 +358,7 @@ nz.Tools.Functions.CreateTool("settings", {
 					end
 					for k,v in pairs(weapons.GetList()) do
 						-- By default, add all weapons that have print names unless they are blacklisted
-						if v.PrintName and v.PrintName != "" and !nz.Config.WeaponBlackList[v.ClassName] and v.PrintName != "Scripted Weapon" and !v.NZPreventBox then
+						if v.PrintName and v.PrintName != "" and !nzConfig.WeaponBlackList[v.ClassName] and v.PrintName != "Scripted Weapon" and !v.NZPreventBox then
 							if v.Category and v.Category != "" then
 								InsertWeaponToList(v.PrintName and v.PrintName != "" and v.PrintName.." ["..v.Category.."]" or v.ClassName, v.ClassName)
 							else

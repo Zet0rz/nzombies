@@ -19,7 +19,7 @@ ENT.AdminOnly = true
 -- fallbacks
 ENT.DeathDropHeight = 700
 ENT.StepHeight = 22 --Default is 18 but it makes things easier
-ENT.JumpHeight = 68
+ENT.JumpHeight = 70
 ENT.AttackRange = 65
 ENT.RunSpeed = 200
 ENT.WalkSpeed = 100
@@ -31,7 +31,7 @@ ENT.DamageHigh = 70
 AccessorFunc( ENT, "fWalkSpeed", "WalkSpeed", FORCE_NUMBER)
 AccessorFunc( ENT, "fRunSpeed", "RunSpeed", FORCE_NUMBER)
 AccessorFunc( ENT, "fAttackRange", "AttackRange", FORCE_NUMBER)
-AccessorFunc( ENT, "fLastJump", "LastJump", FORCE_NUMBER)
+AccessorFunc( ENT, "fLastLand", "LastLand", FORCE_NUMBER)
 AccessorFunc( ENT, "fLastTargetCheck", "LastTargetCheck", FORCE_NUMBER)
 AccessorFunc( ENT, "fLastAtack", "LastAttack", FORCE_NUMBER)
 AccessorFunc( ENT, "fLastTargetChange", "LastTargetChange", FORCE_NUMBER)
@@ -45,6 +45,7 @@ AccessorFunc( ENT, "fLastPostionSave", "LastPostionSave", FORCE_NUMBER)
 AccessorFunc( ENT, "fLastPush", "LastPush", FORCE_NUMBER)
 AccessorFunc( ENT, "iStuckCounter", "StuckCounter", FORCE_NUMBER)
 AccessorFunc( ENT, "vStuckAt", "StuckAt")
+AccessorFunc( ENT, "bTimedOut", "TimedOut")
 
 -- spawner accessor
 AccessorFunc(ENT, "hSpawner", "Spawner")
@@ -126,7 +127,7 @@ function ENT:Initialize()
 	self:SetModel( self.Models[math.random( #self.Models )] )
 
 	self:SetJumping( false )
-	self:SetLastJump( CurTime() + 3 ) --prevent jumping after spawn
+	self:SetLastLand( CurTime() + 1 ) --prevent jumping after spawn
 	self:SetLastTargetCheck( CurTime() )
 	self:SetLastTargetChange( CurTime() )
 
@@ -172,10 +173,6 @@ function ENT:Initialize()
 	end
 	self:SetSkin( math.random(self:SkinCount()) - 1 )
 
-	if GetConVar( "nz_zombie_debug" ):GetBool() then
-		print(self, "Now spawning")
-	end
-
 end
 
 --init for class related attributes hooks etc...
@@ -213,17 +210,11 @@ function ENT:Think()
 		--this is a very costly operation so we only do it every second
 		if self:GetLastTargetCheck() + 1 < CurTime() then
 			self:SetTarget(self:GetPriorityTarget())
-			if GetConVar( "nz_zombie_debug" ):GetBool() then
-				print(self, "Retargeting from Think.")
-			end
 		end
 
 		if self:GetLastPostionSave() + 4 < CurTime() then
 			if self:GetPos():Distance( self:GetStuckAt() ) < 10 then
 				self:SetStuckCounter( self:GetStuckCounter() + 1)
-				if GetConVar( "nz_zombie_debug" ):GetBool() then
-					print(self, "Adding up stuck counter. Now at " .. self:GetStuckCounter())
-				end
 			else
 				self:SetStuckCounter( 0 )
 			end
@@ -258,9 +249,6 @@ function ENT:Think()
 				if self:GetStuckCounter() > 3 and self:GetStuckCounter() <= 5 then
 					--try to unstuck via jump
 					self:Jump()
-					if GetConVar( "nz_zombie_debug" ):GetBool() then
-						print(self, "Jumping because stuck counter is 3 or 5.")
-					end
 				end
 
 				if self:GetStuckCounter() > 5 then
@@ -268,9 +256,6 @@ function ENT:Think()
 					--respawn the zombie after 32 seconds with no postion change
 					self:RespawnZombie()
 					self:SetStuckCounter( 0 )
-					if GetConVar( "nz_zombie_debug" ):GetBool() then
-						print(self, "Respawned because stuck counter is over 5.")
-					end
 				end
 
 			end
@@ -283,14 +268,37 @@ function ENT:Think()
 
 		if self:ZombieWaterLevel() == 3 then
 			self:RespawnZombie()
-			if GetConVar( "nz_zombie_debug" ):GetBool() then
-				print(self, "Respawning because submerged in water.")
-			end
 		end
+
+		self:DebugThink()
 
 	end
 	self:OnThink()
-	self:NextThink(0.5)
+end
+
+function ENT:DebugThink()
+	if GetConVar( "nz_zombie_debug" ):GetBool() then
+		local spacing = Vector(0,0,64)
+		local target = self:GetTarget()
+		if target then
+			debugoverlay.Text( self:GetPos() + spacing, tostring(target), FrameTime() * 2 )
+		else
+			debugoverlay.Text( self:GetPos() + spacing, "NO_TARGET", FrameTime() * 2 )
+		end
+		spacing = spacing + Vector(0,0,8)
+		local attacking = self:IsAttacking()
+		if attacking then
+			debugoverlay.Text( self:GetPos() + spacing, "IN_ATTACK", FrameTime() * 2 )
+		elseif self:IsTimedOut() then
+			debugoverlay.Text( self:GetPos() + spacing, "TIMED_OUT", FrameTime() * 2 )
+		elseif target then
+			debugoverlay.Text( self:GetPos() + spacing, "MOVING_TO_TARGET", FrameTime() * 2 )
+		else
+			debugoverlay.Text( self:GetPos() + spacing, "ERROR", FrameTime() * 2 )
+		end
+		spacing = spacing + Vector(0,0,8)
+		debugoverlay.Text( self:GetPos() + spacing, tostring(self), FrameTime() * 2 )
+	end
 end
 
 function ENT:SoundThink()
@@ -308,10 +316,8 @@ function ENT:RunBehaviour()
 	self:SpawnZombie()
 
 	while (true) do
-		if GetConVar( "nz_zombie_debug" ):GetBool() then
-			print(self, "Performing a Run Behaviour loop.")
-		end
 		if !self:GetStop() then
+			self:SetTimedOut(false)
 			if self:HasTarget() then
 				local pathResult = self:ChaseTarget( {
 					maxage = 1,
@@ -330,18 +336,14 @@ function ENT:RunBehaviour()
 						self:OnPathTimeOut()
 					end
 				else
-					if GetConVar( "nz_zombie_debug" ):GetBool() then
-						print(self, "Pathing failed!")
-					end
-					self:TimeOut(2)
+					-- self:TimeOut(2)
 					--path failed what should we do :/?
 				end
 			else
 				self:OnNoTarget()
 			end
 		else
-			coroutine.wait(2)
-			coroutine.yield()
+			self:TimeOut(2)
 		end
 	end
 end
@@ -349,9 +351,6 @@ end
 function ENT:Stop()
 	self:SetStop(true)
 	self:SetTarget(nil)
-	if GetConVar( "nz_zombie_debug" ):GetBool() then
-		print(self, "Stopping all behaviour and removing target.")
-	end
 end
 
 --Draw sppoky red eyes
@@ -401,17 +400,11 @@ function ENT:OnSpawn()
 end
 
 function ENT:OnTargetInAttackRange()
-	if GetConVar( "nz_zombie_debug" ):GetBool() then
-		print(self, "Attacking", self:GetTarget())
-	end
 	self:Attack()
 end
 
 function ENT:OnBarricadeBlocking( barricade )
 	if (IsValid(barricade) and barricade:GetClass() == "breakable_entry" ) then
-		if GetConVar( "nz_zombie_debug" ):GetBool() then
-			print(self, "Attacking barricade", barricade)
-		end
 		if barricade:GetNumPlanks() > 0 then
 			timer.Simple(0.3, function()
 
@@ -433,16 +426,14 @@ function ENT:OnBarricadeBlocking( barricade )
 end
 
 function ENT:TimeOut(time)
-	self:OnPathTimeOut()
+	self:SetTimedOut(true)
 	if coroutine.running() then
 		coroutine.wait(time)
 	end
 end
 
 function ENT:OnPathTimeOut()
-	if GetConVar( "nz_zombie_debug" ):GetBool() then
-		print(self, "Path timed out.")
-	end
+
 end
 
 function ENT:OnNoTarget()
@@ -463,9 +454,6 @@ function ENT:OnNoTarget()
 		else
 			--if not visible to players respawn immediately
 			if !self:IsInSight() then
-				if GetConVar( "nz_zombie_debug" ):GetBool() then
-					print(self, "Respawning from no valid target and not in sight.")
-				end
 				self:RespawnZombie()
 			end
 		end
@@ -495,6 +483,7 @@ function ENT:OnLandOnGround()
 	end
 	self.loco:SetAcceleration( self.Acceleration )
 	self.loco:SetStepHeight( 22 )
+	self:SetLastLand(CurTime())
 	self:OnLandOnGroundZombie()
 end
 
@@ -564,17 +553,10 @@ function ENT:OnStuck()
 	--
 	--self.loco:Approach( self:GetPos() + Vector( math.Rand( -1, 1 ), math.Rand( -1, 1 ), 0 ) * 2000, 1000 )
 	--print("Now I'm stuck", self)
-	if GetConVar( "nz_zombie_debug" ):GetBool() then
-		print(self, "Now stuck.")
-	end
 end
 
 --Target and pathfidning
 function ENT:GetPriorityTarget()
-
-	if GetConVar( "nz_zombie_debug" ):GetBool() then
-		print(self, "Retargeting")
-	end
 
 	self:SetLastTargetCheck( CurTime() )
 
@@ -597,7 +579,9 @@ function ENT:GetPriorityTarget()
 
 	for _, target in pairs(allEnts) do
 		if self:IsValidTarget(target) and !self:IsIgnoredTarget(target) then
+
 			if target:GetTargetPriority() == TARGET_PRIORITY_ALWAYS then return target end
+
 			local dist = self:GetRangeSquaredTo( target:GetPos() )
 			if maxdistsqr <= 0 or dist <= maxdistsqr then -- 0 distance is no distance restrictions
 				local priority = target:GetTargetPriority()
@@ -658,7 +642,7 @@ function ENT:ChaseTarget( options )
 				losColor = Color(0,255,0)
 			end
 			debugoverlay.Line( self:EyePos(),  self:GetTarget():GetPos() + Vector(0,0,35), 0.03, losColor )
-			local nav = navmesh.GetNearestNavArea( self:GetPos() )
+			--[[local nav = navmesh.GetNearestNavArea( self:GetPos() )
 			if IsValid(nav) and nav:GetClosestPointOnArea( self:GetPos() ):DistToSqr( self:GetPos() ) < 2500 then
 				debugoverlay.Line( nav:GetCorner( 0 ),  nav:GetCorner( 1 ), 0.05, Color(255,0,0), true )
 				debugoverlay.Line( nav:GetCorner( 0 ),  nav:GetCorner( 3 ), 0.05, Color(255,0,0), true )
@@ -670,11 +654,13 @@ function ENT:ChaseTarget( options )
 					debugoverlay.Line( v:GetCorner( 1 ),  v:GetCorner( 2 ), 0.05, Color(150,80,0,80), true )
 					debugoverlay.Line( v:GetCorner( 2 ),  v:GetCorner( 3 ), 0.05, Color(150,80,0,80), true )
 				end
-			end
+			end ]]--
 		end
 		--print(self.loco:GetGroundMotionVector(), self:GetForward())
-		--local goal = path:GetCurrentGoal()
-		if path:IsValid() and math.abs(self:GetPos().z - path:GetClosestPosition(self:EyePos() + self.loco:GetGroundMotionVector() * scanDist).z) > 22 then
+		local goal = path:GetCurrentGoal()
+
+		--height triggered jumping
+		if path:IsValid() and math.abs(self:GetPos().z - path:GetClosestPosition(self:EyePos() + self.loco:GetGroundMotionVector() * scanDist).z) > 22 and (goal and goal.type != 1) then
 			self:Jump()
 		end
 
@@ -702,12 +688,6 @@ function ENT:ChaseTarget( options )
 
 		coroutine.yield()
 
-	end
-
-	--if the zombie isnt engaged in combat, make a time out if the path duration was to small, to prevent repath spam.
-	if path:GetAge() < 0.3 and self:GetLastAttack() + 1 < CurTime() and !self:TargetInAttackRange() and self:GetLastTargetChange() + 1 < CurTime() then
-		--target is probably not reachable wait a bit then try again
-		coroutine.wait(2)
 	end
 
 	return "ok"
@@ -764,7 +744,8 @@ function ENT:ChaseTargetPath( options )
 			--check height change
 			local deltaZ = fromArea:ComputeAdjacentConnectionHeightChange( area )
 			if ( deltaZ >= self.loco:GetStepHeight() ) then
-				if ( deltaZ >= self.loco:GetMaxJumpHeight() ) then
+				-- use player default max jump height even thouh teh zombie will jump a bit higher
+				if ( deltaZ >= 64 ) then
 					--Include ladders in pathing:
 					--currently disableddue to the lack of a loco:Climb function
 					--[[if IsValid( ladder ) then
@@ -791,18 +772,19 @@ function ENT:ChaseTargetPath( options )
 	local lastSeg = path:LastSegment()
 
 	-- a little more complicated that i thought but it should do the trick
-
-	if self:GetTargetNavArea() and lastSeg.area:GetID() != self:GetTargetNavArea():GetID() then
-		if !nz.Nav.Data[self:GetTargetNavArea():GetID()] or nz.Nav.Data[self:GetTargetNavArea():GetID()].locked then
-			self:IgnoreTarget(self:GetTarget())
-			-- trigger a retarget
-			self:SetLastTargetCheck(CurTime() - 1)
-			self:TimeOut(0.5)
-			return nil
+	if lastSeg then
+		if self:GetTargetNavArea() and lastSeg.area:GetID() != self:GetTargetNavArea():GetID() then
+			if !nz.Nav.Data[self:GetTargetNavArea():GetID()] or nz.Nav.Data[self:GetTargetNavArea():GetID()].locked then
+				self:IgnoreTarget(self:GetTarget())
+				-- trigger a retarget
+				self:SetLastTargetCheck(CurTime() - 1)
+				self:TimeOut(0.5)
+				return nil
+			end
+		else
+			self:ResetIgnores()
+			return path
 		end
-	else
-		self:ResetIgnores()
-		return path
 	end
 
 	return path
@@ -949,11 +931,10 @@ end
 
 --we do our own jump since the loco one is a bit weird.
 function ENT:Jump()
-	if CurTime() < self:GetLastJump() + 1.75 or navmesh.GetNavArea(self:GetPos(), 50):HasAttributes( NAV_MESH_NO_JUMP ) then return end
+	if CurTime() < self:GetLastLand() + 0.5 or navmesh.GetNavArea(self:GetPos(), 50):HasAttributes( NAV_MESH_NO_JUMP ) then return end
 	if !self:IsOnGround() then return end
 	self.loco:SetDesiredSpeed( 450 )
 	self.loco:SetAcceleration( 5000 )
-	self:SetLastJump( CurTime() )
 	self:SetJumping( true )
 	--self:SetSolidMask( MASK_NPCSOLID_BRUSHONLY )
 	self.loco:Jump()
@@ -1282,4 +1263,8 @@ end
 
 function ENT:IsAttacking()
 	return self:GetAttacking()
+end
+
+function ENT:IsTimedOut()
+	return self:GetTimedOut()
 end

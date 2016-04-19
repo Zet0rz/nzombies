@@ -38,12 +38,13 @@ function ENT:IsSuitable()
 		start = self:GetPos(),
 		endpos = self:GetPos(),
 		filter = self,
-		mins = Vector( -20, -20, -0 ),
+		mins = Vector( -20, -20, 0 ),
 		maxs = Vector( 20, 20, 70 ),
+		ignoreworld = true,
 		mask = MASK_NPCSOLID
 	} )
 
-	return not tr.HitNonWorld
+	return not tr.Hit
 end
 
 function ENT:Think()

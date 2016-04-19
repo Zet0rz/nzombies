@@ -89,8 +89,10 @@ if SERVER then
 				local ent = tr.Entity
 				if IsValid(ent) and nzConfig.ValidEnemies[ent:GetClass()] then
 					local head = ent:LookupBone("ValveBiped.Bip01_Neck1")
-					local headpos,headang = ent:GetBonePosition(head)
-					wep.Owner:SetEyeAngles((headpos - wep.Owner:GetShootPos()):Angle())
+					if head then
+						local headpos,headang = ent:GetBonePosition(head)
+						wep.Owner:SetEyeAngles((headpos - wep.Owner:GetShootPos()):Angle())
+					end
 				end
 			end
 		end
