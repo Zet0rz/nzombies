@@ -53,6 +53,9 @@ This is an edited version from Aligs original featuring these changes:
 		- Undo system
 		- Context Menu to quickly edit properties without equipping tool (Hold C)
 		- Many more props, light effects, sky/fog/sun editors, fire entites, and more ...
+	- Chat Commands
+		- /revive to revive yourself in creative mode.
+		- More coming here soon...
 
 - Map Settings tool!
 	- Decide which weapons the random box can spawn
