@@ -102,6 +102,7 @@ nz.Tools.Functions.CreateTool("settings", {
 			if !valz["Row5"] then data.script = nil else data.script = valz["Row5"] end
 			if !valz["Row6"] or valz["Row6"] == "" then data.scriptinfo = nil else data.scriptinfo = valz["Row6"] end
 			if !valz["RBoxWeps"] or !valz["RBoxWeps"][1] then data.rboxweps = nil else data.rboxweps = valz["RBoxWeps"] end
+			if !valz["WMPerks"] or !valz["WMPerks"][1] then data.wunderfizzperks = nil else data.wunderfizzperks = valz["WMPerks"] end
 			PrintTable(data)
 
 			nzMapping:SendMapData( data )
@@ -393,12 +394,53 @@ nz.Tools.Functions.CreateTool("settings", {
 					end
 				end
 			end
-
+			
 			local DermaButton2 = vgui.Create( "DButton", rboxpanel )
 			DermaButton2:SetText( "Submit" )
 			DermaButton2:SetPos( 0, 180 )
 			DermaButton2:SetSize( 260, 30 )
 			DermaButton2.DoClick = UpdateData
+			
+			local perklist = {}
+
+			local perkpanel = vgui.Create("DPanel", sheet)
+			sheet:AddSheet( "Wunderfizz Perks", perkpanel, "icon16/drink.png")
+			perkpanel.Paint = function() return end
+
+			local perklistpnl = vgui.Create("DScrollPanel", perkpanel)
+			perklistpnl:SetPos(0, 0)
+			perklistpnl:SetSize(265, 250)
+			perklistpnl:SetPaintBackground(true)
+			perklistpnl:SetBackgroundColor( Color(200, 200, 200) )
+			
+			local perkchecklist = vgui.Create( "DIconLayout", perklistpnl )
+			perkchecklist:SetSize( 265, 250 )
+			perkchecklist:SetPos( 0, 0 )
+			perkchecklist:SetSpaceY( 5 )
+			perkchecklist:SetSpaceX( 5 )
+			
+			for k,v in pairs(nz.Perks.Functions.GetList()) do
+				if k != "wunderfizz" and k != "pap" then
+					local perkitem = perkchecklist:Add( "DPanel" )
+					perkitem:SetSize( 130, 20 )
+					
+					local check = perkitem:Add("DCheckBox")
+					check:SetPos(2,2)
+					local has = Mapping.Settings.wunderfizzperks and table.HasValue(Mapping.Settings.wunderfizzperks, k) or 1
+					check:SetValue(has)
+					if has then perklist[k] = true else perklist[k] = nil end
+					check.OnChange = function(self, val)
+						if val then perklist[k] = true else perklist[k] = nil end
+						Mapping:SendMapData( {wunderfizzperks = perklist} )
+					end
+					
+					local name = perkitem:Add("DLabel")
+					name:SetTextColor(Color(50,50,50))
+					name:SetSize(105, 20)
+					name:SetPos(20,1)
+					name:SetText(v)
+				end
+			end
 		else
 			local text = vgui.Create("DLabel", DProperties)
 			text:SetText("Enable Advanced Mode for more options.")

@@ -1,0 +1,5 @@
+"VertexLitGeneric"
+{
+	"$basetexture" "models/wunderfizz/_-gmtl_p6_zm_tm_crystal_bubbles_c"
+	"$bumpmap" "models/wunderfizz/mtl_p6_zm_tm_crystal_n"
+}

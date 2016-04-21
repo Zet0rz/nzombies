@@ -72,3 +72,13 @@ function lmne(name, find, listall)
 		end
 	end
 end
+
+concommand.Add("printeyeentityinfo", function(ply, cmd, args, argstr)
+	if !ply:IsSuperAdmin() then return end
+	local ent = ply:GetEyeTrace().Entity
+	if IsValid(ent) then
+		local pos = ent:GetPos()
+		local ang = ent:GetAngles()
+		print("{pos = Vector("..math.Round(pos.x)..", "..math.Round(pos.y)..", "..math.Round(pos.z).."), ang = Angle("..math.Round(ang[1])..", "..math.Round(ang[2])..", "..math.Round(ang[3])..")}")
+	end
+end)

@@ -72,7 +72,7 @@ if CLIENT then
 	end
 	
 	local function ReceiveItemPlayer( length )
-		local plu = net.ReadEntity()
+		local ply = net.ReadEntity()
 		local data = net.ReadTable()
 		
 		nzItemCarry.Players[ply] = data

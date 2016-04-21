@@ -22,10 +22,10 @@ function ENT:Initialize()
 		self:SetUseType( SIMPLE_USE )
 		self.Boundone,self.Boundtwo = self:GetCollisionBounds()
 	end
-	self:BlockLock()
+	self:BlockLock(true)
 end
 
-function ENT:BlockUnlock()
+function ENT:BlockUnlock(spawn)
 	--self.Locked = false
 	--self:SetNoDraw( true )
 	if SERVER then
@@ -33,10 +33,12 @@ function ENT:BlockUnlock()
 	end
 	self:SetSolid( SOLID_NONE )
 	self:SetNoDraw(true)
-	self:SetLocked(false)
+	if !spawn then -- Spawning a prop should'nt register it to the doors list
+		self:SetLocked(false)
+	end
 end
 
-function ENT:BlockLock()
+function ENT:BlockLock(spawn)
 	--self.Locked = true
 	--self:SetNoDraw( false )
 	if SERVER then
@@ -44,7 +46,9 @@ function ENT:BlockLock()
 	end
 	self:SetSolid( SOLID_VPHYSICS )
 	self:SetNoDraw(false)
-	self:SetLocked(true)
+	if !spawn then
+		self:SetLocked(true)
+	end
 end
 
 function ENT:OnRemove()

@@ -150,9 +150,9 @@ nz.PowerUps.Functions.NewPowerUp("nuke", {
 //Fire Sale
 nz.PowerUps.Functions.NewPowerUp("firesale", {
 	name = "Fire Sale",
-	model = "models/props_urban/mhanko_shovel_tag.mdl",
+	model = "models/nzpowerups/firesale.mdl",
 	angle = Angle(45,0,0),
-	scale = 4.5,
+	scale = 0.75,
 	chance = 1,
 	duration = 30,
 	func = (function(self, ply)

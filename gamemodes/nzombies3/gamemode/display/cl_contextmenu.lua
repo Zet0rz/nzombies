@@ -214,3 +214,21 @@ function GM:OnContextMenuClose()
 	end
 	
 end
+
+local function SpawnMenuKeyboardFocusOn( pnl )
+
+	if ( IsValid( g_ContextMenu ) && IsValid( pnl ) && pnl:HasParent( g_ContextMenu ) ) then
+		g_ContextMenu:StartKeyFocus( pnl )
+	end
+
+end
+hook.Add( "OnTextEntryGetFocus", "SpawnMenuKeyboardFocusOn", SpawnMenuKeyboardFocusOn )
+
+local function SpawnMenuKeyboardFocusOff( pnl )
+
+	if ( IsValid( g_ContextMenu ) && IsValid( pnl ) && pnl:HasParent( g_ContextMenu ) ) then
+		g_ContextMenu:EndKeyFocus( pnl )
+	end
+
+end
+hook.Add( "OnTextEntryLoseFocus", "SpawnMenuKeyboardFocusOff", SpawnMenuKeyboardFocusOff )

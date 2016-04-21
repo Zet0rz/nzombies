@@ -384,3 +384,7 @@ nz.Perks.Functions.NewPerk("vulture", {
 	lostfunc = function(self, ply)
 	end,
 })
+
+nz.Perks.Functions.NewPerk("wunderfizz", {
+	name = "Der Wunderfizz", -- Nothing more is needed, it is specially handled
+})

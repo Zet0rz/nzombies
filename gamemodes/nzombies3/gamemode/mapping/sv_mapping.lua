@@ -204,29 +204,52 @@ function nzMapping:BoxSpawn(pos, ang, ply)
 end
 
 function nzMapping:PerkMachine(pos, ang, id, ply)
-	local perkData = nz.Perks.Functions.Get(id)
+	if id == "wunderfizz" then
+		local perk = ents.Create("wunderfizz_machine")
+		perk:SetPos(pos)
+		perk:SetAngles(ang)
+		perk:Spawn()
+		perk:Activate()
+		perk:PhysicsInit( SOLID_VPHYSICS )
+		perk:TurnOff()
 
-	local perk = ents.Create("perk_machine")
-	perk:SetPerkID(id)
-	perk:TurnOff()
-	perk:SetPos(pos)
-	perk:SetAngles(ang)
-	perk:Spawn()
-	perk:Activate()
-	perk:PhysicsInit( SOLID_VPHYSICS )
+		local phys = perk:GetPhysicsObject()
+		if phys:IsValid() then
+			phys:EnableMotion(false)
+		end
 
-	local phys = perk:GetPhysicsObject()
-	if phys:IsValid() then
-		phys:EnableMotion(false)
+		if ply then
+			undo.Create( "Der Wunderfizz" )
+				undo.SetPlayer( ply )
+				undo.AddEntity( perk )
+			undo.Finish( "Effect (" .. tostring( model ) .. ")" )
+		end
+		return perk
+	else
+		local perkData = nz.Perks.Functions.Get(id)
+
+		local perk = ents.Create("perk_machine")
+		perk:SetPerkID(id)
+		perk:TurnOff()
+		perk:SetPos(pos)
+		perk:SetAngles(ang)
+		perk:Spawn()
+		perk:Activate()
+		perk:PhysicsInit( SOLID_VPHYSICS )
+
+		local phys = perk:GetPhysicsObject()
+		if phys:IsValid() then
+			phys:EnableMotion(false)
+		end
+
+		if ply then
+			undo.Create( "Perk Machine" )
+				undo.SetPlayer( ply )
+				undo.AddEntity( perk )
+			undo.Finish( "Effect (" .. tostring( model ) .. ")" )
+		end
+		return perk
 	end
-
-	if ply then
-		undo.Create( "Perk Machine" )
-			undo.SetPlayer( ply )
-			undo.AddEntity( perk )
-		undo.Finish( "Effect (" .. tostring( model ) .. ")" )
-	end
-	return perk
 end
 
 function nzMapping:BreakEntry(pos,ang,ply)

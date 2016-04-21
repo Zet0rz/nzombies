@@ -1,0 +1,5 @@
+"VertexLitGeneric"
+{
+	"$basetexture" "models/wunderfizz/_-gchemistry_glass_c"
+	"$translucent" "1"
+}

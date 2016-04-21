@@ -95,6 +95,26 @@ local traceents = {
 
 		return name
 	end,
+	["wunderfizz_machine"] = function(ent)
+		local text = ""
+		if !ent:IsOn() then
+			text = "The Wunderfizz Orb is currently at another location."
+		elseif ent:GetBeingUsed() then
+			if ent:GetUser() == LocalPlayer() and ent:GetPerkID() != "" and !ent:GetIsTeddy() then
+				text = "Press E to take "..nz.Perks.Functions.Get(ent:GetPerkID()).name.." from Der Wunderfizz."
+			else
+				text = "Currently in use."
+			end
+		else
+			if #LocalPlayer():GetPerks() >= GetConVar("nz_difficulty_perks_max"):GetInt() then
+				text = "You cannot have more perks."
+			else
+				text = "Press E to buy Der Wunderfizz for " .. ent:GetPrice() .. " points."
+			end
+		end
+
+		return text
+	end,
 }
 
 local function GetTarget()

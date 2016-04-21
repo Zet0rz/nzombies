@@ -258,6 +258,7 @@ end
 local vulture_textures = {
 	["wall_buys"] = Material("vulture_icons/wall_buys.png", "smooth unlitgeneric"),
 	["random_box"] = Material("vulture_icons/random_box.png", "smooth unlitgeneric"),
+	["wunderfizz_machine"] = Material("vulture_icons/wunderfizz.png", "smooth unlitgeneric"),
 }
 
 local function VultureVision()
