@@ -119,6 +119,14 @@ function nzMapping:SaveConfig(name)
 			id = v:GetPerkID(),
 		})
 	end
+	
+	local wunderfizz_machines = {}
+	for _, v in pairs(ents.FindByClass("wunderfizz_machine")) do
+		table.insert(wunderfizz_machines, {
+			pos = v:GetPos(),
+			angle = v:GetAngles(),
+		})
+	end
 
 	//Normal Map doors
 	local door_setup = {}
@@ -181,6 +189,7 @@ function nzMapping:SaveConfig(name)
 	main["PropEffects"] = prop_effects
 	main["SpecialEntities"] = special_entities
 	main["InvisWalls"] = invis_walls
+	main["WunderfizzMachines"] = wunderfizz_machines
 
 	--We better clear the merges in case someone played around with them in create mode (lua_run)
 	nz.Nav.ResetNavGroupMerges()
@@ -234,6 +243,8 @@ function nzMapping:ClearConfig()
 		["invis_wall"] = true,
 		["nz_script_triggerzone"] = true,
 		["nz_script_prop"] = true,
+		["wunderfizz_machine"] = true,
+		["wunderfizz_windup"] = true,
 	}
 
 	--jsut loop once over all entities isntead of seperate findbyclass calls
@@ -390,6 +401,12 @@ function nzMapping:LoadConfig( name, loader )
 		if data.EasterEggs then
 			for k,v in pairs(data.EasterEggs) do
 				nzMapping:EasterEgg(v.pos, v.angle, v.model)
+			end
+		end
+		
+		if data.WunderfizzMachines then
+			for k,v in pairs(data.WunderfizzMachines) do
+				nzMapping:PerkMachine(v.pos, v.angle, "wunderfizz")
 			end
 		end
 

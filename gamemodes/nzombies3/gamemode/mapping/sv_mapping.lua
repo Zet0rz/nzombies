@@ -318,6 +318,7 @@ function nzMapping:CleanUpMap()
 		"edit_color",
 		"power_box",
 		"invis_wall",
+		"wunderfizz_machine",
 	})
 
 	-- Gotta reset the doors and other entites' values!

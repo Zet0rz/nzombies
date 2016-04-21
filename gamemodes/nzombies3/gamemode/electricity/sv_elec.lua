@@ -22,6 +22,10 @@ function nzElec:Activate(nochat)
 		v:TurnOn()
 	end
 	
+	local wund = ents.FindByClass("wunderfizz_machine")
+	local machine = wund[math.random(#wund)]
+	if IsValid(machine) then machine:TurnOn() end
+	
 	-- Inform players
 	if !nochat then
 		PrintMessage(HUD_PRINTTALK, "[NZ] Electricity is on!")

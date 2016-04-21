@@ -28,7 +28,7 @@ function ENT:DecideOutcomePerk(specific)
 			["wunderfizz"] = true, -- lol, this would happen
 			["pap"] = true,
 		}
-		local available = Mapping.Settings.wunderfizzperks or table.GetKeys(nz.Perks.Functions.GetList())
+		local available = nzMapping.Settings.wunderfizzperks or table.GetKeys(nz.Perks.Functions.GetList())
 		local tbl = {}
 		for k,v in pairs(available) do
 			if !self:GetUser():HasPerk(v) and !blockedperks[v] then

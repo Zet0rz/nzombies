@@ -31,7 +31,7 @@ end
 
 function ENT:RandomizeSkin()
 	local skin
-	if Mapping.Settings.wunderfizzperks then
+	if nzMapping.Settings.wunderfizzperks then
 		skin = table.Random(perk_materials)
 	else
 		skin = table.Random(perk_materials)
