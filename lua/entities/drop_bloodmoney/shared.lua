@@ -10,15 +10,13 @@ ENT.Instructions	= ""
 
 function ENT:SetupDataTables()
 
-	self:NetworkVar( "String", 0, "PowerUp" )
+	self:NetworkVar( "String", 0, "Points" )
 	
 end
 
 function ENT:Initialize()
-
-	//self:SetPowerUp("dp")
-	self:SetModelScale(nzPowerUps:Get(self:GetPowerUp()).scale, 0)
 	
+	self:SetModel("models/nzpowerups/bloodmoney.mdl")
 	--self:PhysicsInit(SOLID_VPHYSICS)
 	self:PhysicsInitSphere(50, "default_silent")
 	self:SetMoveType(MOVETYPE_NONE)
@@ -47,7 +45,7 @@ end
 if SERVER then
 	function ENT:StartTouch(hitEnt)
 		if (hitEnt:IsValid() and hitEnt:IsPlayer()) then
-			nzPowerUps:Activate(self:GetPowerUp(), hitEnt)
+			hitEnt:GivePoints(self:GetPoints())
 			self:Remove()
 		end
 	end

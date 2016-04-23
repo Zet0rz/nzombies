@@ -2,6 +2,8 @@
 
 function nzElec:Activate(nochat)
 
+	if self.Active then return end -- We don't wanna turn it on twice
+
 	self.Active = true
 	self:SendSync()
 	
@@ -34,11 +36,17 @@ function nzElec:Activate(nochat)
 		net.Broadcast()
 	end
 	
+	for k,v in pairs(ents.FindByClass("nz_electricity")) do
+		v:Fire("OnElectricityOn")
+	end
+	
 	hook.Call("ElectricityOn")
 	
 end
 
 function nzElec:Reset(nochat)
+
+	if !self.Active then return end -- No need to turn it off again
 	
 	self.Active = false
 	-- Reset the button aswell
@@ -53,6 +61,10 @@ function nzElec:Reset(nochat)
 		net.Start("nz.nzElec.Sound")
 			net.WriteBool(false)
 		net.Broadcast()
+	end
+	
+	for k,v in pairs(ents.FindByClass("nz_electricity")) do
+		v:Fire("OnElectricityOff")
 	end
 	
 	hook.Call("ElectricityOff")

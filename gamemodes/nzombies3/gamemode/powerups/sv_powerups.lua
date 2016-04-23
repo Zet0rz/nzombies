@@ -1,27 +1,75 @@
 -- 
 
-function nz.PowerUps.Functions.Nuke(nopoints)
-	-- Kill them all
-	for k,v in pairs(nzConfig.ValidEnemies) do
-		for k2,enemy in pairs(ents.FindByClass(k)) do
-			if IsValid(enemy) then
-				local insta = DamageInfo()
-				insta:SetDamage(enemy:Health())
-				insta:SetAttacker(Entity(0))
-				insta:SetDamageType(DMG_BLAST_SURFACE)
-				-- Delay so it doesn't "die" twice
-				timer.Simple(0.1, function() if IsValid(enemy) then enemy:TakeDamageInfo( insta ) end end)
+hook.Add("Think", "CheckActivePowerups", function()
+	for k,v in pairs(nzPowerUps.ActivePowerUps) do
+		if CurTime() >= v then
+			local func = nzPowerUps:Get(k).expirefunc
+			if func then func(id) end
+			nzPowerUps.ActivePowerUps[k] = nil
+			nzPowerUps:SendSync()
+		end
+	end
+	for k,v in pairs(nzPowerUps.ActivePlayerPowerUps) do
+		for id, time in pairs(v) do
+			if CurTime() >= time then
+				local func = nzPowerUps:Get(id).expirefunc
+				if func then func(id, k) end
+				nzPowerUps.ActivePlayerPowerUps[k][id] = nil
+				nzPowerUps:SendPlayerSync(k)
 			end
-		end	
+		end
+	end
+end)
+
+function nzPowerUps:Nuke(pos, nopoints, noeffect)
+	-- Kill them all
+	local highesttime = 0
+	if pos and type(pos) == "Vector" then
+		for k,v in pairs(ents.GetAll()) do
+			if nzConfig.ValidEnemies[v:GetClass()] then
+				if IsValid(v) then
+					v:SetBlockAttack(true) -- They cannot attack now!
+					local insta = DamageInfo()
+					insta:SetDamage(v:Health())
+					insta:SetAttacker(Entity(0))
+					insta:SetDamageType(DMG_BLAST_SURFACE)
+					-- Delay the death by the distance from the position in milliseconds
+					local time = v:GetPos():Distance(pos)/1000
+					if time > highesttime then highesttime = time end
+					timer.Simple(time, function() if IsValid(v) then v:TakeDamageInfo( insta ) end end)
+				end
+			end
+		end
+	else
+		for k,v in pairs(ents.GetAll()) do
+			if nzConfig.ValidEnemies[v:GetClass()] then
+				if IsValid(v) then
+					local insta = DamageInfo()
+					insta:SetDamage(v:Health())
+					insta:SetAttacker(Entity(0))
+					insta:SetDamageType(DMG_BLAST_SURFACE)
+					timer.Simple(0.1, function() if IsValid(v) then v:TakeDamageInfo( insta ) end end)
+				end
+			end
+		end
 	end
 	
 	-- Give the players a set amount of points
 	if !nopoints then
-		for k,v in pairs(player.GetAll()) do
-			if v:IsPlayer() then
-				v:GivePoints(400)
+		timer.Simple(highesttime, function()
+			if nzRound:InProgress() then -- Only if the game is still going!
+				for k,v in pairs(player.GetAll()) do
+					if v:IsPlayer() then
+						v:GivePoints(400)
+					end
+				end
 			end
-		end
+		end)
+	end
+	
+	if !noeffect then
+		net.Start("nzPowerUps.Nuke")
+		net.Broadcast()
 	end
 end
 
@@ -35,7 +83,7 @@ sound.Add( {
 	sound = "nz/randombox/fire_sale.wav"
 } )
 
-function nz.PowerUps.Functions.FireSale()
+function nzPowerUps:FireSale()
 	--print("Running")
 	-- Get all spawns
 	local all = ents.FindByClass("random_box_spawns")
@@ -64,33 +112,21 @@ function nz.PowerUps.Functions.FireSale()
 	for k,v in pairs(ents.FindByClass("random_box")) do
 		v:EmitSound("nz_firesale_jingle")
 	end
-	
-	hook.Add("Tick", "FireSaleActive", function()
-		if !nz.PowerUps.Functions.IsPowerupActive("firesale") then
-			for k,v in pairs(ents.FindByClass("random_box_spawns")) do
-				if IsValid(v.FireSaleBox) then
-					v.FireSaleBox:StopSound("nz_firesale_jingle")
-					v.FireSaleBox:MarkForRemoval()
-				end
-			end
-			hook.Remove("Tick", "FireSaleActive")
-		end
-	end)
 end
 
-function nz.PowerUps.Functions.CleanUp()
+function nzPowerUps:CleanUp()
 	-- Clear all powerups
 	for k,v in pairs(ents.FindByClass("drop_powerup")) do
 		v:Remove()
 	end
 	
 	-- Turn off all modifiers
-	table.Empty(nz.PowerUps.Data.ActivePowerUps)
+	table.Empty(self.ActivePowerUps)
 	-- Sync
-	nz.PowerUps.Functions.SendSync()
+	self:SendSync()
 end
 
-function nz.PowerUps.Functions.Carpenter(nopoints)
+function nzPowerUps:Carpenter(nopoints)
 	-- Repair them all
 	for k,v in pairs(ents.FindByClass("breakable_entry")) do
 		if v:IsValid() then

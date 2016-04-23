@@ -1,0 +1,12 @@
+@include "base.fgd" 
+
+@PointClass base(Targetname, Origin, Angles) = nz_electricity :
+	"Fires outputs when electricity is turned on or off, and can also turn it on or off itself."
+[
+	input TurnElectricityOn(void) : "Turns on electricity. Pass 1 to make it silent."
+	input TurnElectricityOff(void) : "Turns off electricity. Pass 1 to make it silent."
+
+	output OnInitialized(void) : "Fires when the entity is created in nZombies. You can use this to turn off the lights only in this gamemode."
+	output OnElectricityOn(void) : "Fires when the electricity is turned on."
+	output OnElectricityOff(void) : "Fires when the electricity is turned off."
+]

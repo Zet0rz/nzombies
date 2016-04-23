@@ -80,14 +80,14 @@ ENT.EmergeSequences = {
 	"nz_emerge5",
 }
 ENT.JumpSequences = {
-	{seq = "nz_barricade1", speed = 15, time = 2.8},
+	{seq = "nz_barricade1", speed = 15, time = 2.7},
 	{seq = "nz_barricade2", speed = 15, time = 2.4},
-	{seq = "nz_barricade_fast1", speed = 20, time = 2.4},
-	--[[{seq = "nz_barricade_fast2", speed = 5, time = 4}]]
+	{seq = "nz_barricade_fast1", speed = 15, time = 1.8},
+	{seq = "nz_barricade_fast2", speed = 35, time = 4},
 }
 ENT.SprintJumpSequences = {
-	{seq = "nz_barricade_sprint1", speed = 30, time = 1.9},
-	{seq = "nz_barricade_sprint2", speed = 30, time = 1.9},
+	{seq = "nz_barricade_sprint1", speed = 50, time = 1.9},
+	{seq = "nz_barricade_sprint2", speed = 35, time = 1.9},
 }
 
 ENT.AttackSounds = {
@@ -383,14 +383,19 @@ function ENT:TriggerBarricadeJump()
 		local seqtbl = self.ActStages[self:GetActStage()] and self[self.ActStages[self:GetActStage()].barricadejumps] or self.JumpSequences
 		local seq = seqtbl[math.random(#seqtbl)]
 		local id, dur = self:LookupSequence(seq.seq)
-		self.loco:SetDesiredSpeed(self:GetSequenceGroundSpeed(id))
+		self:SetSolidMask(MASK_SOLID_BRUSHONLY)
+		self.loco:SetAcceleration( 5000 )
+		self.loco:SetDesiredSpeed(seq.speed)
+		self:SetVelocity(self:GetForward()*seq.speed)
 		self:SetSequence(id)
 		self:SetCycle(0)
-		self:SetSolidMask(MASK_SOLID_BRUSHONLY)
-		self:BodyMoveXY()
+		self:SetPlaybackRate(1)
+		--self:BodyMoveXY()
+		--PrintTable(self:GetSequenceInfo(id))
 		self:TimedEvent(dur, function()
 			self.NextBarricade = CurTime() + 2
 			self:SetSpecialAnimation(false)
+			self.loco:SetAcceleration( self.Acceleration )
 			self.loco:SetDesiredSpeed(self:GetRunSpeed())
 			self:UpdateSequence()
 		end)

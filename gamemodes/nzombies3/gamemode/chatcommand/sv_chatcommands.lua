@@ -206,7 +206,7 @@ chatcommand.Add("/targetpriority", function(ply, text)
 	else
 		priority = tonumber(text[2])
 	end
-	if IsValid(plyToGiv) and plyToGiv:Alive() and (plyToGiv:IsPlaying() or nzRound:InState(ROUND_CREATE)) then
+	if IsValid(plyToGiv) and (!plyToGiv:IsPlayer() or (plyToGiv:Alive() and (plyToGiv:IsPlaying() or nzRound:InState(ROUND_CREATE)))) then
 		if priority then
 			plyToGiv:SetTargetPriority(priority)
 		else

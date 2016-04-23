@@ -1,32 +1,44 @@
-//
+-- 
 
 if SERVER then
-	function nz.PowerUps.Functions.Activate(id, ply)
-		local powerupData = nz.PowerUps.Functions.Get(id)
 
-		if powerupData.duration != 0 then
-			//Activate for a certain time
-			nz.PowerUps.Data.ActivePowerUps[id] = CurTime() + powerupData.duration
-		//else
-			//Activate Once
+	local plyMeta = FindMetaTable("Player")
+	
+	function plyMeta:GivePowerUp(id, duration)
+		if !nzPowerUps.ActivePlayerPowerUps[self] then nzPowerUps.ActivePlayerPowerUps[self] = {} end
+		nzPowerUps.ActivePlayerPowerUps[self][id] = CurTime() + duration
+	end
+	
+	function nzPowerUps:Activate(id, ply)
+		local powerupData = self:Get(id)
 
+		if !powerupData.global then
+			ply:GivePowerUp(id, powerupData.duration)
+			self:SendPlayerSync(ply) -- Sync this player's powerups
+		else
+			if powerupData.duration != 0 then
+				-- Activate for a certain time
+				self.ActivePowerUps[id] = CurTime() + powerupData.duration
+			--else
+				-- Activate Once
+
+			end
+			-- Sync to everyone
+			self:SendSync()
 		end
 
-		//Notify
+		-- Notify
 		ply:EmitSound("nz/powerups/power_up_grab.wav")
 		powerupData.func(id, ply)
-
-		//Sync
-		nz.PowerUps.Functions.SendSync()
 	end
 
-	function nz.PowerUps.Functions.SpawnPowerUp(pos, specific)
+	function nzPowerUps:SpawnPowerUp(pos, specific)
 		local choices = {}
 		local total = 0
 
-		//Chance it
+		-- Chance it
 		if !specific then
-			for k,v in pairs(nz.PowerUps.Data) do
+			for k,v in pairs(self.Data) do
 				if k != "ActivePowerUps" then
 					choices[k] = v.chance
 					total = total + v.chance
@@ -35,10 +47,10 @@ if SERVER then
 		end
 
 		local id = specific and specific or nzMisc.WeightedRandom(choices)
-		if !id or id == "null" then return end // Back out
+		if !id or id == "null" then return end --  Back out
 
-		//Spawn it
-		local powerupData = nz.PowerUps.Functions.Get(id)
+		-- Spawn it
+		local powerupData = self:Get(id)
 
 		local pos = pos+Vector(0,0,50)
 		local ent = ents.Create("drop_powerup")
@@ -53,15 +65,15 @@ if SERVER then
 
 end
 
-function nz.PowerUps.Functions.IsPowerupActive(id)
+function nzPowerUps:IsPowerupActive(id)
 
-	local time = nz.PowerUps.Data.ActivePowerUps[id]
+	local time = self.ActivePowerUps[id]
 
 	if time != nil then
-		//Check if it is still within the time.
+		-- Check if it is still within the time.
 		if CurTime() > time then
-			//Expired
-			nz.PowerUps.Data.ActivePowerUps[id] = nil
+			-- Expired
+			self.ActivePowerUps[id] = nil
 		else
 			return true
 		end
@@ -71,29 +83,48 @@ function nz.PowerUps.Functions.IsPowerupActive(id)
 
 end
 
-function nz.PowerUps.Functions.AllActivePowerUps()
+function nzPowerUps:IsPlayerPowerupActive(ply, id)
 
-	return nz.PowerUps.Data.ActivePowerUps
+	local time = self.ActivePlayerPowerUps[ply][id]
+
+	if time then
+		-- Check if it is still within the time.
+		if CurTime() > time then
+			-- Expired
+			self.ActivePlayerPowerUps[ply][id] = nil
+		else
+			return true
+		end
+	end
+
+	return false
 
 end
 
-function nz.PowerUps.Functions.NewPowerUp(id, data)
+function nzPowerUps:AllActivePowerUps()
+
+	return self.ActivePowerUps
+
+end
+
+function nzPowerUps:NewPowerUp(id, data)
 	if SERVER then
-		//Sanitise any client data.
+		-- Sanitise any client data.
 	else
 		data.Func = nil
 	end
-	nz.PowerUps.Data[id] = data
+	self.Data[id] = data
 end
 
-function nz.PowerUps.Functions.Get(id)
-	return nz.PowerUps.Data[id]
+function nzPowerUps:Get(id)
+	return self.Data[id]
 end
 
-//Double Points
-nz.PowerUps.Functions.NewPowerUp("dp", {
+-- Double Points
+nzPowerUps:NewPowerUp("dp", {
 	name = "Double Points",
 	model = "models/nzpowerups/x2.mdl",
+	global = true, -- Global means it will appear for any player and will refresh its own time if more
 	angle = Angle(25,0,0),
 	scale = 1,
 	chance = 5,
@@ -103,27 +134,29 @@ nz.PowerUps.Functions.NewPowerUp("dp", {
 	end),
 })
 
-//Max Ammo
-nz.PowerUps.Functions.NewPowerUp("maxammo", {
+-- Max Ammo
+nzPowerUps:NewPowerUp("maxammo", {
 	name = "Max Ammo",
 	model = "models/Items/BoxSRounds.mdl",
+	global = true,
 	angle = Angle(0,0,25),
 	scale = 1.5,
 	chance = 5,
 	duration = 0,
 	func = (function(self, ply)
 		nz.Notifications.Functions.PlaySound("nz/powerups/max_ammo.mp3", 2)
-		//Give everyone ammo
+		-- Give everyone ammo
 		for k,v in pairs(player.GetAll()) do
 			nz.Weps.Functions.GiveMaxAmmo(v)
 		end
 	end),
 })
 
-//Insta Kill
-nz.PowerUps.Functions.NewPowerUp("insta", {
+-- Insta Kill
+nzPowerUps:NewPowerUp("insta", {
 	name = "Insta Kill",
 	model = "models/nzpowerups/insta.mdl",
+	global = true,
 	angle = Angle(0,0,0),
 	scale = 1,
 	chance = 5,
@@ -133,38 +166,41 @@ nz.PowerUps.Functions.NewPowerUp("insta", {
 	end),
 })
 
-//Nuke
-nz.PowerUps.Functions.NewPowerUp("nuke", {
+-- Nuke
+nzPowerUps:NewPowerUp("nuke", {
 	name = "Nuke",
 	model = "models/nzpowerups/nuke.mdl",
+	global = true,
 	angle = Angle(10,0,0),
 	scale = 1,
 	chance = 5,
 	duration = 0,
 	func = (function(self, ply)
-		nz.Notifications.Functions.PlaySound("nz/powerups/nuke.mp3", 1)
-		nz.PowerUps.Functions.Nuke()
+		nz.Notifications.Functions.PlaySound("nz/powerups/nuke.wav", 1)
+		nzPowerUps:Nuke(ply:GetPos())
 	end),
 })
 
-//Fire Sale
-nz.PowerUps.Functions.NewPowerUp("firesale", {
+-- Fire Sale
+nzPowerUps:NewPowerUp("firesale", {
 	name = "Fire Sale",
 	model = "models/nzpowerups/firesale.mdl",
+	global = true,
 	angle = Angle(45,0,0),
 	scale = 0.75,
 	chance = 1,
 	duration = 30,
 	func = (function(self, ply)
 		nz.Notifications.Functions.PlaySound("nz/powerups/fire_sale_announcer.wav", 1)
-		nz.PowerUps.Functions.FireSale()
+		nzPowerUps:FireSale()
 	end),
 })
 
-//Carpenter
-nz.PowerUps.Functions.NewPowerUp("carpenter", {
+-- Carpenter
+nzPowerUps:NewPowerUp("carpenter", {
 	name = "Carpenter",
 	model = "models/nzpowerups/carpenter.mdl",
+	global = true,
 	angle = Angle(45,0,0),
 	scale = 1,
 	chance = 5,
@@ -172,6 +208,24 @@ nz.PowerUps.Functions.NewPowerUp("carpenter", {
 	func = (function(self, ply)
 		nz.Notifications.Functions.PlaySound("nz/powerups/carpenter.wav", 0)
 		nz.Notifications.Functions.PlaySound("nz/powerups/carp_loop.wav", 1)
-		nz.PowerUps.Functions.Carpenter()
+		nzPowerUps:Carpenter()
 	end),
+})
+
+-- Zombie Blood
+nzPowerUps:NewPowerUp("zombieblood", {
+	name = "Zombie Blood",
+	model = "models/nzpowerups/zombieblood.mdl",
+	global = false, -- Only applies to the player picking it up and time is handled individually per player
+	angle = Angle(0,0,0),
+	scale = 1,
+	chance = 2,
+	duration = 30,
+	func = (function(self, ply)
+		-- No sound yet :(
+		ply:SetTargetPriority(TARGET_PRIORITY_NONE)
+	end),
+	expirefunc = function(self, ply) -- ply is only passed if the powerup is non-global
+		ply:SetTargetPriority(TARGET_PRIORITY_PLAYER)
+	end,
 })

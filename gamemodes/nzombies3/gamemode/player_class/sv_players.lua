@@ -16,7 +16,7 @@ function nz.Players.Functions.FullSync( ply )
 	--Electric
 	--nzElec:SendSync()
 	--PowerUps
-	nz.PowerUps.Functions.SendSync()
+	--nzPowerUps:SendSync()
 	--Doors
 	--nzDoors.SendSync( ply )
 	--Perks

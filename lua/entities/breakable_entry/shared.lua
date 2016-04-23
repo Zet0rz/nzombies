@@ -20,27 +20,22 @@ function ENT:Initialize()
 	self.NextPlank = CurTime()
 
 	self.Planks = {}
-	
-	--self:SetTriggerJumps(true) Not yet
 
 	if SERVER then
 		self:ResetPlanks(true)
-		if self:GetTriggerJumps() then
-			--print("Triggered!")
-			--self:UseTriggerBounds(true)
-			self:SetTrigger(true)
-		end
 	end
 end
 
 function ENT:SetupDataTables()
 
 	self:NetworkVar( "Int", 0, "NumPlanks" )
-	self:NetworkVar( "Bool", 0, "TriggerJumps" )
+	self:NetworkVar( "Bool", 0, "HasPlanks" )
+	self:NetworkVar( "Bool", 1, "TriggerJumps" )
 
 end
 
 function ENT:AddPlank(nosound)
+	if !self:GetHasPlanks() then return end
 	self:SpawnPlank()
 	self:SetNumPlanks( (self:GetNumPlanks() or 0) + 1 )
 	if !nosound then
@@ -74,14 +69,16 @@ function ENT:ResetPlanks(nosoundoverride)
 	for i=1, GetConVar("nz_difficulty_barricade_planks_max"):GetInt() do
 		self:RemovePlank()
 	end
-	for i=1, GetConVar("nz_difficulty_barricade_planks_max"):GetInt() do
-		self:AddPlank(!nosoundoverride)
+	if self:GetHasPlanks() then
+		for i=1, GetConVar("nz_difficulty_barricade_planks_max"):GetInt() do
+			self:AddPlank(!nosoundoverride)
+		end
 	end
 end
 
 function ENT:Use( activator, caller )
 	if CurTime() > self.NextPlank then
-		if self:GetNumPlanks() < GetConVar("nz_difficulty_barricade_planks_max"):GetInt() then
+		if self:GetHasPlanks() and self:GetNumPlanks() < GetConVar("nz_difficulty_barricade_planks_max"):GetInt() then
 			self:AddPlank()
                   activator:GivePoints(10)
 				  activator:EmitSound("nz/effects/repair_ching.wav")
@@ -94,7 +91,8 @@ function ENT:SpawnPlank()
 	//Spawn
 	local angs = {-60,-70,60,70}
 	local plank = ents.Create("breakable_entry_plank")
-	plank:SetPos( self:GetPos()+Vector(0,0, math.random( -45, 45 )) )
+	local min = self:GetTriggerJumps() and 0 or -45
+	plank:SetPos( self:GetPos()+Vector(0,0, math.random( min, 45 )) )
 	plank:SetAngles( Angle(0,self:GetAngles().y, table.Random(angs)) )
 	plank:Spawn()
 	plank:SetParent(self)

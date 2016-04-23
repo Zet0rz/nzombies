@@ -25,7 +25,7 @@ local traceents = {
 		return text
 	end,
 	["breakable_entry"] = function(ent)
-		if ent:GetNumPlanks() < GetConVar("nz_difficulty_barricade_planks_max"):GetInt() then
+		if ent:GetHasPlanks() and ent:GetNumPlanks() < GetConVar("nz_difficulty_barricade_planks_max"):GetInt() then
 			local text = "Hold E to rebuild the barricade."
 			return text
 		end

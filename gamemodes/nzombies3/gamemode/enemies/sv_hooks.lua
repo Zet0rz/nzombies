@@ -21,15 +21,15 @@ function nzEnemies:OnEnemyKilled(enemy, attacker, dmginfo, hitgroup)
 		nzRound:SetZombiesKilled( nzRound:GetZombiesKilled() + 1 )
 
 		-- Chance a powerup spawning
-		if nz.PowerUps.Functions.IsPowerupActive("insta") == false and enemy:IsValid() then -- Don't spawn powerups during instakill
+		if !nzPowerUps:IsPowerupActive("insta") and IsValid(enemy) then -- Don't spawn powerups during instakill
 			if math.random(1, 100 / GetConVar("nz_difficulty_powerup_chance"):GetFloat()) == 1 then -- 1 in 100 chance - you can change this in config
-				nz.PowerUps.Functions.SpawnPowerUp(enemy:GetPos())
+				nzPowerUps:SpawnPowerUp(enemy:GetPos())
 			end
 		end
 
 		print("Killed Enemy: " .. nzRound:GetZombiesKilled() .. "/" .. nzRound:GetZombiesMax() )
 		if nzRound:IsSpecial() and nzRound:GetZombiesKilled() >= nzRound:GetZombiesMax() then
-			nz.PowerUps.Functions.SpawnPowerUp(enemy:GetPos(), "maxammo")
+			nzPowerUps:SpawnPowerUp(enemy:GetPos(), "maxammo")
 		end
 	end
 	-- Prevent this function from running on this zombie again
@@ -45,7 +45,7 @@ function GM:EntityTakeDamage(zombie, dmginfo)
 	if IsValid(zombie) and nzConfig.ValidEnemies[zombie:GetClass()] and nzConfig.ValidEnemies[zombie:GetClass()].Valid then
 		local hitgroup = util.QuickTrace( dmginfo:GetDamagePosition( ), dmginfo:GetDamagePosition( ) ).HitGroup
 
-		if nz.PowerUps.Functions.IsPowerupActive("insta") then
+		if nzPowerUps:IsPowerupActive("insta") then
 			dmginfo:SetDamage(zombie:Health())
 			nzEnemies:OnEnemyKilled(zombie, dmginfo:GetAttacker(), dmginfo, hitgroup)
 		return end

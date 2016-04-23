@@ -252,10 +252,15 @@ function nzMapping:PerkMachine(pos, ang, id, ply)
 	end
 end
 
-function nzMapping:BreakEntry(pos,ang,ply)
+function nzMapping:BreakEntry(pos, ang, planks, jump, ply)
+	local planks = tobool(planks)
+	local jump = tobool(jump)
+	
 	local entry = ents.Create( "breakable_entry" )
 	entry:SetPos( pos )
 	entry:SetAngles( ang )
+	entry:SetHasPlanks(planks)
+	entry:SetTriggerJumps(jump)
 	entry:Spawn()
 	entry:PhysicsInit( SOLID_VPHYSICS )
 

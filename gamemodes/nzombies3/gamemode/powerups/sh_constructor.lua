@@ -1,8 +1,7 @@
-//Main Tables
-nz.PowerUps = {}
-nz.PowerUps.Functions = {}
-nz.PowerUps.Data = {}
+-- Main Tables
+nzPowerUps = nzPowerUps or {}
+nzPowerUps.Data = nzPowerUps.Data or {}
 
-//_ Variables
-
-nz.PowerUps.Data.ActivePowerUps = {}
+-- Tables storing the active powerups and their expiration time
+nzPowerUps.ActivePowerUps = nzPowerUps.ActivePowerUps or {}
+nzPowerUps.ActivePlayerPowerUps = nzPowerUps.ActivePlayerPowerUps or {}

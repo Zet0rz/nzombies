@@ -135,9 +135,17 @@ local function PowerUpsHud()
 		local w = ScrW() / 2
 		local offset = 40
 		local c = 0
-		for k,v in pairs(nz.PowerUps.Data.ActivePowerUps) do
-			if nz.PowerUps.Functions.IsPowerupActive(k) then
-				local powerupData = nz.PowerUps.Functions.Get(k)
+		for k,v in pairs(nzPowerUps.ActivePowerUps) do
+			if nzPowerUps:IsPowerupActive(k) then
+				local powerupData = nzPowerUps:Get(k)
+				draw.SimpleText(powerupData.name .. " - " .. math.Round(v - CurTime()), font, w, ScrH() * 0.85 + offset * c, Color(255, 255, 255,255), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+				c = c + 1
+			end
+		end
+		if !nzPowerUps.ActivePlayerPowerUps[LocalPlayer()] then nzPowerUps.ActivePlayerPowerUps[LocalPlayer()] = {} end
+		for k,v in pairs(nzPowerUps.ActivePlayerPowerUps[LocalPlayer()]) do
+			if nzPowerUps:IsPlayerPowerupActive(LocalPlayer(), k) then
+				local powerupData = nzPowerUps:Get(k)
 				draw.SimpleText(powerupData.name .. " - " .. math.Round(v - CurTime()), font, w, ScrH() * 0.85 + offset * c, Color(255, 255, 255,255), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
 				c = c + 1
 			end
