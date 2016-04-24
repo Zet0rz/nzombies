@@ -1,0 +1,7 @@
+"VertexLitGeneric"
+{
+	"$basetexture" "models/barbwire/_-gp6_zm_tm_barbed_wire_poles_c#0"
+	"$bumpmap" "models/barbwire/p6_zm_tm_barbed_wire_poles_n"
+	"$alphatest" "1"
+	"$nocull" "1"
+}

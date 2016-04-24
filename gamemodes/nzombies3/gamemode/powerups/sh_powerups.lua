@@ -13,7 +13,9 @@ if SERVER then
 		local powerupData = self:Get(id)
 
 		if !powerupData.global then
-			ply:GivePowerUp(id, powerupData.duration)
+			if powerupData.duration != 0 then
+				ply:GivePowerUp(id, powerupData.duration)
+			end
 			self:SendPlayerSync(ply) -- Sync this player's powerups
 		else
 			if powerupData.duration != 0 then

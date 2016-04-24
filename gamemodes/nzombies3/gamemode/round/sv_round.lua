@@ -279,7 +279,7 @@ function nzRound:ResetGame()
 	end
 
 	--Clean up powerups
-	nz.PowerUps.Functions.CleanUp()
+	nzPowerUps:CleanUp()
 
 	--Reset easter eggs
 	nzEE:Reset()

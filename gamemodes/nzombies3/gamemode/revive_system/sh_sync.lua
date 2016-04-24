@@ -51,7 +51,6 @@ if SERVER then
 	FullSyncModules["Revive"] = function(ply)
 		for k,v in pairs(player.GetAll()) do
 			if !v:GetNotDowned() then -- Player needs to be downed
-				print(v, ply)
 				Revive:SendPlayerFullData(v, ply)
 			end
 		end
