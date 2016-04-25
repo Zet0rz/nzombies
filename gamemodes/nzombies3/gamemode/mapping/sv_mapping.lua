@@ -253,8 +253,10 @@ function nzMapping:PerkMachine(pos, ang, id, ply)
 end
 
 function nzMapping:BreakEntry(pos, ang, planks, jump, ply)
-	local planks = tobool(planks)
-	local jump = tobool(jump)
+	local planks = planks
+	if planks == nil then planks = true else planks = tobool(planks) end
+	local jump = jump
+	if jump == nil then jump = false else jump = tobool(jump) end
 	
 	local entry = ents.Create( "breakable_entry" )
 	entry:SetPos( pos )

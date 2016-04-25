@@ -45,10 +45,10 @@ function ENT:Use( activator, caller )
 end
 
 function ENT:BuyWeapon(ply)
-	if ply:CanAfford(nz.PowerUps.Functions.IsPowerupActive("firesale") and 10 or 950) then
+	if ply:CanAfford(nzPowerUps:IsPowerupActive("firesale") and 10 or 950) then
         local class = nzRandomBox.DecideWep(ply)
         if class != nil then
-      		ply:TakePoints(nz.PowerUps.Functions.IsPowerupActive("firesale") and 10 or 950)
+      		ply:TakePoints(nzPowerUps:IsPowerupActive("firesale") and 10 or 950)
       		self:Open()
       		local wep = self:SpawnWeapon( ply, class )
 			wep.Buyer = ply

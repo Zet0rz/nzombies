@@ -10,6 +10,7 @@ if SERVER then
 
 		-- downed players are not targeted
 		self:SetTargetPriority(TARGET_PRIORITY_NONE)
+		self:SetHealth(100)
 
 		if self:HasPerk("whoswho") then
 			self.HasWhosWho = true
@@ -120,7 +121,7 @@ if SERVER then
 		if !nosync then hook.Call("PlayerNoLongerBeingRevived", Revive, self) end
 	end
 
-	function playerMeta:KillDownedPlayer(silent, nosync)
+	function playerMeta:KillDownedPlayer(silent, nosync, nokill)
 		local id = self:EntIndex()
 		if !Revive.Players[id] then return end
 
@@ -130,17 +131,19 @@ if SERVER then
 		end
 
 		Revive.Players[id] = nil
-		if silent then
-			self:KillSilent()
-		else
-			self:Kill()
+		if !nokill then
+			if silent then
+				self:KillSilent()
+			else
+				self:Kill()
+			end
 		end
 		if !nosync then hook.Call("PlayerKilled", Revive, self) end
 		self.HasWhosWho = nil
 		self.DownPoints = nil
 		self.DownedWithSoloRevive = nil
 		for k,v in pairs(player.GetAllPlayingAndAlive()) do
-			v:TakePoints(math.Round(v:GetPoints()*0.1, -1))
+			v:TakePoints(math.Round(v:GetPoints()*0.1, -1), true)
 		end
 	end
 

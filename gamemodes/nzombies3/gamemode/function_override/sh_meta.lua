@@ -221,11 +221,11 @@ function GM:EntityFireBullets(ent, data)
 	//If we hit anything, move the source of the bullets up to that point
 	if tr.Hit and tr.HitPos then
 		data.Src = tr.HitPos - data.Dir*5
-		if ent:HasPerk("dtap2") then
+		if ent:IsPlayer() and ent:HasPerk("dtap2") then
 			data.Num = data.Num * 2
 		end
 		return true
-	elseif ent:HasPerk("dtap2") then
+	elseif ent:IsPlayer() and ent:HasPerk("dtap2") then
 		data.Num = data.Num * 2
 	end
 end

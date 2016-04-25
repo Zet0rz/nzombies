@@ -21,7 +21,7 @@ local tab = {
  [ "$pp_colour_addb" ] = 0,
  [ "$pp_colour_brightness" ] = 0,
  [ "$pp_colour_contrast" ] = 1,
- [ "$pp_colour_colour" ] = 1,
+ [ "$pp_colour_colour" ] = 0,
  [ "$pp_colour_mulr" ] = 0,
  [ "$pp_colour_mulg" ] = 0,
  [ "$pp_colour_mulb" ] = 0
@@ -37,7 +37,7 @@ function Revive:ResetColorFade()
 		 [ "$pp_colour_addb" ] = 0,
 		 [ "$pp_colour_brightness" ] = 0,
 		 [ "$pp_colour_contrast" ] = 1,
-		 [ "$pp_colour_colour" ] = 1,
+		 [ "$pp_colour_colour" ] = 0,
 		 [ "$pp_colour_mulr" ] = 0,
 		 [ "$pp_colour_mulg" ] = 0,
 		 [ "$pp_colour_mulb" ] = 0
@@ -48,32 +48,35 @@ function Revive:ResetColorFade()
 end
 
 local function CalcDownView(ply, pos, ang, fov, znear, zfar)
-	if !Revive.Players[LocalPlayer():EntIndex()] then return end
-	
-	local pos = pos + Vector(0,0,-30)
-	local ang = ang + Angle(0,0,20)
-	
-	return {origin = pos, angles = ang, fov = fov, znear = znear, zfar = zfar, drawviewer = false }
+	if Revive.Players[LocalPlayer():EntIndex()] then
+		local pos = pos + Vector(0,0,-30)
+		local ang = ang + Angle(0,0,20)
+		
+		return {origin = pos, angles = ang, fov = fov, znear = znear, zfar = zfar, drawviewer = false }
+	end
 end
 
 local function CalcDownViewmodelView(wep, vm, oldpos, oldang, pos, ang)
-	if !Revive.Players[LocalPlayer():EntIndex()] then return end
-	
-	local oldpos = oldpos + Vector(0,0,-30)
-	local oldang = oldang + Angle(0,0,20)
-	
-	return oldpos, oldang
+	if Revive.Players[LocalPlayer():EntIndex()] then
+		local oldpos = oldpos + Vector(0,0,-30)
+		local oldang = oldang + Angle(0,0,20)
+		
+		return oldpos, oldang
+	end
 end
 
 local function DrawColorModulation()
-	if !Revive.Players[LocalPlayer():EntIndex()] then return end
-	
-	local fadeadd = ((1/GetConVar("nz_downtime"):GetFloat()) * FrameTime()) * -1 	//Change 45 to the revival time
-	tab[ "$pp_colour_colour" ] = math.Approach(tab[ "$pp_colour_colour" ], 0, fadeadd)
-	tab[ "$pp_colour_brightness" ] = math.Approach(tab[ "$pp_colour_brightness" ], -0.5, fadeadd * 0.5)
-	
-	--print(fadeadd, tab[ "$pp_colour_colour" ], tab[ "$pp_colour_brightness" ]) 
-	DrawColorModify(tab)
+	if Revive.Players[LocalPlayer():EntIndex()] then
+		local fadeadd = ((1/GetConVar("nz_downtime"):GetFloat()) * FrameTime()) * -1 	//Change 45 to the revival time
+		tab[ "$pp_colour_colour" ] = math.Approach(tab[ "$pp_colour_colour" ], 0, fadeadd)
+		tab[ "$pp_colour_addr" ] = math.Approach(tab[ "$pp_colour_addr" ], 0.5, fadeadd *-0.5)
+		tab[ "$pp_colour_mulr" ] = math.Approach(tab[ "$pp_colour_mulr" ], 1, -fadeadd)
+		tab[ "$pp_colour_mulg" ] = math.Approach(tab[ "$pp_colour_mulg" ], 0, fadeadd)
+		tab[ "$pp_colour_mulb" ] = math.Approach(tab[ "$pp_colour_mulb" ], 0, fadeadd)
+		
+		--print(fadeadd, tab[ "$pp_colour_colour" ], tab[ "$pp_colour_brightness" ]) 
+		DrawColorModify(tab)
+	end
 end
 
 function surface.DrawTexturedRectRotatedPoint( x, y, w, h, rot, x0, y0 )
@@ -176,26 +179,25 @@ local blood_overlay = Material("materials/overlay_low_health.png", "unlitgeneric
 local bloodpulse = true --if true, going up
 local pulse = 0
 local function DrawDamagedOverlay()
-	if !GetConVar("nz_bloodoverlay"):GetBool() then return end
-	if !LocalPlayer():Alive() then return end
-
-	local fade = (math.Clamp(LocalPlayer():Health()/LocalPlayer():GetMaxHealth(), 0.2, 0.5)-0.2)/0.3
-	local fade2 = 1 - math.Clamp(LocalPlayer():Health()/LocalPlayer():GetMaxHealth(), 0, 0.5)/0.5
-	
-	surface.SetMaterial(blood_overlay)
-	surface.SetDrawColor(255,255,255,255-fade*255)
-	surface.DrawTexturedRect( -10, -10, ScrW()+20, ScrH()+20)
-	
-	if fade2 > 0 then
-		if bloodpulse then
-			pulse = math.Approach(pulse, 255, math.Clamp(pulse, 1, 50)*FrameTime()*100)
-			if pulse >= 255 then bloodpulse = false end
-		else
-			if pulse <= 0 then bloodpulse = true end
-			pulse = math.Approach(pulse, 0, -255*FrameTime())
-		end
-		surface.SetDrawColor(255,255,255,pulse*fade2)
+	if GetConVar("nz_bloodoverlay"):GetBool() and LocalPlayer():Alive() then
+		local fade = (math.Clamp(LocalPlayer():Health()/LocalPlayer():GetMaxHealth(), 0.2, 0.5)-0.2)/0.3
+		local fade2 = 1 - math.Clamp(LocalPlayer():Health()/LocalPlayer():GetMaxHealth(), 0, 0.5)/0.5
+		
+		surface.SetMaterial(blood_overlay)
+		surface.SetDrawColor(255,255,255,255-fade*255)
 		surface.DrawTexturedRect( -10, -10, ScrW()+20, ScrH()+20)
+		
+		if fade2 > 0 then
+			if bloodpulse then
+				pulse = math.Approach(pulse, 255, math.Clamp(pulse, 1, 50)*FrameTime()*100)
+				if pulse >= 255 then bloodpulse = false end
+			else
+				if pulse <= 0 then bloodpulse = true end
+				pulse = math.Approach(pulse, 0, -255*FrameTime())
+			end
+			surface.SetDrawColor(255,255,255,pulse*fade2)
+			surface.DrawTexturedRect( -10, -10, ScrW()+20, ScrH()+20)
+		end
 	end
 end
 
@@ -247,8 +249,9 @@ end)
 local whoswhomat = "models/shadertest/shader4"
 
 local function DrawWhosWhoOverlay()
-	if !whoswhoactive then return end
-	DrawMaterialOverlay(whoswhomat, 0.03)
+	if whoswhoactive then
+		DrawMaterialOverlay(whoswhomat, 0.03)
+	end
 end
 
 //Hooks

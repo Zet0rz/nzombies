@@ -380,10 +380,12 @@ end
 function ENT:TriggerBarricadeJump()
 	if !self:GetSpecialAnimation() and (!self.NextBarricade or CurTime() > self.NextBarricade) then
 		self:SetSpecialAnimation(true)
+		self:SetBlockAttack(true)
 		local seqtbl = self.ActStages[self:GetActStage()] and self[self.ActStages[self:GetActStage()].barricadejumps] or self.JumpSequences
 		local seq = seqtbl[math.random(#seqtbl)]
 		local id, dur = self:LookupSequence(seq.seq)
-		self:SetSolidMask(MASK_SOLID_BRUSHONLY)
+		self:SetSolidMask(MASK_NPCSOLID_BRUSHONLY)
+		self:SetCollisionGroup(COLLISION_GROUP_DEBRIS_TRIGGER)
 		self.loco:SetAcceleration( 5000 )
 		self.loco:SetDesiredSpeed(seq.speed)
 		self:SetVelocity(self:GetForward()*seq.speed)
@@ -395,6 +397,7 @@ function ENT:TriggerBarricadeJump()
 		self:TimedEvent(dur, function()
 			self.NextBarricade = CurTime() + 2
 			self:SetSpecialAnimation(false)
+			self:SetBlockAttack(false)
 			self.loco:SetAcceleration( self.Acceleration )
 			self.loco:SetDesiredSpeed(self:GetRunSpeed())
 			self:UpdateSequence()

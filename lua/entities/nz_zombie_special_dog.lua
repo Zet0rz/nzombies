@@ -180,12 +180,12 @@ function ENT:BodyUpdate()
 		self.CalcIdeal = ACT_JUMP
 	end
 
-	if self:GetActivity() != self.CalcIdeal and !self:IsAttacking() and !self:GetStop() then self:StartActivity(self.CalcIdeal) end
+	--if self:GetActivity() != self.CalcIdeal and !self:IsAttacking() and !self:GetStop() then self:StartActivity(self.CalcIdeal) end
 
-	if ( self.CalcIdeal and !self:GetAttacking() ) then
+	if !self:GetSpecialAnimation() and !self:IsAttacking() then
+		if self:GetActivity() != self.CalcIdeal and !self:GetStop() then self:StartActivity(self.CalcIdeal) end
 
 		self:BodyMoveXY()
-
 	end
 
 	self:FrameAdvance()
@@ -280,4 +280,30 @@ function ENT:IsValidTarget( ent )
 	if !ent then return false end
 	return IsValid( ent ) and ent:GetTargetPriority() != TARGET_PRIORITY_NONE and ent:GetTargetPriority() != TARGET_PRIORITY_SPECIAL
 	-- Won't go for special targets (Monkeys), but still MAX, ALWAYS and so on
+end
+
+function ENT:TriggerBarricadeJump()
+	if !self:GetSpecialAnimation() and (!self.NextBarricade or CurTime() > self.NextBarricade) then
+		self:SetSpecialAnimation(true)
+		self:SetBlockAttack(true)
+		local id = self:SelectWeightedSequence(ACT_JUMP)
+		self:SetSequence(id)
+		self:SetCycle(0)
+		self:SetPlaybackRate(1)
+		self:SetSolidMask(MASK_NPCSOLID_BRUSHONLY)
+		self:SetCollisionGroup(COLLISION_GROUP_DEBRIS_TRIGGER)
+		self.loco:SetAcceleration( 5000 )
+		self.loco:SetDesiredSpeed(20)
+		self:SetVelocity(self:GetForward()*30)
+		--self:BodyMoveXY()
+		--PrintTable(self:GetSequenceInfo(id))
+		self:TimedEvent(1, function()
+			self.NextBarricade = CurTime() + 2
+			self:SetSpecialAnimation(false)
+			self:SetBlockAttack(false)
+			self.loco:SetAcceleration( self.Acceleration )
+			self.loco:SetDesiredSpeed(self:GetRunSpeed())
+			self:UpdateSequence()
+		end)
+	end
 end

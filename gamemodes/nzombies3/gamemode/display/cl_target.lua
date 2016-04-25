@@ -32,7 +32,7 @@ local traceents = {
 	end,
 	["random_box"] = function(ent)
 		if !ent:GetOpen() then
-			local text = nz.PowerUps.Functions.IsPowerupActive("firesale") and "Press E to buy a random weapon for 10 points." or "Press E to buy a random weapon for 950 points."
+			local text = nzPowerUps:IsPowerupActive("firesale") and "Press E to buy a random weapon for 10 points." or "Press E to buy a random weapon for 950 points."
 			return text
 		end
 	end,

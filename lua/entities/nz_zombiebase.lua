@@ -197,7 +197,11 @@ function ENT:Think()
 				maxs = Vector( 20, 20, 70 ),
 				mask = MASK_NPCSOLID
 			} )
-			if !tr.HitNonWorld then self:SetSolidMask(MASK_NPCSOLID) end
+			if !tr.HitNonWorld then 
+				self:SetSolidMask(MASK_NPCSOLID)
+				self:SetCollisionGroup(COLLISION_GROUP_PLAYER)
+				--print("No longer no-colliding")
+			end
 			--[[for _,ent in pairs(ents.FindInBox(self:GetPos() + Vector( -16, -16, 0 ), self:GetPos() + Vector( 16, 16, 70 ))) do
 				if ent:GetClass() == "nz_zombie*" and ent != self then occupied = true end
 			end
@@ -329,6 +333,8 @@ function ENT:RunBehaviour()
 				if pathResult == "ok" then
 					if self:TargetInAttackRange() then
 						self:OnTargetInAttackRange()
+					else
+						self:TimeOut(1)
 					end
 				elseif pathResult == "timeout" then --asume pathing timedout, maybe we are stuck maybe we are blocked by barricades
 					local barricade = self:CheckForBarricade()
@@ -886,7 +892,9 @@ function ENT:Attack( data )
 				dmgInfo:SetDamageForce( data.dmgforce )
 			self:GetTarget():TakeDamageInfo(dmgInfo)
 			self:GetTarget():EmitSound( data.hitsound, 50, math.random( 80, 160 ) )
-			self:GetTarget():ViewPunch( data.viewpunch )
+			if self:GetTarget().ViewPunch then
+				self:GetTarget():ViewPunch( data.viewpunch )
+			end
 			self:GetTarget():SetVelocity( data.dmgforce )
 
 			local blood = ents.Create("env_blood")

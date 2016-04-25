@@ -44,7 +44,7 @@ end
 function nzRandomBox.DecideWep(ply)
 
 	local teddychance = math.random(1, 15)
-	if teddychance <= 1 and !nz.PowerUps.Functions.IsPowerupActive("firesale") and table.Count(ents.FindByClass("random_box_spawns")) > 1 then
+	if teddychance <= 1 and !nzPowerUps:IsPowerupActive("firesale") and table.Count(ents.FindByClass("random_box_spawns")) > 1 then
 		return "nz_box_teddy"
 	end
 
