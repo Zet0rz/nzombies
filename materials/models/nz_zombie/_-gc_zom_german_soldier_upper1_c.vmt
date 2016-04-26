@@ -1,0 +1,5 @@
+"VertexLitGeneric"
+{
+     "$basetexture" "models/nz_zombie/_-gc_zom_german_soldier_upper1_c"
+	 "$bumpmap" "models/nz_zombie/c_zom_german_soldier_upper1_n"
+}

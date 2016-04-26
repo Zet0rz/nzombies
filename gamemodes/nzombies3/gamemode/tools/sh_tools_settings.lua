@@ -382,8 +382,8 @@ nz.Tools.Functions.CreateTool("settings", {
 						weplist[k] = nil
 						numweplist = 0
 					end
-					if Mapping.Settings.rboxweps then
-						for k,v in pairs(Mapping.Settings.rboxweps) do
+					if nzMapping.Settings.rboxweps then
+						for k,v in pairs(nzMapping.Settings.rboxweps) do
 							local wep = weapons.Get(v)
 							if wep.Category and wep.Category != "" then
 								InsertWeaponToList(wep.PrintName and wep.PrintName != "" and wep.PrintName.." ["..wep.Category.."]" or v, v)
@@ -426,12 +426,12 @@ nz.Tools.Functions.CreateTool("settings", {
 					
 					local check = perkitem:Add("DCheckBox")
 					check:SetPos(2,2)
-					local has = Mapping.Settings.wunderfizzperks and table.HasValue(Mapping.Settings.wunderfizzperks, k) or 1
+					local has = nzMapping.Settings.wunderfizzperks and table.HasValue(nzMapping.Settings.wunderfizzperks, k) or 1
 					check:SetValue(has)
 					if has then perklist[k] = true else perklist[k] = nil end
 					check.OnChange = function(self, val)
 						if val then perklist[k] = true else perklist[k] = nil end
-						Mapping:SendMapData( {wunderfizzperks = perklist} )
+						nzMapping:SendMapData( {wunderfizzperks = perklist} )
 					end
 					
 					local name = perkitem:Add("DLabel")

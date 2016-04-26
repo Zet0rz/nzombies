@@ -6,6 +6,9 @@ A GM13 Nazi Zombies style (WIP) gamemode
 Download folder and place it in garrysmod/garrysmod/addons
 Make sure the structure has a path to addon.json like this: garrysmod/garrysmod/addons/nzombies/addon.json
 
+Get the collection of weapon packs used by the official configs here:
+http://steamcommunity.com/sharedfiles/filedetails/?id=673266588
+
 If you have bugs, suggestions, or general improvements, open up an issue with the issue button at the top. If you want to help, feel free to create pull requests with your changes. If you have questions, add me on steam :)
 
 This is an edited version from Aligs original featuring these changes:
