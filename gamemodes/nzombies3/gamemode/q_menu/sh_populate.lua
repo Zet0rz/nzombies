@@ -122,7 +122,6 @@ PropMenuAddModel("Scenery", "models/nzprops/zombies_power_lever.mdl")
 PropMenuAddModel("Scenery", "models/nzprops/zombies_power_lever_handle.mdl")
 PropMenuAddModel("Scenery", "models/nzprops/zombies_power_lever_short.mdl")
 
->>>>>>> refs/heads/pr/13
 PropMenuAddModel("Scenery", "models/props_c17/canister01a.mdl")
 PropMenuAddModel("Scenery", "models/props_c17/canister02a.mdl")
 PropMenuAddModel("Scenery", "models/props_c17/canister_propane01a.mdl")
