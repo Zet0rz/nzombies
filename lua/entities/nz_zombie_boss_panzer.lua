@@ -23,60 +23,21 @@ ENT.DeathSequences = {
 }
 
 ENT.AttackSounds = {
-	"nz/hellhound/attack/attack_00.wav",
-	"nz/hellhound/attack/attack_01.wav",
-	"nz/hellhound/attack/attack_02.wav",
-	"nz/hellhound/attack/attack_03.wav",
-	"nz/hellhound/attack/attack_04.wav",
-	"nz/hellhound/attack/attack_05.wav",
-	"nz/hellhound/attack/attack_06.wav"
+	"nz/panzer/attack/mech_swing_00.wav",
+	"nz/panzer/attack/mech_swing_01.wav",
+	"nz/panzer/attack/mech_swing_02.wav",
 }
 
 ENT.AttackHitSounds = {
-	"nz/hellhound/bite/bite_00.wav",
-	"nz/hellhound/bite/bite_01.wav",
-	"nz/hellhound/bite/bite_02.wav",
-	"nz/hellhound/bite/bite_03.wav",
+	"nz/panzer/attack/mech_swing_00.wav",
+	"nz/panzer/attack/mech_swing_01.wav",
+	"nz/panzer/attack/mech_swing_02.wav",
 }
 
 ENT.WalkSounds = {
-	"nz/hellhound/dist_vox_a/dist_vox_a_00.wav",
-	"nz/hellhound/dist_vox_a/dist_vox_a_01.wav",
-	"nz/hellhound/dist_vox_a/dist_vox_a_02.wav",
-	"nz/hellhound/dist_vox_a/dist_vox_a_03.wav",
-	"nz/hellhound/dist_vox_a/dist_vox_a_04.wav",
-	"nz/hellhound/dist_vox_a/dist_vox_a_05.wav",
-	"nz/hellhound/dist_vox_a/dist_vox_a_06.wav",
-	"nz/hellhound/dist_vox_a/dist_vox_a_07.wav",
-	"nz/hellhound/dist_vox_a/dist_vox_a_08.wav",
-	"nz/hellhound/dist_vox_a/dist_vox_a_09.wav",
-	"nz/hellhound/dist_vox_a/dist_vox_a_10.wav",
-	"nz/hellhound/dist_vox_a/dist_vox_a_11.wav"
-}
-
-ENT.PainSounds = {
-	--"physics/flesh/flesh_impact_bullet1.wav",
-	--"physics/flesh/flesh_impact_bullet2.wav",
-	--"physics/flesh/flesh_impact_bullet3.wav",
-	--"physics/flesh/flesh_impact_bullet4.wav",
-	--"physics/flesh/flesh_impact_bullet5.wav"
-}
-
-ENT.DeathSounds = {
-	"nz/hellhound/death2/death0.wav",
-	"nz/hellhound/death2/death1.wav",
-	"nz/hellhound/death2/death2.wav",
-	"nz/hellhound/death2/death3.wav",
-	"nz/hellhound/death2/death4.wav",
-	"nz/hellhound/death2/death5.wav",
-	"nz/hellhound/death2/death6.wav",
-}
-
-ENT.SprintSounds = {
-	"nz/hellhound/close/close_00.wav",
-	"nz/hellhound/close/close_01.wav",
-	"nz/hellhound/close/close_02.wav",
-	"nz/hellhound/close/close_03.wav",
+	"nz/panzer/ambient/mech_ambi_00.wav",
+	"nz/panzer/ambient/mech_ambi_01.wav",
+	"nz/panzer/ambient/mech_ambi_02.wav",
 }
 
 ENT.ActStages = {
@@ -163,12 +124,87 @@ function ENT:OnZombieDeath(dmgInfo)
 	self:ResetSequence(seq)
 	self:SetCycle(0)
 
-	timer.Simple(dur + 1, function()
+	timer.Simple(dur - 0.5, function()
+		if IsValid(self) then
+			self:EmitSound("nz/panzer/mech_explode.wav")
+		end
+	end)
+	timer.Simple(dur, function()
 		if IsValid(self) then
 			self:Remove()
+			local effectData = EffectData()
+			effectData:SetStart( self:GetPos() )
+			effectData:SetOrigin( self:GetPos() )
+			effectData:SetMagnitude(2)
+			util.Effect("HelicopterMegaBomb", effectData)
 		end
 	end)
 
+end
+
+function ENT:Attack( data )
+
+	self:SetLastAttack(CurTime())
+
+	--if self:Health() <= 0 then coroutine.yield() return end
+
+	data = data or {}
+	data.attackseq = data.attackseq or self.AttackSequences[ math.random( #self.AttackSequences ) ].seq or "swing"
+	data.attacksound = data.attacksound or self.AttackSounds[ math.random( #self.AttackSounds) ] or Sound( "npc/vort/claw_swing1.wav" )
+	data.hitsound = data.hitsound or self.AttackHitSounds[ math.random( #self.AttackHitSounds ) ]Sound( "npc/zombie/zombie_hit.wav" )
+	data.viewpunch = data.viewpunch or VectorRand():Angle() * 0.05
+	data.dmglow = data.dmglow or self.DamageLow or 50
+	data.dmghigh = data.dmghigh or self.DamageHigh or 70
+	data.dmgtype = data.dmgtype or DMG_CLUB
+	data.dmgforce = data.dmgforce or (self:GetTarget():GetPos() - self:GetPos()) * 7 + Vector( 0, 0, 16 )
+	data.dmgforce.z = math.Clamp(data.dmgforce.z, 1, 16)
+	local seq, dur = self:LookupSequence( data.attackseq )
+	data.attackdur = (seq != - 1 and dur) or 0.6
+	data.dmgdelay = data.dmgdelay or ( ( data.attackdur != 0 ) and data.attackdur / 2 ) or 0.3
+
+	self:EmitSound("npc/zombie_poison/pz_throw2.wav", 50, math.random(75, 125)) -- whatever this is!? I will keep it for now
+
+	self:SetAttacking( true )
+
+	self:TimedEvent(0.4, function()
+		self:EmitSound( data.attacksound )
+	end)
+
+	self:TimedEvent( data.dmgdelay, function()
+		if self:IsValidTarget( self:GetTarget() ) and self:TargetInRange( self:GetAttackRange() + 10 ) then
+			local dmgAmount = math.random( data.dmglow, data.dmghigh )
+			local dmgInfo = DamageInfo()
+				dmgInfo:SetAttacker( self )
+				dmgInfo:SetDamage( dmgAmount )
+				dmgInfo:SetDamageType( data.dmgtype )
+				dmgInfo:SetDamageForce( data.dmgforce )
+			self:GetTarget():TakeDamageInfo(dmgInfo)
+			self:GetTarget():EmitSound( data.hitsound, 50, math.random( 80, 160 ) )
+			if self:GetTarget().ViewPunch then
+				self:GetTarget():ViewPunch( data.viewpunch )
+			end
+			self:GetTarget():SetVelocity( data.dmgforce )
+
+			local blood = ents.Create("env_blood")
+			blood:SetKeyValue("targetname", "carlbloodfx")
+			blood:SetKeyValue("parentname", "prop_ragdoll")
+			blood:SetKeyValue("spawnflags", 8)
+			blood:SetKeyValue("spraydir", math.random(500) .. " " .. math.random(500) .. " " .. math.random(500))
+			blood:SetKeyValue("amount", dmgAmount * 5)
+			blood:SetCollisionGroup( COLLISION_GROUP_WORLD )
+			blood:SetPos( self:GetTarget():GetPos() + self:GetTarget():OBBCenter() + Vector( 0, 0, 10 ) )
+			blood:Spawn()
+			blood:Fire("EmitBlood")
+			SafeRemoveEntityDelayed( blood, 2) --just to make sure everything gets cleaned
+		end
+	end)
+
+	self:TimedEvent(data.attackdur, function()
+		self:SetAttacking(false)
+		self:SetLastAttack(CurTime())
+	end)
+
+	self:PlayAttackAndWait(data.attackseq, 1)
 end
 
 function ENT:BodyUpdate()
@@ -327,7 +363,6 @@ if CLIENT then
 		if GetConVar( "nz_zombie_debug" ):GetBool() then
 			render.DrawWireframeBox(self:GetPos(), Angle(0,0,0), self:OBBMins(), self:OBBMaxs(), Color(255,0,0), true)
 			render.DrawWireframeSphere(self:GetPos(), self:GetAttackRange(), 10, 10, Color(255,165,0), true)
-			render.DrawWireframeSphere(pos, 2, 10, 10, Color(0,255,0), false)
 		end
 	end
 end

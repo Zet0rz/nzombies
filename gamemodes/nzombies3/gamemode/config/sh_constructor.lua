@@ -103,7 +103,7 @@ nzConfig.ValidEnemies = {
 			end
 		end
 	},
-	--[[["nz_zombie_boss_panzer"] = {
+	["nz_zombie_boss_panzer"] = {
 		Valid = true,
 		SpecialSpawn = true,
 		ScaleDMG = function(zombie, hitgroup, dmginfo)
@@ -127,7 +127,7 @@ nzConfig.ValidEnemies = {
 				end
 			end
 		end
-	},]]
+	},
 }
 
 -- Random Box

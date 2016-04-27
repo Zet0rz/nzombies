@@ -224,7 +224,7 @@ nzPowerUps:NewPowerUp("zombieblood", {
 	chance = 2,
 	duration = 30,
 	func = (function(self, ply)
-		-- No sound yet :(
+		nz.Notifications.Functions.PlaySound("nz/powerups/zombie_blood.wav", 1)
 		ply:SetTargetPriority(TARGET_PRIORITY_NONE)
 	end),
 	expirefunc = function(self, ply) -- ply is only passed if the powerup is non-global
