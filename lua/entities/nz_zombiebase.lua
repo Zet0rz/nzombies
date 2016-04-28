@@ -197,7 +197,7 @@ function ENT:Think()
 				maxs = Vector( 20, 20, 70 ),
 				mask = MASK_NPCSOLID
 			} )
-			if !tr.HitNonWorld then 
+			if !tr.HitNonWorld then
 				self:SetSolidMask(MASK_NPCSOLID)
 				self:SetCollisionGroup(COLLISION_GROUP_PLAYER)
 				--print("No longer no-colliding")
@@ -426,13 +426,15 @@ function ENT:OnBarricadeBlocking( barricade )
 
 			end)
 
-			self:PlaySequenceAndWait( self.AttackSequences[ math.random( #self.AttackSequences ) ].seq , 1)
+			self:PlaySequenceAndWait(self.AttackSequences[math.random( #self.AttackSequences )].seq, 1)
+			self:SetLastAttack(CurTime())
 			self:SetAttacking(true)
 
-			self:TimedEvent(1, function()
-				self:SetAttacking(false)
-				self:SetLastAttack(CurTime())
-			end)
+			-- this will cause zombies to attack the barricade until it's destroyed
+			local stillBlocked = self:CheckForBarricade()
+			if stillBlocked then
+				self:OnBarricadeBlocking(stillBlocked)
+			end
 		elseif barricade:GetTriggerJumps() then
 			if self.TriggerBarricadeJump then self:TriggerBarricadeJump() end
 		end
@@ -831,7 +833,7 @@ function ENT:CheckForBarricade()
 	dataL.filter = function( ent ) if ( ent:GetClass() == "breakable_entry" ) then return true end end
 	dataL.ignoreworld = true
 	local trL = util.TraceLine( dataL )
-	
+
 	if IsValid( trL.Entity ) and trL.Entity:GetClass() == "breakable_entry" then
 		return trL.Entity
 	end
@@ -844,7 +846,7 @@ function ENT:CheckForBarricade()
 	dataH.mins = self:OBBMins() * 0.65
 	dataH.maxs = self:OBBMaxs() * 0.65
 	local trH = util.TraceHull(dataH )
-	
+
 	if IsValid( trH.Entity ) and trH.Entity:GetClass() == "breakable_entry" then
 		return trH.Entity
 	end

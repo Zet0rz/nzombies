@@ -190,7 +190,7 @@ function CheatInputPriority:Init()
 	self:SetValue("Target")
 	self:SetWide(128)
 	self:SetTall(24)
-	
+
 	self:AddChoice("None (0)", "0")
 	self:AddChoice("Player (1)", "1")
 	self:AddChoice("Special (2)", "2")
@@ -229,12 +229,3 @@ function CheatInputPlayerEntity:OnSelect(index, value, data)
 end
 
 vgui.Register("NZCheatInputPlayerEntity", CheatInputPlayerEntity, "DComboBox")
-
-
-chatcommand.Add("/cheats", function(ply, text)
-	if !IsValid(g_nz_cheats) then
-		g_nz_cheats = vgui.Create("NZCheatFrame")
-	else
-		g_nz_cheats:Remove()
-	end
-end)

@@ -1,34 +1,51 @@
 -- Chat Commands
 
+chatcommand.Add("/help", function(ply, text)
+	ply:PrintMessage( HUD_PRINTTALK, "-----" )
+	ply:PrintMessage( HUD_PRINTTALK, "NZ Available commands:" )
+	ply:PrintMessage( HUD_PRINTTALK, "Arguments in [] are optional." )
+	for _, cmd in pairs(chatcommand.commands) do
+		local cmdText = cmd[1]
+		if cmd[4] then
+			cmdText = cmdText .. " " .. cmd[4]
+		end
+		if cmd[3]  or (!cmd[3] and ply:IsSuperAdmin()) then
+			ply:PrintMessage( HUD_PRINTTALK, cmdText )
+		end
+	end
+	ply:PrintMessage( HUD_PRINTTALK, "-----" )
+	ply:PrintMessage( HUD_PRINTTALK, "" )
+end, true, "   Print this list.")
+
 chatcommand.Add("/ready", function(ply, text)
 	ply:ReadyUp()
-end, true)
+end, true, "   Mark yourself as ready.")
 
 chatcommand.Add("/unready", function(ply, text)
 	ply:UnReady()
-end, true)
+end, true, "   Mark yourself as unready.")
 
 chatcommand.Add("/dropin", function(ply, text)
 	ply:DropIn()
-end, true)
+end, true, "   Drop into the next round.")
 
 chatcommand.Add("/dropout", function(ply, text)
 	ply:DropOut()
-end, true)
+end, true, "   Drop out of the current round.")
 
 chatcommand.Add("/create", function(ply, text)
 	nzRound:Create()
-end)
+end, false, "   Respawn in creative mode.")
 
 chatcommand.Add("/generate", function(ply, text)
 	if navmesh.IsLoaded() then
-		ply:PrintMessage( HUD_PRINTTALK, "[NZ] Navmesh already exists, couldn't generate." )
+		ply:PrintMessage( HUD_PRINTTALK, "NZ Navmesh already exists, couldn't generate." )
 	else
-		ply:PrintMessage( HUD_PRINTTALK, "[NZ] Starting Navmesh Generation, this may take a while." )
+		ply:PrintMessage( HUD_PRINTTALK, "NZ Starting Navmesh Generation, this may take a while." )
 		navmesh.BeginGeneration()
 		--force generate
 		if !navmesh.IsGenerating() then
-			ply:PrintMessage( HUD_PRINTTALK, "[NZ] No walkable seeds found, forcing generation..." )
+			ply:PrintMessage( HUD_PRINTTALK, "NZ No walkable seeds found, forcing generation..." )
 			local sPoint = GAMEMODE.SpawnPoints[ math.random( #GAMEMODE.SpawnPoints ) ]
 			local tr = util.TraceLine( {
 				start = sPoint:GetPos(),
@@ -44,10 +61,10 @@ chatcommand.Add("/generate", function(ply, text)
 
 		if !navmesh.IsGenerating() then
 			--Will not happen but jsut in case
-			ply:PrintMessage( HUD_PRINTTALK, "[NZ] Navmesh Generation failed! Please try this command again or generate the navmesh manually." )
+			ply:PrintMessage( HUD_PRINTTALK, "NZ Navmesh Generation failed! Please try this command again or generate the navmesh manually." )
 		end
 	end
-end)
+end, false, "   Generate a new naviagtion mesh.")
 
 util.AddNetworkString("nz_SaveConfig")
 chatcommand.Add("/save", function(ply, text)
@@ -56,30 +73,23 @@ chatcommand.Add("/save", function(ply, text)
 		net.Start("nz_SaveConfig")
 		net.Send(ply)
 	else
-		ply:PrintMessage( HUD_PRINTTALK, "[NZ] You can't save outside of create mode." )
+		ply:PrintMessage( HUD_PRINTTALK, "NZ You can't save outside of create mode." )
 	end
-end)
-
-chatcommand.Add("/forcegenerate", function(ply, text)
-	local ent = ents.Create("info_player_start")
-	ent:SetPos(ply:GetPos())
-	ent:Spawn()
-	navmesh.BeginGeneration( )
-end)
+end, false, "   Save your cahnges to a config.")
 
 chatcommand.Add("/load", function(ply, text)
 	if nzRound:InState( ROUND_CREATE) or nzRound:InState( ROUND_WAITING ) then
 		nz.Interfaces.Functions.SendInterface(ply, "ConfigLoader", {configs = file.Find( "nz/nz_*", "DATA" ), workshopconfigs = file.Find( "nz/nz_*", "LUA" ), officialconfigs = file.Find("gamemodes/nzombies3/officialconfigs/*", "GAME")})
 	else
-		ply:PrintMessage( HUD_PRINTTALK, "[NZ] You can't load while playing!" )
+		ply:PrintMessage( HUD_PRINTTALK, "NZ You can't load while playing!" )
 	end
-end)
+end, false, "   Open the map config load dialog.")
 
 chatcommand.Add("/clean", function(ply, text)
 	if nzRound:InState( ROUND_CREATE) or nzRound:InState( ROUND_WAITING ) then
 		nzMapping:ClearConfig()
 	else
-		ply:PrintMessage( HUD_PRINTTALK, "[NZ] You can't clean while playing!" )
+		ply:PrintMessage( HUD_PRINTTALK, "NZ You can't clean while playing!" )
 	end
 end)
 
@@ -117,7 +127,7 @@ chatcommand.Add("/revive", function(ply, text)
 	else
 		ply:ChatPrint("Player could not have been revived, are you sure he is downed?")
 	end
-end)
+end, false, "[playerName]   Revive yourself or another player.")
 
 chatcommand.Add("/givepoints", function(ply, text)
 	local plyToGiv = player.GetByName(text[1])
@@ -137,9 +147,9 @@ chatcommand.Add("/givepoints", function(ply, text)
 			ply:ChatPrint("No valid number provided.")
 		end
 	else
-		ply:ChatPrint("They player you have selected is either not valid or not alive.")
+		ply:ChatPrint("The player you have selected is either not valid or not alive.")
 	end
-end)
+end, false, "[playerName] pointAmount   Give points to yourself or another player.")
 
 chatcommand.Add("/giveweapon", function(ply, text)
 	local plyToGiv = player.GetByName(text[1])
@@ -159,9 +169,9 @@ chatcommand.Add("/giveweapon", function(ply, text)
 			ply:ChatPrint("No valid weapon provided.")
 		end
 	else
-		ply:ChatPrint("They player you have selected is either not valid or not alive.")
+		ply:ChatPrint("The player you have selected is either not valid or not alive.")
 	end
-end)
+end, false, "[playerName] weaponName   Give a weapon to yourself or another player.")
 
 chatcommand.Add("/giveperk", function(ply, text)
 	local plyToGiv = player.GetByName(text[1])
@@ -183,7 +193,7 @@ chatcommand.Add("/giveperk", function(ply, text)
 	else
 		ply:ChatPrint("They player you have selected is either not valid or not alive.")
 	end
-end)
+end, false, "[playerName] perkID   Give a perk to yourself or another player.")
 
 chatcommand.Add("/targetpriority", function(ply, text)
 	local plyToGiv
