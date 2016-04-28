@@ -19,8 +19,8 @@ end
 function ENT:Initialize()
 
 	self:SetMoveType(MOVETYPE_NOCLIP)
-	self:SetLocalVelocity(self:GetAngles():Up()*4)
-	
+	self:SetLocalVelocity(self:GetAngles():Up() * 4)
+
 	self:SetSolid( SOLID_OBB )
 	self:DrawShadow( false )
 
@@ -35,7 +35,7 @@ function ENT:Initialize()
 
 	if SERVER then
 		//Stop winding up
-		timer.Simple(5, function() 
+		timer.Simple(5, function()
 			self:SetWinding(false)
 			if self:GetWepClass() == "nz_box_teddy" then
 				self:SetModel("models/hoff/props/teddy_bear/teddy_bear.mdl")
@@ -81,8 +81,8 @@ function ENT:WindUp( )
 	else
 		gun = table.Random(weapons.GetList())
 	end
-	
-	if gun.WorldModel != nil then
+
+	if gun and gun.WorldModel != nil then
 		self:SetModel(gun.WM or gun.WorldModel)
 	end
 	--[[self.c = self.c + 1.3
@@ -105,7 +105,7 @@ end
 
 function ENT:WindDown( )
 	--[[self.s = self.s + 1
-	
+
 	if self.s > 7 then
 		self.s = 7
 	end
