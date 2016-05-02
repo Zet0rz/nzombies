@@ -1,6 +1,0 @@
-"VertexlitGeneric"
-{
-	"$basetexture" "models/cherry/cherry_colour"
-	"$bumpmap" "models/cherry/cherry_normal"
-                "$selfillum" "1"
-}

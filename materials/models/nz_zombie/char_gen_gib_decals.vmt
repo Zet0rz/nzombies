@@ -1,7 +1,0 @@
-"VertexLitGeneric"
-{
-     "$basetexture" "models/nz_zombie/char_gen_gib_decals"
-	 "$bumpmap" "models/nz_zombie/char_gen_gib_decals_n_bump"
-     "$model" 1
-	 "$translucent" 1
-}

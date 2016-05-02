@@ -1,7 +1,0 @@
-"VertexLitGeneric"
-{
-     "$basetexture" "models/nz_zombie/limbs_c"
-     "$bumpmap" "models/nz_zombie/limbs_n_bump"
-     "$model" 1
-	 "$translucent" 1
-}

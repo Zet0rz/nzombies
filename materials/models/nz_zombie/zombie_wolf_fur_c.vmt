@@ -1,6 +1,0 @@
-"VertexLitGeneric"
-{
-     "$basetexture" "models/nz_zombie/zombie_wolf_fur_c"
-     "$model" 1
-	 "$translucent" 1
-}

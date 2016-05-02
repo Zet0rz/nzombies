@@ -1,6 +1,0 @@
-"VertexlitGeneric"
-{
-	"$basetexture" "models/chugabud/chugabud_colour"
-	"$bumpmap" "models/chugabud/chugabud_normal"
-                "$selfillum" "1"
-}

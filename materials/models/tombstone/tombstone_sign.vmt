@@ -1,6 +1,0 @@
-"VertexlitGeneric"
-{
-	"$basetexture" "models/tombstone/tombstone_sign"
-	"$bumpmap" "models/tombstone/tombstone_sign_normal"
-                "$selfillum" "1"
-}

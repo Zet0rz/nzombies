@@ -1,6 +1,0 @@
-"VertexLitGeneric"
-{
-     "$basetexture" "models/weapons/usa_monkey_bomb_explosive_c"
-     "$bumpmap" "models/weapons/usa_monkey_bomb_explosive_n"
-     "$model" 1
-}

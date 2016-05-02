@@ -1,5 +1,0 @@
-"VertexlitGeneric"
-{
-	"$basetexture" "models/tombstone/tombstone_colour"
-	"$bumpmap" "models/tombstone/tombstone_normal"
-}

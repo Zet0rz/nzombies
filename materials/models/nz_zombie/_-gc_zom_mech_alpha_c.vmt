@@ -1,6 +1,0 @@
-"VertexLitGeneric"
-{
-     "$basetexture" "models/nz_zombie/_-gc_zom_mech_alpha_c"
-	 "$bumpmap" "models/nz_zombie/c_zom_mech_alpha_n"
-	 "$translucent" "1"
-}

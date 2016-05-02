@@ -1,6 +1,0 @@
-"VertexlitGeneric"
-{
-	"$basetexture" "models/doubletap2/doubletap2_colour"
-	"$bumpmap" "models/doubletap2/doubletap2_normal"
-                "$selfillum" "1"
-}
