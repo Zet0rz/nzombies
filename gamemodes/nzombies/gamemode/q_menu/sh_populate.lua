@@ -123,7 +123,6 @@ PropMenuAddModel("Scenery", "models/nzprops/zombies_power_lever.mdl")
 PropMenuAddModel("Scenery", "models/nzprops/zombies_power_lever_handle.mdl")
 PropMenuAddModel("Scenery", "models/nzprops/zombies_power_lever_short.mdl")
 
---Random Assortment of Crap (Thanks to Logan)
 PropMenuAddModel("Scenery", "models/props_c17/canister01a.mdl")
 PropMenuAddModel("Scenery", "models/props_c17/canister02a.mdl")
 PropMenuAddModel("Scenery", "models/props_c17/canister_propane01a.mdl")
@@ -225,6 +224,7 @@ PropMenuAddModel("Foliage", "models/props_foliage/tree_cliff_02a.mdl")
 PropMenuAddModel("Foliage", "models/props_foliage/tree_deciduous_01a.mdl")
 PropMenuAddModel("Foliage", "models/props_foliage/tree_deciduous_03a.mdl")
 PropMenuAddModel("Foliage", "models/props_foliage/tree_deciduous_03b.mdl")
+
 PropMenuAddModel("Foliage", "models/props_foliage/tree_poplar_01.mdl")
 
 PropMenuAddCat("Wall Pieces")
@@ -311,3 +311,4 @@ PropMenuAddModel("Apocalyptic", "models/props_fortifications/traffic_barrier001.
 PropMenuAddModel("Apocalyptic", "models/props_fortifications/concrete_barrier001_96_reference.mdl")
 PropMenuAddModel("Apocalyptic", "models/props_fortifications/concrete_barrier001_96_reference.mdl")
 PropMenuAddModel("Apocalyptic", "models/props_fortifications/concrete_barrier001_96_reference.mdl")
+
