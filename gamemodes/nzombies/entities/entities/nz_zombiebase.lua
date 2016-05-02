@@ -1179,7 +1179,7 @@ function ENT:BodyUpdate()
 	end
 
 	if !self:GetSpecialAnimation() and !self:IsAttacking() then
-		if self:GetActivity() != self.CalcIdeal and !self:GetStop() then print(self.CalcIdeal) self:StartActivity(self.CalcIdeal) end
+		if self:GetActivity() != self.CalcIdeal and !self:GetStop() then self:StartActivity(self.CalcIdeal) end
 
 		if self.ActStages[self:GetActStage()] then
 			self:BodyMoveXY()

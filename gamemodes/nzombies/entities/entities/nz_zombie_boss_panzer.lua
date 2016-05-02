@@ -59,10 +59,67 @@ ENT.ActStages = {
 	},
 }
 
+-- We overwrite the Init function because we do not change bodygroups randomly!
+function ENT:Initialize()
+
+	self:Precache()
+
+	self:SetModel( self.Models[math.random( #self.Models )] )
+
+	self:SetJumping( false )
+	self:SetLastLand( CurTime() + 1 ) --prevent jumping after spawn
+	self:SetLastTargetCheck( CurTime() )
+	self:SetLastTargetChange( CurTime() )
+
+	--sounds
+	self:SetNextMoanSound( CurTime() + 1 )
+
+	--stuck prevetion
+	self:SetLastPush( CurTime() )
+	self:SetLastPostionSave( CurTime() )
+	self:SetStuckAt( self:GetPos() )
+	self:SetStuckCounter( 0 )
+
+	self:SetAttacking( false )
+	self:SetLastAttack( CurTime() )
+	self:SetAttackRange( self.AttackRange )
+	self:SetTargetCheckRange(0) -- 0 for no distance restriction (infinite)
+
+	--target ignore
+	self:ResetIgnores()
+
+	self:SetHealth( 75 ) --fallback
+
+	self:SetRunSpeed( self.RunSpeed ) --fallback
+	self:SetWalkSpeed( self.WalkSpeed ) --fallback
+
+	self:SetCollisionBounds(Vector(-16,-16, 0), Vector(16, 16, 70))
+
+	self:SetActStage(0)
+	self:SetSpecialAnimation(false)
+
+	self:StatsInitialize()
+	self:SpecialInit()
+
+	if SERVER then
+		self.loco:SetDeathDropHeight( self.DeathDropHeight )
+		self.loco:SetDesiredSpeed( self:GetRunSpeed() )
+		self.loco:SetAcceleration( self.Acceleration )
+		self.loco:SetJumpHeight( self.JumpHeight )
+		if GetConVar("nz_zombie_lagcompensated"):GetBool() then
+			self:SetLagCompensated(true)
+		end
+		
+		self.HelmetDamage = 0 -- Used to save how much damage the light has taken
+	end
+
+end
+
 function ENT:StatsInitialize()
 	if SERVER then
 		self:SetRunSpeed(150)
-		self:SetHealth( 100 )
+		self:SetHealth(1000)
+		self:SetMaxHealth(1000)
 	end
 	self:SetCollisionBounds(Vector(-20,-20, 0), Vector(20, 20, 100))
 
@@ -221,12 +278,12 @@ function ENT:BodyUpdate()
 		self.CalcIdeal = ACT_JUMP
 	end
 
-	if self:GetActivity() != self.CalcIdeal and !self:IsAttacking() and !self:GetStop() then self:StartActivity(self.CalcIdeal) end
+	if !self:GetSpecialAnimation() and !self:IsAttacking() then
+		if self:GetActivity() != self.CalcIdeal and !self:GetStop() then self:StartActivity(self.CalcIdeal) end
 
-	if ( self.CalcIdeal and !self:GetAttacking() ) then
-
-		self:BodyMoveXY()
-
+		if self.ActStages[self:GetActStage()] then
+			self:BodyMoveXY()
+		end
 	end
 
 	self:FrameAdvance()
@@ -242,79 +299,6 @@ function ENT:OnTargetInAttackRange()
     self:Attack( atkData )
 end
 
--- Hellhounds target differently
-function ENT:GetPriorityTarget()
-
-	if GetConVar( "nz_zombie_debug" ):GetBool() then
-		print(self, "Retargeting")
-	end
-
-	self:SetLastTargetCheck( CurTime() )
-
-	-- Well if he exists and he is targetable, just target this guy!
-	if IsValid(self:GetTarget()) and self:GetTarget():GetTargetPriority() > 0 then
-		local dist = self:GetRangeSquaredTo( self:GetTarget():GetPos() )
-		if dist < 1000 then
-			if !self.sprinting then
-				self.sprinting = true
-			end
-			self:SetRunSpeed(100)
-			self.loco:SetDesiredSpeed( self:GetRunSpeed() )
-		elseif !self.sprinting then
-			self:SetRunSpeed(80)
-			self.loco:SetDesiredSpeed( self:GetRunSpeed() )
-		end
-		return self:GetTarget()
-	end
-
-	-- Otherwise, we just loop through all to try and target again
-	local allEnts = ents.GetAll()
-
-	local bestTarget = nil
-	local lowest
-
-	--local possibleTargets = ents.FindInSphere( self:GetPos(), self:GetTargetCheckRange())
-
-	for _, target in pairs(allEnts) do
-		if self:IsValidTarget(target) then
-			if target:GetTargetPriority() == TARGET_PRIORITY_ALWAYS then return target end
-			if !lowest then
-				lowest = target.hellhoundtarget -- Set the lowest variable if not yet
-				bestTarget = target -- Also mark this for the best target so he isn't ignored
-			end
-
-			if lowest and (!target.hellhoundtarget or target.hellhoundtarget < lowest) then -- If the variable exists and this player is lower than that amount
-				bestTarget = target -- Mark him for the potential target
-				lowest = target.hellhoundtarget or 0 -- And set the new lowest to continue the loop with
-			end
-
-			if !lowest then -- If no players had any target values (lowest was never set, first ever hellhound)
-				local players = player.GetAllTargetable()
-				bestTarget = players[math.random(#players)] -- Then pick a random player
-			end
-		end
-	end
-
-	if self:IsValidTarget(bestTarget) then -- If we found a valid target
-		local targetDist = self:GetRangeSquaredTo( bestTarget:GetPos() )
-		if targetDist < 1000 then -- Under this distance, we will break into sprint
-			self.sprinting = true -- Once sprinting, you won't stop
-			self:SetRunSpeed(100)
-		else -- Otherwise we'll just search (towards him)
-			self:SetRunSpeed(80)
-			self.sprinting = nil
-		end
-		self.loco:SetDesiredSpeed( self:GetRunSpeed() )
-		-- Apply the new target numbers
-		bestTarget.hellhoundtarget = bestTarget.hellhoundtarget and bestTarget.hellhoundtarget + 1 or 1
-		self:SetTarget(bestTarget) -- Well we found a target, we kinda have to force it
-
-		return bestTarget
-	else
-		self:TimeOut(0.2)
-	end
-end
-
 function ENT:IsValidTarget( ent )
 	if !ent then return false end
 	return IsValid( ent ) and ent:GetTargetPriority() != TARGET_PRIORITY_NONE and ent:GetTargetPriority() != TARGET_PRIORITY_SPECIAL
@@ -324,6 +308,8 @@ end
 if CLIENT then
 	local eyeGlow =  Material( "sprites/redglow1" )
 	local white = Color( 255, 255, 255, 255 )
+	local lightglow = Material ( "sprites/physg_glow1_noz" )
+	local lightyellow = Color( 255, 255, 200, 200 )
 	function ENT:Draw()
 		self:DrawModel()
 		
@@ -354,7 +340,7 @@ if CLIENT then
 
 			local leftEye = self:GetAttachment(self:LookupAttachment("lefteye")).Pos
 			local rightEye = self:GetAttachment(self:LookupAttachment("righteye")).Pos
-			cam.Start3D(EyePos(),EyeAngles())
+			cam.Start3D()
 				render.SetMaterial( eyeGlow )
 				render.DrawSprite( leftEye, 4, 4, white)
 				render.DrawSprite( rightEye, 4, 4, white)
@@ -364,9 +350,75 @@ if CLIENT then
 			render.DrawWireframeBox(self:GetPos(), Angle(0,0,0), self:OBBMins(), self:OBBMaxs(), Color(255,0,0), true)
 			render.DrawWireframeSphere(self:GetPos(), self:GetAttackRange(), 10, 10, Color(255,165,0), true)
 		end
+		
+		local bone = self:LookupBone("j_helmet")
+		local pos, ang = self:GetBonePosition(bone)
+		local finalpos = pos + ang:Forward()*20 + ang:Up()*10
+		--debugoverlay.Cross(finalpos, 5)
+		--debugoverlay.Line(finalpos, finalpos + ang:Forward()*10, 1, Color(0,255,0))
+		--debugoverlay.Line(finalpos, finalpos + ang:Right()*5, 1, Color(0,255,0))
+		if self:GetBodygroup(1) == 0 then
+			cam.Start3D2D(finalpos, ang, 1)
+				surface.SetMaterial(lightglow)
+				surface.SetDrawColor(lightyellow)
+				surface.DrawTexturedRect(-50,-10,100,20)
+			cam.End3D2D()
+			
+			ang:RotateAroundAxis(ang:Forward(),90)
+			
+			--debugoverlay.Line(finalpos, finalpos + ang:Forward()*15, 1, Color(255,0,0))
+			--debugoverlay.Line(finalpos, finalpos + ang:Right()*5, 1, Color(255,0,0))
+		
+			cam.Start3D2D(finalpos, ang, 1)
+				surface.SetMaterial(lightglow)
+				surface.SetDrawColor(lightyellow)
+				surface.DrawTexturedRect(-50,-10,100,20)
+			cam.End3D2D()
+		end
+		
 	end
 end
 
 function ENT:OnInjured( dmgInfo )
-	-- No pain sounds
+	local hitpos = dmgInfo:GetDamagePosition()
+	
+	if !self.HelmetLost then
+		local bone = self:LookupBone("j_helmet")
+		local pos, ang = self:GetBonePosition(bone)
+		local finalpos = pos + ang:Forward()*8 + ang:Up()*11
+		
+		if hitpos:DistToSqr(finalpos) < 50 then
+			self.HelmetDamage = self.HelmetDamage + dmgInfo:GetDamage()
+			if self.HelmetDamage > (self:GetMaxHealth() * 0.01) then
+				self.HelmetLost = true
+				self:ManipulateBonePosition(bone, Vector(0,0,-75))
+				self:SetBodygroup(1, 1)
+				self:SetSpecialAnimation(true)
+				self:SetBlockAttack(true)
+				local id, dur = self:LookupSequence("nz_crit_head")
+				self:ResetSequence(id)
+				self:SetCycle(0)
+				self:SetPlaybackRate(1)
+				self.loco:SetDesiredSpeed(0)
+				self:SetVelocity(Vector(0,0,0))
+				self:TimedEvent(dur, function()
+					self.loco:SetDesiredSpeed(self:GetRunSpeed())
+					self:SetSpecialAnimation(false)
+					self:SetBlockAttack(false)
+				end)
+			end
+		end
+		
+		dmgInfo:ScaleDamage(0.1) -- When the helmet isn't lost, all damage only deals 10%
+	else
+		local bone = self:LookupBone("j_head")
+		local pos, ang = self:GetBonePosition(bone)
+		local finalpos = pos + ang:Up()*4
+		
+		if hitpos:DistToSqr(finalpos) < 150 then
+			-- No damage scaling on headshot, we keep it at 1x
+		else
+			dmgInfo:ScaleDamage(0.1) -- When the helmet is lost, a non-headshot still only deals 10%
+		end
+	end
 end
