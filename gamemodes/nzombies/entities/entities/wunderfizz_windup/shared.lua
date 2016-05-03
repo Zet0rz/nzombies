@@ -104,7 +104,7 @@ if CLIENT then
 		self:DrawModel()
 		if self:GetWinding() then
 			if !self:GetRenderAngles() then self:SetRenderAngles(self:GetAngles() + Angle(20,0,0)) end
-			self:SetRenderAngles(self:GetRenderAngles()+(Angle(0,100,0)*FrameTime()))
+			self:SetRenderAngles(self:GetRenderAngles()+(Angle(0,50,0)*FrameTime()))
 		elseif !self.Stopped then
 			self:SetRenderAngles(self:GetNetworkAngles())
 			self.LightningAura = nil -- Kill the aura effect

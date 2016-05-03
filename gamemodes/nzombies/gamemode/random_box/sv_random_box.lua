@@ -1,17 +1,18 @@
 --
 
-function nzRandomBox.Spawn(exclude)
+function nzRandomBox.Spawn(exclude, first)
 	--Get all spawns
 	local all = ents.FindByClass("random_box_spawns")
-	if IsValid(exclude) then
-		table.RemoveByValue(all, exclude)
-		--print("Excluded ", exclude)
-		if table.Count(all) <= 0 then
-			all = {exclude} -- Should there be nothing left, reuse the old excluded one
+	local possible = {}
+	for k,v in pairs(all) do
+		if (!IsValid(exclude) or exclude != v) and (!first or tobool(v.PossibleSpawn)) then
+			table.insert(possible, v)
 		end
 	end
+	-- No points with possible spawn set, we'll just use all then
+	if #possible <= 0 then possible = all end
 
-	local rand = all[ math.random( #all ) ]
+	local rand = possible[ math.random( #possible ) ]
 
 	if rand != nil and !rand.HasBox then
 		local box = ents.Create( "random_box" )

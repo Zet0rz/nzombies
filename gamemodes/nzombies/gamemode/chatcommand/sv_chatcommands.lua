@@ -232,6 +232,6 @@ chatcommand.Add("/activateelec", function(ply, text)
 end)
 
 chatcommand.Add("/navflush", function(ply, text)
-	nz.Nav.Functions.FlushAllNavModifications()
-	PrintMessage(HUD_PRINTTALK, "Navlocks and Navgroups successfully flushed. Remember to redo them for best playing experience.")
+	nzNav.FlushAllNavModifications()
+	PrintMessage(HUD_PRINTTALK, "Navlocks successfully flushed. Remember to redo them for best playing experience.")
 end)

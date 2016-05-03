@@ -382,19 +382,6 @@ local countprops = {
 	}
 }
 
--- Remove props and stuff on spawn
-local function CleanUpMapScriptStuff()
-	if IsValid(scriptgenerator) then scriptgenerator:Remove() end
-	if IsValid(scriptgascan) then scriptgascan:Remove() end
-	scriptgenerator = nil
-	scriptgaspositions = nil
-	scriptgascan = nil
-	hasscriptgascan = nil
-	for k,v in pairs(ee_actualbuttons) do
-		v:Remove()
-	end
-end
-
 function mapscript.ScriptLoad()
 end
 
@@ -411,6 +398,22 @@ local curbuttoncount = 0
 
 local function RandomizeButtonOrders()
 	
+end
+
+-- Remove props and stuff on spawn
+local function CleanUpMapScriptStuff()
+	if IsValid(scriptgenerator) then scriptgenerator:Remove() end
+	if IsValid(scriptgascan) then scriptgascan:Remove() end
+	scriptgenerator = nil
+	scriptgaspositions = nil
+	scriptgascan = nil
+	hasscriptgascan = nil
+	for k,v in pairs(ee_actualbuttons) do
+		if IsValid(v) then
+			v:Remove()
+		end
+		ee_actualbuttons[k] = nil
+	end
 end
 
 function mapscript.OnGameBegin()

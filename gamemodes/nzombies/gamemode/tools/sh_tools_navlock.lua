@@ -12,17 +12,13 @@ nz.Tools.Functions.CreateTool("navlock", {
 			local navarea = navmesh.GetNearestNavArea(pos)
 			local id = navarea:GetID()
 
-			nz.Nav.Data[id] = {
-				prev = navarea:GetAttributes(),
+			nzNav.Locks[id] = {
 				locked = true,
 				link = wep.Ent1:GetDoorData().link
 			}
-			//Purely to visualize, resets when game begins or shuts down
-			navarea:SetAttributes(NAV_MESH_STOP)
 
 			wep.Owner:ChatPrint("Navmesh ["..id.."] locked to door "..wep.Ent1:GetClass().."["..wep.Ent1:EntIndex().."] with link ["..wep.Ent1:GetDoorData().link.."]!")
 			wep.Ent1:SetMaterial( "" )
-			nz.Nav.Functions.CreateAutoMergeLink(wep.Ent1, id)
 			wep.Ent1 = nil
 		return end
 
@@ -44,19 +40,16 @@ nz.Tools.Functions.CreateTool("navlock", {
 		local navarea = navmesh.GetNearestNavArea(pos)
 		local navid = navarea:GetID()
 
-		if nz.Nav.Data[navid] then
-			navarea:SetAttributes(nz.Nav.Data[navid].prev)
+		if nzNav.Locks[navid] then
 			wep.Owner:ChatPrint("Navmesh ["..navid.."] unlocked!")
-			nz.Nav.Data[navid] = nil
+			nzNav.Locks[navid] = nil
 		return end
 
-		nz.Nav.Data[navid] = {
-			prev = navarea:GetAttributes(),
+		nzNav.Locks[navid] = {
 			locked = true,
 			link = nil
 		}
-
-		navarea:SetAttributes(NAV_MESH_AVOID)
+		
 		wep.Owner:ChatPrint("Navmesh ["..navid.."] locked!")
 	end,
 	Reload = function(wep, ply, tr, data)
@@ -65,7 +58,6 @@ nz.Tools.Functions.CreateTool("navlock", {
 	OnEquip = function(wep, ply, data)
 		if wep.Owner:IsListenServerHost() then
 			RunConsoleCommand("nav_edit", 1)
-			RunConsoleCommand("nav_quicksave", 0)
 		end
 	end,
 	OnHolster = function(wep, ply, data)
@@ -73,6 +65,24 @@ nz.Tools.Functions.CreateTool("navlock", {
 			RunConsoleCommand("nav_edit", 0)
 		end
 		return true
+	end,
+	Think = function()
+		if GetConVar("nav_edit"):GetBool() and GetConVar("developer"):GetBool() then
+			local pos = navmesh.GetEditCursorPosition()
+			local area = navmesh.GetNearestNavArea(pos)
+			local id = area:GetID()
+			
+			local tbl = nzNav.Locks[id]
+			if tbl then
+				if tbl.locked then
+					if tbl.link then
+						debugoverlay.Sphere(area:GetCenter(), 10, 0.1, Color(0,255,0,50))
+					else
+						debugoverlay.Sphere(area:GetCenter(), 10, 0.1, Color(255,0,0,50))
+					end
+				end
+			end
+		end
 	end
 }, {
 	displayname = "Nav Locker Tool",
@@ -102,21 +112,37 @@ nz.Tools.Functions.CreateTool("navlock", {
 		textw2:SizeToContents()
 		textw2:SetPos(0, 30)
 		textw2:CenterHorizontal()
-
+		
 		local textw3 = vgui.Create("DLabel", panel)
-		textw3:SetText("The tool can still be used blindly")
+		textw3:SetText("sv_cheats is needed in multiplayer.")
 		textw3:SetFont("Trebuchet18")
-		textw3:SetTextColor( Color(50, 50, 50) )
+		textw3:SetTextColor( Color(150, 50, 50) )
 		textw3:SizeToContents()
-		textw3:SetPos(0, 40)
+		textw3:SetPos(0, 50)
 		textw3:CenterHorizontal()
+
+		local textw4 = vgui.Create("DLabel", panel)
+		textw4:SetText("The tool can still be used blindly")
+		textw4:SetFont("Trebuchet18")
+		textw4:SetTextColor( Color(50, 50, 50) )
+		textw4:SizeToContents()
+		textw4:SetPos(0, 60)
+		textw4:CenterHorizontal()
+		
+		local textw5 = vgui.Create("DLabel", panel)
+		textw5:SetText("Console 'developer 1' is needed to see navlocks.")
+		textw5:SetFont("Trebuchet18")
+		textw5:SetTextColor( Color(150, 50, 50) )
+		textw5:SizeToContents()
+		textw5:SetPos(0, 80)
+		textw5:CenterHorizontal()
 
 		local text = vgui.Create("DLabel", panel)
 		text:SetText("Right click on the ground to lock a Navmesh")
 		text:SetFont("Trebuchet18")
 		text:SetTextColor( Color(50, 50, 50) )
 		text:SizeToContents()
-		text:SetPos(0, 80)
+		text:SetPos(0, 120)
 		text:CenterHorizontal()
 
 		local text2 = vgui.Create("DLabel", panel)
@@ -124,7 +150,7 @@ nz.Tools.Functions.CreateTool("navlock", {
 		text2:SetFont("Trebuchet18")
 		text2:SetTextColor( Color(50, 50, 50) )
 		text2:SizeToContents()
-		text2:SetPos(0, 120)
+		text2:SetPos(0, 160)
 		text2:CenterHorizontal()
 
 		local text3 = vgui.Create("DLabel", panel)
@@ -132,7 +158,7 @@ nz.Tools.Functions.CreateTool("navlock", {
 		text3:SetFont("Trebuchet18")
 		text3:SetTextColor( Color(50, 50, 50) )
 		text3:SizeToContents()
-		text3:SetPos(0, 130)
+		text3:SetPos(0, 170)
 		text3:CenterHorizontal()
 
 		local text4 = vgui.Create("DLabel", panel)
@@ -140,7 +166,7 @@ nz.Tools.Functions.CreateTool("navlock", {
 		text4:SetFont("Trebuchet18")
 		text4:SetTextColor( Color(50, 50, 50) )
 		text4:SizeToContents()
-		text4:SetPos(0, 140)
+		text4:SetPos(0, 180)
 		text4:CenterHorizontal()
 
 		local text5 = vgui.Create("DLabel", panel)
@@ -148,7 +174,7 @@ nz.Tools.Functions.CreateTool("navlock", {
 		text5:SetFont("Trebuchet18")
 		text5:SetTextColor( Color(50, 50, 50) )
 		text5:SizeToContents()
-		text5:SetPos(0, 180)
+		text5:SetPos(0, 210)
 		text5:CenterHorizontal()
 
 		local text6 = vgui.Create("DLabel", panel)
@@ -156,7 +182,7 @@ nz.Tools.Functions.CreateTool("navlock", {
 		text6:SetFont("Trebuchet18")
 		text6:SetTextColor( Color(50, 50, 50) )
 		text6:SizeToContents()
-		text6:SetPos(0, 190)
+		text6:SetPos(0, 220)
 		text6:CenterHorizontal()
 
 		return panel

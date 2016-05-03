@@ -195,6 +195,12 @@ function SWEP:Holster()
 	return true
 end
 
+function SWEP:Think()
+	if nz.Tools.ToolData[self.ToolMode] and nz.Tools.ToolData[self.ToolMode].Think then
+		nz.Tools.ToolData[self.ToolMode].Think()
+	end
+end
+
 --[[
 RENDER The scroll text Liek in sandbox
 --]]

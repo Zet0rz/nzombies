@@ -285,9 +285,6 @@ function nzRound:ResetGame()
 	nzEE:Reset()
 	nzEE.Major:Reset()
 
-	--Reset merged navigation groups
-	nz.Nav.ResetNavGroupMerges()
-
 end
 
 function nzRound:End()
@@ -320,16 +317,7 @@ function nzRound:Create()
 		end
 
 		nzMapping:CleanUpMap()
-
-		--Re-enable navmesh visualization
-		for k,v in pairs(nz.Nav.Data) do
-			local navarea = navmesh.GetNavAreaByID(k)
-			if v.link then
-				navarea:SetAttributes(NAV_MESH_STOP)
-			else
-				navarea:SetAttributes(NAV_MESH_AVOID)
-			end
-		end
+		nzDoors:LockAllDoors()
 
 	elseif self:InState( ROUND_CREATE ) then
 		PrintMessage( HUD_PRINTTALK, "The mode has been set to play mode!" )
@@ -356,11 +344,6 @@ function nzRound:SetupGame()
 	nzMapping:CleanUpMap()
 	nzDoors:LockAllDoors()
 
-	-- Reset navigation attributes so they don't save into the actual .nav file.
-	for k,v in pairs(nz.Nav.Data) do
-		navmesh.GetNavAreaByID(k):SetAttributes(v.prev)
-	end
-
 	-- Open all doors with no price and electricity requirement
 	for k,v in pairs(ents.GetAll()) do
 		if v:IsBuyableEntity() then
@@ -384,8 +367,8 @@ function nzRound:SetupGame()
 	nzDoors.OpenedLinks[0] = true
 	--nz.nzDoors.Functions.SendSync()
 
-	-- Spawn a random box
-	nzRandomBox.Spawn()
+	-- Spawn a random box at a possible starting position
+	nzRandomBox.Spawn(nil, true)
 
 	local power = ents.FindByClass("power_box")
 	if !IsValid(power[1]) then -- No power switch D:

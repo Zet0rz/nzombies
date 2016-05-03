@@ -18,7 +18,6 @@ nz.Tools.Functions.CreateTool("door", {
 		local ent = tr.Entity
 		if !IsValid(ent) then return end
 		if ent:IsDoor() or ent:IsBuyableProp() or ent:IsButton() then
-			nz.Nav.Functions.UnlinkAutoMergeLink(ent)
 			nzDoors:RemoveLink(ent)
 		end
 	end,
@@ -52,30 +51,21 @@ nz.Tools.Functions.CreateTool("door", {
 		valz["Row5"] = data.buyable
 		valz["Row6"] = data.rebuyable
 
-		valz["Row7"] = data.navgroup1
-		valz["Row8"] = data.navgroup2
-
 		local function UpdateData()
-			local function compileString(price, elec, flag, buyable, rebuyable, navgroup1, navgroup2)
+			local function compileString(price, elec, flag, buyable, rebuyable)
 				local str = "price="..price..",elec="..elec
 				if flag then
 					str = str..",link="..flag
 				end
 				str = str..",buyable="..buyable
 				str = str..",rebuyable="..rebuyable
-				if navgroup1 and navgroup1 != "" then
-					str = str..",navgroup1="..navgroup1
-				end
-				if navgroup2 and navgroup2 != "" then
-					str = str..",navgroup2="..navgroup2
-				end
 				return str
 			end
 			local flag = false
 			if valz["Row1"] == 1 then
 				flag = valz["Row2"]
 			end
-			local flagString = compileString(valz["Row3"], valz["Row4"], flag, valz["Row5"], valz["Row6"], valz["Row7"], valz["Row8"])
+			local flagString = compileString(valz["Row3"], valz["Row4"], flag, valz["Row5"], valz["Row6"])
 			print(flagString)
 
 			nz.Tools.Functions.SendData( {flags = flagString}, "door", {
@@ -85,8 +75,6 @@ nz.Tools.Functions.CreateTool("door", {
 				elec = valz["Row4"],
 				buyable = valz["Row5"],
 				rebuyable = valz["Row6"],
-				navgroup1 = valz["Row7"],
-				navgroup2 = valz["Row8"],
 			})
 		end
 
@@ -123,15 +111,6 @@ nz.Tools.Functions.CreateTool("door", {
 			Row6:Setup( "Boolean" )
 			Row6:SetValue( valz["Row6"] )
 			Row6.DataChanged = function( _, val ) valz["Row6"] = val UpdateData() end
-
-			local Row7 = DProperties:CreateRow( "Nav Group Merging", "Group 1 ID" )
-			Row7:Setup( "Generic" )
-			Row7:SetValue( valz["Row7"] )
-			Row7.DataChanged = function( _, val ) valz["Row7"] = val UpdateData() end
-			local Row8 = DProperties:CreateRow( "Nav Group Merging", "Group 2 ID" )
-			Row8:Setup( "Generic" )
-			Row8:SetValue( valz["Row8"] )
-			Row8.DataChanged = function( _, val ) valz["Row8"] = val UpdateData() end
 		else
 			local text = vgui.Create("DLabel", DProperties)
 			text:SetText("Enable Advanced Mode for more options.")
@@ -151,8 +130,5 @@ nz.Tools.Functions.CreateTool("door", {
 		elec = 0,
 		buyable = 1,
 		rebuyable = 0,
-
-		navgroup1 = "",
-		navgroup2 = "",
 	}
 })

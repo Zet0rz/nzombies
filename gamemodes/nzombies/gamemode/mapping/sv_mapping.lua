@@ -1,6 +1,6 @@
 //
 
-function nzMapping:ZedSpawn(pos, link, respawnable, ply)
+function nzMapping:ZedSpawn(pos, link, ply)
 
 	local ent = ents.Create("nz_spawn_zombie_normal")
 	pos.z = pos.z - ent:OBBMaxs().z
@@ -187,12 +187,13 @@ function nzMapping:BlockSpawn(pos, ang, model, ply)
 	return block
 end
 
-function nzMapping:BoxSpawn(pos, ang, ply)
+function nzMapping:BoxSpawn(pos, ang, spawn, ply)
 	local box = ents.Create( "random_box_spawns" )
 	box:SetPos( pos )
 	box:SetAngles( ang )
 	box:Spawn()
 	box:PhysicsInit( SOLID_VPHYSICS )
+	box.PossibleSpawn = spawn
 
 	if ply then
 		undo.Create( "Random Box Spawnpoint" )

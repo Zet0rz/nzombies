@@ -79,12 +79,14 @@ end
 
 function ENT:SpawnWeapon(activator, class)
 	local wep = ents.Create("random_box_windup")
+	local ang = self:GetAngles()
+	wep:SetAngles( ang )
+	wep:SetPos( self:GetPos() + ang:Up()*10 )
 	wep:Spawn()
-	wep:SetPos( self:GetPos( ) - Vector(0,0,-10) )
 	wep.Buyer = activator
 	--wep:SetParent( self )
 	wep.Box = self
-	wep:SetAngles( self:GetAngles() )
+	--wep:SetAngles( self:GetAngles() )
 	wep:SetWepClass(class)
 	self:EmitSound("nz/randombox/random_box_jingle.wav")
 
@@ -99,6 +101,7 @@ end
 function ENT:MoveAway()
 	nz.Notifications.Functions.PlaySound("nz/randombox/Announcer_Teddy_Zombies.wav", 0)
 	self.Moving = true
+	self:SetSolid(SOLID_NONE)
 	local s = 0
 	local ang = self:GetAngles()
 	//Shake Effect
@@ -134,14 +137,15 @@ function ENT:MoveAway()
 				self:Remove()
 			end)
 			--print(self:GetMoveType())
-			self:SetMoveType(MOVETYPE_FLYGRAVITY)
+			self:SetMoveType(MOVETYPE_FLY)
 			self:SetGravity(0.1)
 			self:SetNotSolid(true)
 			self:SetCollisionBounds(Vector(0,0,0), Vector(0,0,0))
 			self:GetPhysicsObject():SetDamping(100, 0)
 			self:CollisionRulesChanged()
-			self:SetVelocity(Vector(0,0,100))
+			self:SetLocalVelocity(self:GetAngles():Up()*100)
 			timer.Simple(1.5, function()
+				self:SetLocalVelocity( Vector(0,0,0) )
 				self:SetVelocity( Vector(0,0,0) )
 				self:SetMoveType(MOVETYPE_FLY)
 				self:Open()

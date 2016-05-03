@@ -122,10 +122,14 @@ function ENT:Use(activator, caller)
 					self.Bottle.Perk = self.OutcomePerk
 					self.Bottle:Spawn()
 					
-					local e = EffectData()
-					e:SetEntity(self.Bottle)
-					e:SetMagnitude(1.1)
-					util.Effect("lightning_aura", e)
+					timer.Simple(0, function()
+						if IsValid(self.Bottle) then
+							local e = EffectData()
+							e:SetEntity(self.Bottle)
+							e:SetMagnitude(1.1)
+							util.Effect("lightning_aura", e)
+						end
+					end)
 					
 					self.TimesUsed = self.TimesUsed + 1
 				end

@@ -6,7 +6,7 @@ nz.Tools.Functions.CreateTool("rbox", {
 	end,
 
 	PrimaryAttack = function(wep, ply, tr, data)
-		nzMapping:BoxSpawn(tr.HitPos, Angle(0,(tr.HitPos - ply:GetPos()):Angle()[2] - 90,0), ply)
+		nzMapping:BoxSpawn(tr.HitPos, Angle(0,(tr.HitPos - ply:GetPos()):Angle()[2] - 90,0), data.PossibleSpawn, ply)
 	end,
 
 	SecondaryAttack = function(wep, ply, tr, data)
@@ -32,7 +32,26 @@ nz.Tools.Functions.CreateTool("rbox", {
 		return true
 	end,
 	interface = function(frame, data)
+		local valz = {}
+		valz["Row1"] = data.PossibleSpawn
 
+		local function UpdateData()
+			data.PossibleSpawn = valz["Row1"]
+			nz.Tools.Functions.SendData(data, "rbox")
+		end
+
+		local DProperties = vgui.Create( "DProperties", frame )
+		DProperties:SetSize( 280, 180 )
+		DProperties:SetPos( 10, 10 )
+
+		local Row1 = DProperties:CreateRow( "Random Box", "Possible Spawn?" )
+		Row1:Setup( "Boolean" )
+		Row1:SetValue( valz["Row1"] )
+		Row1.DataChanged = function( _, val ) valz["Row1"] = val UpdateData() end
+
+		return DProperties
 	end,
-	//defaultdata = {}
+	defaultdata = {
+		PossibleSpawn = 0,
+	}
 })

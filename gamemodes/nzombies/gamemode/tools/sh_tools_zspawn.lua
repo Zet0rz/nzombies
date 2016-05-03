@@ -13,8 +13,6 @@ nz.Tools.Functions.CreateTool("zspawn", {
 		if tobool(data.flag) and ent.link != "" then
 			ent.link = data.link
 		end
-		ent.respawnable = data.respawnable
-		ent.spawnable = data.spawnable
 
 		//For the link displayer
 		if data.link then
@@ -32,8 +30,6 @@ nz.Tools.Functions.CreateTool("zspawn", {
 		local ent = tr.Entity
 		if IsValid(ent) and ent:GetClass() == "nz_spawn_zombie_normal" then
 			ent.link = data.link
-			ent.respawnable = data.respawnable
-			ent.spawnable = data.spawnable
 
 			//For the link displayer
 			if data.link then
@@ -60,8 +56,6 @@ nz.Tools.Functions.CreateTool("zspawn", {
 		local valz = {}
 		valz["Row1"] = data.flag
 		valz["Row2"] = data.link
-		valz["Row3"] = data.spawnable
-		valz["Row4"] = data.respawnable
 
 		local function UpdateData()
 			local str="nil"
@@ -73,10 +67,6 @@ nz.Tools.Functions.CreateTool("zspawn", {
 				data.flag = 1
 			end
 			data.link = str
-			data.spawnable = valz["Row3"]
-			data.respawnable = valz["Row4"]
-
-			PrintTable(data)
 
 			nz.Tools.Functions.SendData(data, "zspawn")
 		end
@@ -99,7 +89,5 @@ nz.Tools.Functions.CreateTool("zspawn", {
 	defaultdata = {
 		flag = 0,
 		link = 1,
-		spawnable = 1,
-		respawnable = 1,
 	}
 })
