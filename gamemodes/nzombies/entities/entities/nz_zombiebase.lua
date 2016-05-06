@@ -170,6 +170,7 @@ function ENT:Initialize()
 		if GetConVar("nz_zombie_lagcompensated"):GetBool() then
 			self:SetLagCompensated(true)
 		end
+		self.BarricadeJumpTries = 0
 	end
 
 	for i,v in ipairs(self:GetBodyGroups()) do
@@ -445,8 +446,19 @@ function ENT:OnBarricadeBlocking( barricade )
 			if stillBlocked then
 				self:OnBarricadeBlocking(stillBlocked)
 			end
-		elseif barricade:GetTriggerJumps() then
-			if self.TriggerBarricadeJump then self:TriggerBarricadeJump() end
+			
+			-- Attacking a new barricade resets the counter
+			self.BarricadeJumpTries = 0
+		elseif barricade:GetTriggerJumps() and self.TriggerBarricadeJump then
+			local dist = barricade:GetPos():DistToSqr(self:GetPos())
+			if dist <= 3500 + (1000 * self.BarricadeJumpTries) then 
+				self:TriggerBarricadeJump()
+				self.BarricadeJumpTries = 0
+			else
+				-- If we continuously fail, we need to increase the check range (if it is a bigger prop)
+				self.BarricadeJumpTries = self.BarricadeJumpTries + 1
+				-- Otherwise they'd get continuously stuck on slightly bigger props :(
+			end
 		end
 	end
 end
@@ -651,7 +663,8 @@ function ENT:ChaseTarget( options )
 
 		--Timeout the pathing so it will rerun the entire behaviour (break barricades etc)
 		if ( path:GetAge() > options.maxage ) then
-			self.BarricadeCheckDir = (path:FirstSegment().forward)
+			local segment = path:FirstSegment()
+			self.BarricadeCheckDir = segment and segment.forward or Vector(0,0,0)
 			return "timeout"
 		end
 

@@ -18,6 +18,9 @@ function ENT:Initialize()
 	--self:SetMoveType( MOVETYPE_NONE )
 	self:DrawShadow( false )
 	self:SetRenderMode( RENDERMODE_TRANSCOLOR )
+	if self.SetRenderBounds then
+		self:SetRenderBounds(Vector(0,0,0), self:GetMaxBound())
+	end
 	--self:SetCustomCollisionCheck(true)
 	--self:SetFilter(true, true)
 end

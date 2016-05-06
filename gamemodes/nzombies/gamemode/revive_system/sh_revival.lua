@@ -4,7 +4,17 @@ if SERVER then
 		for k,v in pairs(Revive.Players) do
 			//The time it takes for a downed player to die - Prevent dying if being revived
 			if CurTime() - v.DownTime >= GetConVar("nz_downtime"):GetFloat() and !v.ReviveTime then
-				Entity(k):KillDownedPlayer()
+				local ent = Entity(k)
+				if ent:IsPlayer() then
+					Entity(k):KillDownedPlayer()
+				else
+					-- If it's a non-player entity, do the same thing just to clean up the table
+					local revivor = v.RevivePlayer
+					if IsValid(revivor) then
+						revivor:StripWeapon("nz_revive_morphine")
+					end
+					Revive.Players[k] = nil
+				end
 			end
 		end
 	end)

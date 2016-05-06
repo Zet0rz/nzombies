@@ -1,10 +1,10 @@
 //
 
-function nz.QMenu.Functions.AddNewCategory( text, tooltip )
-	if tooltip == nil then
-		tooltip = true
-	end
-	nz.QMenu.Data.Categories[text] = tooltip
+function nz.QMenu.Functions.AddNewCategory( text, tooltip, icon )
+	--if tooltip == nil then
+		--tooltip = true
+	--end
+	nz.QMenu.Data.Categories[text] = {tooltip = tooltip, icon = icon}
 end
 
 function nz.QMenu.Functions.AddNewModel( cat, model )
@@ -22,7 +22,7 @@ PropMenuAddModel = nz.QMenu.Functions.AddNewModel
 PropMenuAddEntity = nz.QMenu.Functions.AddNewEntity
 
 //Use
-PropMenuAddCat("Light Effects")
+PropMenuAddCat("Light Effects", "Foggy Light Effect Props", "icon16/shading.png")
 PropMenuAddModel("Light Effects", "models/effects/vol_light.mdl")
 PropMenuAddModel("Light Effects", "models/effects/vol_light01.mdl")
 PropMenuAddModel("Light Effects", "models/effects/vol_light02.mdl")
@@ -38,7 +38,7 @@ PropMenuAddModel("Light Effects", "models/effects/lightshaft/lightshaft_window01
 PropMenuAddModel("Light Effects", "models/lostcoast/effects/vollight_stainedglass.mdl")
 PropMenuAddModel("Light Effects", "models/props/cs_militia/bridgelight.mdl")
 
-PropMenuAddCat("Gates")
+PropMenuAddCat("Gates", "Fences & Useful Door Props", "icon16/link_break.png")
 PropMenuAddModel("Gates", "models/props_c17/fence03a.mdl")
 PropMenuAddModel("Gates", "models/props_c17/fence02b.mdl")
 PropMenuAddModel("Gates", "models/props_c17/fence01b.mdl")
@@ -68,7 +68,7 @@ PropMenuAddModel("Gates", "models/props_c17/gravestone_coffinpiece001a.mdl")
 PropMenuAddModel("Gates", "models/props_c17/gravestone_coffinpiece002a.mdl")
 PropMenuAddModel("Gates", "models/props_junk/TrashDumpster02b.mdl")
 
-PropMenuAddCat("Scenery")
+PropMenuAddCat("Scenery", "Cabinets, Shelves, Urban Props", "icon16/camera.png")
 PropMenuAddModel("Scenery", "models/props_borealis/bluebarrel001.mdl")
 PropMenuAddModel("Scenery", "models/props_interiors/Furniture_shelf01a.mdl")
 PropMenuAddModel("Scenery", "models/props_junk/TrashDumpster02.mdl")
@@ -180,7 +180,7 @@ PropMenuAddModel("Scenery", "models/props_junk/garbage256_composite002a.mdl")
 PropMenuAddModel("Scenery", "models/props_junk/garbage256_composite002b.mdl")
 
 --Destoyed boats/vehicles
-PropMenuAddCat("Vehicles")
+PropMenuAddCat("Vehicles", "Broken Vehicles", "icon16/car.png")
 PropMenuAddModel("Vehicles", "models/props_canal/boat001a.mdl")
 PropMenuAddModel("Vehicles", "models/props_canal/boat001b.mdl")
 PropMenuAddModel("Vehicles", "models/props_canal/boat002b.mdl")
@@ -204,7 +204,7 @@ PropMenuAddModel("Vehicles", "models/props_vehicles/truck003a.mdl")
 PropMenuAddModel("Vehicles", "models/props_vehicles/van001a_physics.mdl")
 
 --Foliage
-PropMenuAddCat("Foliage")
+PropMenuAddCat("Foliage", "Bushes & Trees", "icon16/world.png")
 PropMenuAddModel("Foliage", "models/props_foliage/tree_springers_01a-lod.mdl")
 PropMenuAddModel("Foliage", "models/props_foliage/tree_springers_01a.mdl")
 PropMenuAddModel("Foliage", "models/props_foliage/tree_springers_card_01_skybox.mdl")
@@ -227,7 +227,7 @@ PropMenuAddModel("Foliage", "models/props_foliage/tree_deciduous_03b.mdl")
 
 PropMenuAddModel("Foliage", "models/props_foliage/tree_poplar_01.mdl")
 
-PropMenuAddCat("Wall Pieces")
+PropMenuAddCat("Wall Pieces", "Broken Walls & Debris", "icon16/house.png")
 PropMenuAddModel("Wall Pieces", "models/props_debris/plaster_wall001a.mdl")
 PropMenuAddModel("Wall Pieces", "models/props_debris/plaster_wall002a.mdl")
 PropMenuAddModel("Wall Pieces", "models/props_debris/walldestroyed06b.mdl")
@@ -282,7 +282,7 @@ PropMenuAddModel("Wall Pieces", "models/props_debris/building_brokenwindow001a.m
 PropMenuAddModel("Wall Pieces", "models/props_debris/building_brokenwindow001b.mdl")
 PropMenuAddModel("Wall Pieces", "models/props_unique/zombiebreakwallcoreframe01_dm.mdl")
 
-PropMenuAddCat("Apocalyptic")
+PropMenuAddCat("Apocalyptic", "Dead Corpses & Barbed Wire (Origins)", "icon16/bomb.png")
 PropMenuAddModel("Apocalyptic", "models/nzprops/origins/barbwire_blockade.mdl")
 PropMenuAddModel("Apocalyptic", "models/nzprops/origins/barbwire_long.mdl")
 PropMenuAddModel("Apocalyptic", "models/nzprops/origins/barbwire_gate.mdl")

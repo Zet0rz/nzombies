@@ -28,7 +28,7 @@ concommand.Add("nz_forceround", function(ply, cmd, args, argStr)
 		local nokill = args[2] and tobool(args[2]) or false
 
 		if !nokill then
-			nz.PowerUps.Functions.Nuke(nil, true) -- Nuke kills them all, no points, no position delay
+			nzPowerUps:Nuke(nil, true) -- Nuke kills them all, no points, no position delay
 		end
 
 		if round then

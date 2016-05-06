@@ -19,6 +19,8 @@ function PLAYER:Init()
 
 end
 
+if not ConVarExists("nz_failsafe_preventgrenades") then CreateConVar("nz_failsafe_preventgrenades", 0, {FCVAR_SERVER_CAN_EXECUTE, FCVAR_ARCHIVE, FCVAR_NOTIFY}) end
+
 function PLAYER:Loadout()
 	-- Give ammo and guns
 
@@ -38,7 +40,11 @@ function PLAYER:Loadout()
 		end
 	end
 	self.Player:Give("nz_quickknife_crowbar")
-	self.Player:Give("nz_grenade")
+	
+	-- We need this to disable the grenades for those that it causes problems with until they've been remade :(
+	if !GetConVar("nz_failsafe_preventgrenades"):GetBool() then
+		self.Player:Give("nz_grenade")
+	end
 
 end
 function PLAYER:Spawn()

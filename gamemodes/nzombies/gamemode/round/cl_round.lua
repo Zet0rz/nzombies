@@ -4,6 +4,7 @@ end
 
 function nzRound:StateChange( old, new )
 	if new == ROUND_WAITING then
+		nzRound:EnableSpecialFog( false )
 		hook.Call( "OnRoundWating", nzRound )
 	elseif new == ROUND_INIT then
 		hook.Call( "OnRoundInit", nzRound )

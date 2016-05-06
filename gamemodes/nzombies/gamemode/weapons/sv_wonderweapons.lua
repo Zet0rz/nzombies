@@ -62,4 +62,11 @@ nz.Weps.Functions.AddWonderWeapon("wunderwaffe")
 nz.Weps.Functions.AddWonderWeapon("weapon_hoff_thundergun")
 nz.Weps.Functions.AddWonderWeapon("weapon_teslagun")
 
+-- We can also add all weapons which have SWEP.NZWonderWeapon = true set in their files
+hook.Add("InitPostEntity", "nzRegisterWonderWeaponsByKey", function()
+	for k,v in pairs(weapons.GetList()) do
+		if v.NZWonderWeapon then nz.Weps.Functions.AddWonderWeapon(v.ClassName) end
+	end	
+end)
+
 -- More wonder weapons should be added by map scripts for their map - if you think you have one that should officially apply to all maps, add me

@@ -30,8 +30,8 @@ function nz.QMenu.Functions.CreatePropsMenu( )
 		tabs.Lists[k]:SetPos( 0, 0 )
 		tabs.Lists[k]:SetSpaceY( 5 ) //Sets the space in between the panels on the X Axis by 5
 		tabs.Lists[k]:SetSpaceX( 5 ) //Sets the space in between the panels on the Y Axis by 5
-		if v == true then v = nil end
-		PropertySheet:AddSheet( k, tabs.Scrolls[k], nil, false, false, v )
+		--if v == true then v = nil end
+		PropertySheet:AddSheet( k, tabs.Scrolls[k], v.icon, false, false, v.tooltip )
 	end
 	
 	tabs.Scrolls["Entities"] = vgui.Create( "DScrollPanel", nz.QMenu.Data.MainFrame )
@@ -71,6 +71,26 @@ function nz.QMenu.Functions.CreatePropsMenu( )
 	tabs.Lists["Search"]:SetSpaceY( 5 )
 	tabs.Lists["Search"]:SetSpaceX( 5 )
 	
+	tabs.Scrolls["MapProps"] = vgui.Create( "DPanel", nz.QMenu.Data.MainFrame )
+	tabs.Scrolls["MapProps"]:SetSize( 455, 300 )
+	tabs.Scrolls["MapProps"]:SetPos( 10, 30 )
+	
+	tabs.Scrolls["MapProps"].Search = vgui.Create( "DButton", tabs.Scrolls["MapProps"] )
+	tabs.Scrolls["MapProps"].Search:SetSize( 420, 20 )
+	tabs.Scrolls["MapProps"].Search:SetPos( 10, 10 )
+	tabs.Scrolls["MapProps"].Search.DoClick = function() tabs.Scrolls["MapProps"]:RefreshResults() end
+	tabs.Scrolls["MapProps"].Search:SetText("Update")
+	
+	tabs.Scrolls["MapProps"].Content = vgui.Create( "DScrollPanel", tabs.Scrolls["MapProps"] )
+	tabs.Scrolls["MapProps"].Content:SetSize( 430, 220 )
+	tabs.Scrolls["MapProps"].Content:SetPos( 0, 40 )
+
+	tabs.Lists["MapProps"] = vgui.Create( "DIconLayout", tabs.Scrolls["MapProps"].Content )
+	tabs.Lists["MapProps"]:SetSize( 440, 210 )
+	tabs.Lists["MapProps"]:SetPos( 10, 00 )
+	tabs.Lists["MapProps"]:SetSpaceY( 5 )
+	tabs.Lists["MapProps"]:SetSpaceX( 5 )
+	
 	function tabs.Scrolls.Search:RefreshResults() 
 		--print(self.Search:GetText(), "Refresh")
 		if ( self.Search:GetText() == "" ) then return end
@@ -90,6 +110,29 @@ function nz.QMenu.Functions.CreatePropsMenu( )
 		end
 	end
 	
+	function tabs.Scrolls.MapProps:RefreshResults() 
+		local pnl = tabs.Lists["MapProps"]
+		pnl:Clear()
+		local used = {}
+		for k,v in pairs(ents.GetAll()) do
+			if string.find(v:GetClass(), "prop") then
+				local model = v:GetModel()
+				if !used[model] then
+					local ListItem = pnl:Add( "SpawnIcon" )
+					ListItem:SetSize( 45, 45 )
+					ListItem:SetModel(model)
+					ListItem.Model = model
+					ListItem.DoClick = function( item )
+						nz.QMenu.Functions.Request(item.Model)
+						surface.PlaySound( "ui/buttonclickrelease.wav" )
+					end
+					used[model] = true
+				end
+			end
+		end
+	end
+	
+	PropertySheet:AddSheet( "Map Props", tabs.Scrolls["MapProps"], "icon16/map.png", false, false, v )
 	PropertySheet:AddSheet( "Search", tabs.Scrolls["Search"], "icon16/magnifier.png", false, false, v )
 
 	hook.Add( "SearchUpdate", "SearchUpdate", function()

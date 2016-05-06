@@ -165,11 +165,13 @@ local function DrawDownedHeadsUp()
 	--table.SortByMember(nz.Revive.Data.Notify, "time")
 	
 	for k,v in pairs(Revive.Notify) do
-		local fade = math.Clamp(CurTime() - v.time - 5, 0, 1)
-		local status = v.text or "needs to be revived!"
-		draw.SimpleText(k:Nick().." "..status, font, ScrW()/2, ScrH() - h - offset * c, Color(255, 255, 255,255-(255*fade)), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
-		if fade >= 1 then Revive.Notify[k] = nil end
-		c = c + 1
+		if IsValid(k) and k:IsPlayer() then
+			local fade = math.Clamp(CurTime() - v.time - 5, 0, 1)
+			local status = v.text or "needs to be revived!"
+			draw.SimpleText(k:Nick().." "..status, font, ScrW()/2, ScrH() - h - offset * c, Color(255, 255, 255,255-(255*fade)), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+			if fade >= 1 then Revive.Notify[k] = nil end
+			c = c + 1
+		end
 	end
 end
 

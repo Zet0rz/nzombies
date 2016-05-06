@@ -1,13 +1,13 @@
 if SERVER then
-	util.AddNetworkString( ", nzRoundNumber" )
-	util.AddNetworkString( ", nzRoundState" )
-	util.AddNetworkString( ", nzRoundSpecial" )
+	util.AddNetworkString( "nzRoundNumber" )
+	util.AddNetworkString( "nzRoundState" )
+	util.AddNetworkString( "nzRoundSpecial" )
 	util.AddNetworkString( "nzPlayerReadyState" )
 	util.AddNetworkString( "nzPlayerPlayingState" )
 
 	function nzRound:SendNumber( number, ply )
 
-		net.Start( ", nzRoundNumber" )
+		net.Start( "nzRoundNumber" )
 			net.WriteUInt( number or 0, 16 )
 		return ply and net.Send( ply ) or net.Broadcast()
 
@@ -15,7 +15,7 @@ if SERVER then
 
 	function nzRound:SendState( state, ply )
 
-		net.Start( ", nzRoundState" )
+		net.Start( "nzRoundState" )
 			net.WriteUInt( state or ROUND_WAITING, 3 )
 		return ply and net.Send( ply ) or net.Broadcast()
 
@@ -23,7 +23,7 @@ if SERVER then
 
 	function nzRound:SendSpecialRound( bool, ply )
 
-		net.Start( ", nzRoundSpecial" )
+		net.Start( "nzRoundSpecial" )
 			net.WriteBool( bool or false )
 		return ply and net.Send( ply ) or net.Broadcast()
 
@@ -77,18 +77,18 @@ if CLIENT then
 			nzRound:StateChange( old, new )
 		end
 	end
-	net.Receive( ", nzRoundState", receiveRoundState )
+	net.Receive( "nzRoundState", receiveRoundState )
 
 
 	local function receiveRoundNumber()
 		nzRound:SetNumber( net.ReadUInt( 16 ) )
 	end
-	net.Receive( ", nzRoundNumber", receiveRoundNumber)
+	net.Receive( "nzRoundNumber", receiveRoundNumber)
 
 	local function receiveSpecialRound()
 		nzRound:SetSpecial( net.ReadBool() )
 	end
-	net.Receive( ", nzRoundSpecial", receiveSpecialRound )
+	net.Receive( "nzRoundSpecial", receiveSpecialRound )
 
 
 	local function receivePlayerReadyState()
