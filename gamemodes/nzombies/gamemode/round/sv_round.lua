@@ -301,6 +301,58 @@ function nzRound:End()
 	hook.Call( "OnRoundEnd", nzRound )
 end
 
+function nzRound:Win(message)
+	if !message then message = "You survived after " .. self:GetNumber() .. " rounds!" end
+	
+	net.Start("nzMajorEEEndScreen")
+		net.WriteBool(true)
+		net.WriteString(message)
+	net.Broadcast()
+	
+	-- Set round state to Game Over
+	nzRound:SetState( ROUND_GO )
+	--Notify with chat message
+	PrintMessage( HUD_PRINTTALK, "GAME OVER!" )
+	PrintMessage( HUD_PRINTTALK, "Restarting in 10 seconds!" )
+	
+	if self.OverrideEndSlomo then
+		game.SetTimeScale(0.25)
+		timer.Simple(2, function() game.SetTimeScale(1) end)
+	end
+	
+	timer.Simple(10, function()
+		nzRound:ResetGame()
+	end)
+
+	hook.Call( "OnRoundEnd", nzRound )
+end
+
+function nzRound:Lose(message)
+	if !message then message = "You got overwhelmed after " .. self:GetNumber() .. " rounds!" end
+	
+	net.Start("nzMajorEEEndScreen")
+		net.WriteBool(false)
+		net.WriteString(message)
+	net.Broadcast()
+	
+	-- Set round state to Game Over
+	nzRound:SetState( ROUND_GO )
+	--Notify with chat message
+	PrintMessage( HUD_PRINTTALK, "GAME OVER!" )
+	PrintMessage( HUD_PRINTTALK, "Restarting in 10 seconds!" )
+	
+	if self.OverrideEndSlomo then
+		game.SetTimeScale(0.25)
+		timer.Simple(2, function() game.SetTimeScale(1) end)
+	end
+	
+	timer.Simple(10, function()
+		nzRound:ResetGame()
+	end)
+
+	hook.Call( "OnRoundEnd", nzRound )
+end
+
 function nzRound:Create()
 
 	if self:InState( ROUND_WAITING ) then

@@ -29,6 +29,9 @@ if SERVER then
 		if tbl.wunderfizzperks then
 			nzMapping.Settings.wunderfizzperks = tbl.wunderfizzperks and tbl.wunderfizzperks[1] and tbl.wunderfizzperks or nil
 		end
+		if tbl.gamemodeentities then
+			nzMapping.Settings.gamemodeentities = tbl.gamemodeentities or nil
+		end
 
 		for k,v in pairs(player.GetAll()) do
 			nzMapping:SendMapData(ply)
@@ -39,6 +42,7 @@ if SERVER then
 	net.Receive( "nzMapping.SyncSettings", receiveMapData )
 
 	function nzMapping:SendMapData(ply)
+		if !self.GamemodeExtensions then self.GamemodeExtensions = {} end
 		net.Start("nzMapping.SyncSettings")
 			net.WriteTable(self.Settings)
 		net.Send(ply)

@@ -160,14 +160,14 @@ function nzDisplay.DrawLinks( ent, link )
 	//Check for zombie spawns
 	for k, v in pairs(ents.GetAll()) do
 		if v:IsBuyableProp()  then
-			if nz.nzDoors.Data.BuyableProps[k] != nil then
+			if nzDoors.PropDoors[k] != nil then
 				if v.link == link then
 					table.insert(tbl, Entity(k))
 				end
 			end
 		elseif v:IsDoor() then
-			if nz.nzDoors.Data.LinkFlags[v:doorIndex()] != nil then
-				if nz.nzDoors.Data.LinkFlags[v:doorIndex()].link == link then
+			if nzDoors.MapDoors[v:doorIndex()] != nil then
+				if nzDoors.MapDoors[v:doorIndex()].link == link then
 					table.insert(tbl, v)
 				end
 			end
@@ -210,7 +210,7 @@ local function DrawPointsNotification()
 			if v:GetPoints() >= 0 then
 				if !v.LastPoints then v.LastPoints = 0 end
 				if v:GetPoints() != v.LastPoints then
-					nz.Display.Functions.PointsNotification(v, v:GetPoints() - v.LastPoints)
+					PointsNotification(v, v:GetPoints() - v.LastPoints)
 					v.LastPoints = v:GetPoints()
 				end
 			end

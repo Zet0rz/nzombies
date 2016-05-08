@@ -31,9 +31,9 @@ if (SERVER) then
 	end
 
 	-- Quick function to set the money to the current amount plus an amount specified.
-	function _PLAYER:GivePoints(amount)
+	function _PLAYER:GivePoints(amount, ignoredp)
 		//If double points is on.
-		if nzPowerUps:IsPowerupActive("dp") then
+		if nzPowerUps:IsPowerupActive("dp") and !ignoredp then
 			amount = amount * 2
 		end
 		self:SetPoints(self:GetPoints() + amount)

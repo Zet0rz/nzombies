@@ -5,6 +5,8 @@ util.AddNetworkString( ", nzRoundSpecial" )
 util.AddNetworkString( "nzPlayerReadyState" )
 util.AddNetworkString( "nzPlayerPlayingState" )
 
+nzRound.Number = 0 -- Default for reloaded scenarios
+
 function nzRound:GetZombiesKilled()
 	return self.ZombiesKilled
 end

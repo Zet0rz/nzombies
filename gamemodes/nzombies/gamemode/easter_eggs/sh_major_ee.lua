@@ -28,24 +28,6 @@ if SERVER then
 	end
 	
 	util.AddNetworkString("nzMajorEEEndScreen")
-
-	function nzEE.Major:Win(message)
-		if message then
-			net.Start("nzMajorEEEndScreen")
-				net.WriteString(message)
-			net.Broadcast()
-		end
-		-- Set round state to Game Over
-		nzRound:SetState( ROUND_GO )
-		--Notify with chat message
-		PrintMessage( HUD_PRINTTALK, "GAME OVER!" )
-		PrintMessage( HUD_PRINTTALK, "Restarting in 10 seconds!" )
-		timer.Simple(10, function()
-			nzRound:ResetGame()
-		end)
-
-		hook.Call( "OnRoundEnd", nzRound )
-	end
 	
 	function nzEE.Major:Reset()
 		nzEE.Major.CurrentStep = 1
@@ -60,21 +42,46 @@ end
 
 if CLIENT then
 
-	local function ShowWinText()
+	local function ShowWinScreen()
+		local win = net.ReadBool()
 		local msg = net.ReadString()
 		
 		local w = ScrW() / 2
 		local h = ScrH() / 2
 		local font = "DermaLarge"
 		
-		hook.Add("HUDPaint", "DrawEEEndScreen", function()
+		local time = CurTime()
+		local override = GetGlobalVector("endcamerapos", 1)
+		if type(override) ~= "number" then
+			local endposition = override
+			
+			hook.Add("CalcView", "nzCalcEndCameraView", function(ply, origin, angles, fov, znear, zfar)
+				if !nzRound:InState( ROUND_GO ) then
+					hook.Remove("CalcView", "nzCalcEndCameraView")
+				end
+				
+				local delta = math.Clamp((CurTime() - time) * 2, 0, 1)
+	 
+				local start = endposition * delta + origin * (1 - delta)
+				local tr = util.TraceHull({start = start, endpos = start + delta * 64 * Angle(0, CurTime() * 30, 0):Forward(), mins = Vector(-2, -2, -2), maxs = Vector(2, 2, 2), filter = player.GetAll(), mask = MASK_SOLID})
+				return {origin = tr.HitPos + tr.HitNormal, angles = (start - tr.HitPos):Angle()}
+			end)
+		end
+		
+		hook.Add("HUDPaint", "nzDrawEEEndScreen", function()
 			draw.SimpleText(msg, font, w, h, Color(255,255,255,255), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
 			if !nzRound:InState( ROUND_GO ) then
-				hook.Remove("HUDPaint", "DrawEEEndScreen")
+				hook.Remove("HUDPaint", "nzDrawEEEndScreen")
 			end
 		end)
+		
+		if win then
+			surface.PlaySound(GetGlobalString("winmusic", "nz/easteregg/motd_standard.wav"), 21)
+		else
+			surface.PlaySound(GetGlobalString("losemusic", "nz/round/game_over_4.mp3"), 21)
+		end
 	end
-	net.Receive("nzMajorEEEndScreen", ShowWinText)
+	net.Receive("nzMajorEEEndScreen", ShowWinScreen)
 
 
 end

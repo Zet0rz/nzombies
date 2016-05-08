@@ -28,10 +28,10 @@ nz.Tools.Functions.CreateTool("settings", {
 		local valz = {}
 		valz["Row1"] = data.startwep or "Select ..."
 		valz["Row2"] = data.startpoints or 500
-		valz["Row3"] = data.maxwep or 2
-		valz["Row4"] = data.eeurl or ""
-		valz["Row5"] = data.script or false
-		valz["Row6"] = data.scriptinfo or ""
+		valz["Row3"] = data.eeurl or ""
+		valz["Row4"] = data.script or false
+		valz["Row5"] = data.scriptinfo or ""
+		valz["Row6"] = data.gamemodeentities or false
 		valz["RBoxWeps"] = data.RBoxWeps or {}
 
 		local sheet = vgui.Create( "DPropertySheet", frame )
@@ -41,7 +41,7 @@ nz.Tools.Functions.CreateTool("settings", {
 		local DProperties = vgui.Create( "DProperties", DProperySheet )
 		DProperties:SetSize( 280, 250 )
 		DProperties:SetPos( 0, 0 )
-		sheet:AddSheet( "Map Properties", DProperties, "icon16/cog.png")
+		sheet:AddSheet( "Map Properties", DProperties, "icon16/cog.png", false, false, "Allows you to set a list of general settings. The Easter Egg Song URL needs to be from Soundcloud.")
 
 		local Row1 = DProperties:CreateRow( "Map Settings", "Starting Weapon" )
 		Row1:Setup( "Combo" )
@@ -69,38 +69,39 @@ nz.Tools.Functions.CreateTool("settings", {
 		Row2:SetValue( valz["Row2"] )
 		Row2.DataChanged = function( _, val ) valz["Row2"] = val end
 
-		local Row3 = DProperties:CreateRow( "Map Settings", "Max Weapons" )
-		Row3:Setup( "Integer" )
+		local Row3 = DProperties:CreateRow( "Map Settings", "Easter Egg Song URL" )
+		Row3:Setup( "Generic" )
 		Row3:SetValue( valz["Row3"] )
 		Row3.DataChanged = function( _, val ) valz["Row3"] = val end
-
-		local Row4 = DProperties:CreateRow( "Map Settings", "Easter Egg Song URL" )
-		Row4:Setup( "Generic" )
-		Row4:SetValue( valz["Row4"] )
-		Row4.DataChanged = function( _, val ) valz["Row4"] = val end
-		Row4:SetTooltip("Add a link to a SoundCloud track to play this when all easter eggs have been found")
+		Row3:SetTooltip("Add a link to a SoundCloud track to play this when all easter eggs have been found")
 		
 		if nz.Tools.Advanced then
-			local Row5 = DProperties:CreateRow( "Map Settings", "Includes Map Script?" )
-			Row5:Setup( "Boolean" )
+			local Row4 = DProperties:CreateRow( "Map Settings", "Includes Map Script?" )
+			Row4:Setup( "Boolean" )
+			Row4:SetValue( valz["Row4"] )
+			Row4.DataChanged = function( _, val ) valz["Row4"] = val end
+			Row4:SetTooltip("Loads a .lua file with the same name as the config .txt from /lua/nzmapscripts - for advanced developers.")
+		
+			local Row5 = DProperties:CreateRow( "Map Settings", "Script Description" )
+			Row5:Setup( "Generic" )
 			Row5:SetValue( valz["Row5"] )
 			Row5.DataChanged = function( _, val ) valz["Row5"] = val end
-			Row5:SetTooltip("Loads a .lua file with the same name as the config .txt from /lua/nzmapscripts - for advanced developers.")
-		
-			local Row6 = DProperties:CreateRow( "Map Settings", "Script Description" )
-			Row6:Setup( "Generic" )
+			Row5:SetTooltip("Sets the description displayed when attempting to load the script.")
+			
+			local Row6 = DProperties:CreateRow( "Map Settings", "Gamemode Extensions" )
+			Row6:Setup( "Boolean" )
 			Row6:SetValue( valz["Row6"] )
 			Row6.DataChanged = function( _, val ) valz["Row6"] = val end
-			Row6:SetTooltip("Sets the description displayed when attempting to load the script.")
+			Row6:SetTooltip("Sets whether the gamemode should spawn in map entities from other gamemodes, such as ZS.")
 		end
 		
 		local function UpdateData()
 			if !weapons.Get( valz["Row1"] ) then data.startwep = nil else data.startwep = valz["Row1"] end
 			if !tonumber(valz["Row2"]) then data.startpoints = 500 else data.startpoints = tonumber(valz["Row2"]) end
-			if !tonumber(valz["Row3"]) then data.numweps = 2 else data.numweps = tonumber(valz["Row3"]) end
-			if !valz["Row4"] or valz["Row4"] == "" then data.eeurl = nil else data.eeurl = valz["Row4"] end
-			if !valz["Row5"] then data.script = nil else data.script = valz["Row5"] end
-			if !valz["Row6"] or valz["Row6"] == "" then data.scriptinfo = nil else data.scriptinfo = valz["Row6"] end
+			if !valz["Row3"] or valz["Row3"] == "" then data.eeurl = nil else data.eeurl = valz["Row3"] end
+			if !valz["Row4"] then data.script = nil else data.script = valz["Row4"] end
+			if !valz["Row5"] or valz["Row5"] == "" then data.scriptinfo = nil else data.scriptinfo = valz["Row5"] end
+			if !valz["Row6"] or valz["Row6"] == "0" then data.gamemodeentities = nil else data.gamemodeentities = tobool(valz["Row6"]) end
 			if !valz["RBoxWeps"] or !valz["RBoxWeps"][1] then data.rboxweps = nil else data.rboxweps = valz["RBoxWeps"] end
 			if !valz["WMPerks"] or !valz["WMPerks"][1] then data.wunderfizzperks = nil else data.wunderfizzperks = valz["WMPerks"] end
 			PrintTable(data)
@@ -119,7 +120,7 @@ nz.Tools.Functions.CreateTool("settings", {
 			local numweplist = 0
 
 			local rboxpanel = vgui.Create("DPanel", sheet)
-			sheet:AddSheet( "Random Box Weapons", rboxpanel, "icon16/box.png")
+			sheet:AddSheet( "Random Box Weapons", rboxpanel, "icon16/box.png", false, false, "Allows you to set which weapons appear in the Random Box.")
 			rboxpanel.Paint = function() return end
 
 			local rbweplist = vgui.Create("DScrollPanel", rboxpanel)
@@ -404,7 +405,7 @@ nz.Tools.Functions.CreateTool("settings", {
 			local perklist = {}
 
 			local perkpanel = vgui.Create("DPanel", sheet)
-			sheet:AddSheet( "Wunderfizz Perks", perkpanel, "icon16/drink.png")
+			sheet:AddSheet( "Wunderfizz Perks", perkpanel, "icon16/drink.png", false, false, "Allows you to set which perks appears in Der Wunderfizz.")
 			perkpanel.Paint = function() return end
 
 			local perklistpnl = vgui.Create("DScrollPanel", perkpanel)

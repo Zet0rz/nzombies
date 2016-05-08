@@ -211,7 +211,7 @@ function nzMapping:SaveConfig(name)
 
 end
 
-function nzMapping:ClearConfig()
+function nzMapping:ClearConfig(noclean)
 	print("[NZ] Clearing current map")
 
 	-- ALWAYS do this first!
@@ -274,6 +274,10 @@ function nzMapping:ClearConfig()
 
 	nzMapping.Settings = {}
 	nzMapping.MarkedProps = {}
+	
+	for k,v in pairs(player.GetAll()) do
+		nzMapping:SendMapData(v)
+	end
 
 	nzDoors.MapDoors = {}
 	nzDoors.PropDoors = {}
@@ -290,7 +294,9 @@ function nzMapping:ClearConfig()
 
 	nzMapping.CurrentConfig = nil
 
-	nzMapping:CleanUpMap()
+	if !noclean then
+		nzMapping:CleanUpMap()
+	end
 end
 
 function nzMapping:LoadConfig( name, loader )
@@ -335,7 +341,16 @@ function nzMapping:LoadConfig( name, loader )
 			print("Warning: This map config does not contain any set barricades.")
 		end
 
-		self:ClearConfig()
+		self:ClearConfig(true) -- We pass true to not clean up the map
+		
+		-- Then we can load if entity extensions are to be used
+		if data.MapSettings then
+			nzMapping.Settings = data.MapSettings
+			-- That way, the gamemode entities will spawn without getting removed during the map clean up
+		end
+		-- That we then manually call here
+		nzMapping:CleanUpMap()
+		
 
 		print("[NZ] Loading " .. filepath .. "...")
 
@@ -441,12 +456,9 @@ function nzMapping:LoadConfig( name, loader )
 				table.insert(nz.QMenu.Data.SpawnedEntities, ent)
 			end
 		end
-
-		if data.MapSettings then
-			nzMapping.Settings = data.MapSettings
-			for k,v in pairs(player.GetAll()) do
-				nzMapping:SendMapData(v)
-			end
+		
+		for k,v in pairs(player.GetAll()) do
+			nzMapping:SendMapData(v)
 		end
 
 		if data.RemoveProps then
