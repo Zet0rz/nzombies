@@ -62,6 +62,7 @@ function ENT:Use( activator, caller )
 	if !self:GetWinding() and self:GetWepClass() != "nz_box_teddy" then
 		if activator == self.Buyer then
 			local class = self:GetWepClass()
+			activator.LastUsedSWEP = activator:GetActiveWeapon()
 			activator:Give(class)
 			nz.Weps.Functions.GiveMaxAmmoWep(activator, class)
 			self.Box:Close()
