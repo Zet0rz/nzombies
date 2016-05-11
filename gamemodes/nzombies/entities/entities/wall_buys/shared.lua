@@ -204,6 +204,7 @@ if SERVER then
 		if !activator:HasWeapon( self.WeaponGive ) then
 			if activator:CanAfford(price) then
 				activator:TakePoints(price)
+				activator.LastUsedSWEP = activator:GetActiveWeapon()
 				activator:Give(self.WeaponGive)
 				nz.Weps.Functions.GiveMaxAmmoWep(activator, self.WeaponGive)
 				self:SetBought(true)

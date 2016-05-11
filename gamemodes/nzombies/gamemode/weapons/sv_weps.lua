@@ -354,28 +354,19 @@ end)
 
 --hook.Add("OnEntityCreated", "nz.Weps.OnEntityCreated", nz.Weps.Functions.OnWepCreated)
 function GetPriorityWeaponSlot(ply)
-	if ply:HasPerk("mulekick") then
-		for i = 1, 3 do
-			local exists = false
-			for k,v in pairs(ply:GetWeapons()) do
-				if !exists and v:GetNWInt("SwitchSlot") == i then
-					exists = true
-				end
+	local lastused = ply.LastUsedSWEP or ply:GetActiveWeapon()
+	local ie = 2
+	if ply:HasPerk("mulekick") then ie = 3 end
+	for i = 1, ie do
+		local exists = false
+		for k,v in pairs(ply:GetWeapons()) do
+			if !exists and v:GetNWInt("SwitchSlot") == i then
+				exists = true
 			end
-			if !exists then return i end
 		end
-	else
-		for i = 1, 2 do
-			local exists = false
-			for k,v in pairs(ply:GetWeapons()) do
-				if !exists and v:GetNWInt("SwitchSlot") == i then
-					exists = true
-				end
-			end
-			if !exists then return i end
-		end
+		if !exists then return i end
 	end
-	return ply:GetActiveWeapon():GetNWInt("SwitchSlot", 1), true
+	return lastused:GetNWInt("SwitchSlot") or 1, true, lastused:GetClass()
 end
 
 local function OnWeaponAdded( weapon )
@@ -410,8 +401,8 @@ local function OnWeaponAdded( weapon )
 					end
 				end]]
 				
-				local slot, exists = GetPriorityWeaponSlot(ply)
-				if exists then ply:StripWeapon( ply:GetActiveWeapon():GetClass() ) end
+				local slot, exists, rmSWEP = GetPriorityWeaponSlot(ply)
+				if exists then ply:StripWeapon(rmSWEP) end
 				weapon:SetNWInt( "SwitchSlot", slot )
 				
 				weapon.Weight = 10000
