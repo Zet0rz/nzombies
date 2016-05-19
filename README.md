@@ -103,9 +103,9 @@ This is an edited version from Alig's original featuring these changes:
 	- Point distribution works on hooks now, making it work for any NPC you add to "ValidEnemies"
 	- "ValidEnemies" table setup changed to allow more customizability
 	- "Power Ups" now rotate and are golden
-	- "Pack-a-Punch" is now a global hook, will work on all weapons
-	- Prop Search menu
+	- "Pack-a-Punch" is now a global hook; will work on all weapons
+	- "Prop Search" menu
 
 
 - Workshop Release To-do list:
-	Check the Issues tab with the "Workshop Release" milestone. Feel free to discuss your opinion about the things in there, it would help greatly.
+	Check the Issues tab with the "Workshop Release" mile-stone. Feel free to discuss your opinion about the things in there, it would help greatly.
