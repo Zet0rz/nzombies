@@ -51,17 +51,21 @@ function ENT:Think()
 	if SERVER then
 	    if nzRound:InState( ROUND_PROG ) and self:GetZombiesToSpawn() > 0 then
 			if self:GetSpawner() and self:GetSpawner():GetNextSpawn() < CurTime() and self:GetNextSpawn() < CurTime() then
-				if self:IsSuitable() and nzEnemies:TotalAlive() < GetConVar("nz_difficulty_max_zombies_alive"):GetInt() then
-					local class = nzMisc.WeightedRandom(self:GetZombieData(), "chance")
-					local zombie = ents.Create(class)
-					zombie:SetPos(self:GetPos())
-					zombie:Spawn()
-					-- make a reference to the spawner object used for "respawning"
-					zombie:SetSpawner(self:GetSpawner())
-					zombie:Activate()
-					-- reduce zombies in queue on self and spawner object
-					self:GetSpawner():DecrementZombiesToSpawn()
-					self:DecrementZombiesToSpawn()
+				if GetConvar("nz_difficulty_max_zombies_alive"):GetInt() < 5 then
+					GetConvar("nz_difficulty_max_zombies_alive"):SetInt(5)
+		
+					if self:IsSuitable() and nzEnemies:TotalAlive() < GetConVar("nz_difficulty_max_zombies_alive"):GetInt() then
+						local class = nzMisc.WeightedRandom(self:GetZombieData(), "chance")
+						local zombie = ents.Create(class)
+						zombie:SetPos(self:GetPos())
+						zombie:Spawn()
+						-- make a reference to the spawner object used for "respawning"
+						zombie:SetSpawner(self:GetSpawner())
+						zombie:Activate()
+						-- reduce zombies in queue on self and spawner object
+						self:GetSpawner():DecrementZombiesToSpawn()
+						self:DecrementZombiesToSpawn()
+					end
 				end
 				self:GetSpawner():SetNextSpawn(CurTime() + self:GetSpawner():GetDelay())
 				-- this will prevent one spawner from becoming dominant
