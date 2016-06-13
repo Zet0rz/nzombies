@@ -2,11 +2,11 @@
 if SERVER then
 	hook.Add("Think", "CheckDownedPlayersTime", function()
 		for k,v in pairs(Revive.Players) do
-			//The time it takes for a downed player to die - Prevent dying if being revived
+			-- The time it takes for a downed player to die - Prevent dying if being revived
 			if CurTime() - v.DownTime >= GetConVar("nz_downtime"):GetFloat() and !v.ReviveTime then
 				local ent = Entity(k)
-				if ent:IsPlayer() then
-					Entity(k):KillDownedPlayer()
+				if ent.KillDownedPlayer then
+					ent:KillDownedPlayer()
 				else
 					-- If it's a non-player entity, do the same thing just to clean up the table
 					local revivor = v.RevivePlayer
@@ -23,7 +23,7 @@ end
 function Revive.HandleRevive(ply, ent)
 	--print(ply, ent)
 
-	//Make sure other downed players can't revive other downed players next to them
+	-- Make sure other downed players can't revive other downed players next to them
 	if !Revive.Players[ply:EntIndex()] then
 
 		local tr = util.QuickTrace(ply:EyePos(), ply:GetAimVector()*100, ply)
@@ -39,8 +39,8 @@ function Revive.HandleRevive(ply, ent)
 
 				-- print(CurTime() - Revive.Players[id].ReviveTime)
 
-				if ply:HasPerk("revive") and CurTime() - Revive.Players[id].ReviveTime >= 2 //With quick-revive
-				or CurTime() - Revive.Players[id].ReviveTime >= 4 then	//4 is the time it takes to revive
+				if ply:HasPerk("revive") and CurTime() - Revive.Players[id].ReviveTime >= 2 -- With quick-revive
+				or CurTime() - Revive.Players[id].ReviveTime >= 4 then	-- 4 is the time it takes to revive
 					dply:RevivePlayer(ply)
 					ply.Reviving = nil
 				end
@@ -76,7 +76,7 @@ function Revive.HandleRevive(ply, ent)
 	end
 end
 
-//Hooks
+-- Hooks
 hook.Add("FindUseEntity", "CheckRevive", Revive.HandleRevive)
 
 if SERVER then

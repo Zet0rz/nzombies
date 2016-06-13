@@ -4,7 +4,7 @@ AccessorFunc( plyMeta, "iCurrentWeaponSlot", "CurrentWeaponSlot", FORCE_NUMBER)
 function plyMeta:SelectWeapon( class )
 	if ( !self:HasWeapon( class ) ) then return end
 	self.DoWeaponSwitch = self:GetWeapon( class )
-	print(self.DoWeaponSwitch)
+	--print(self.DoWeaponSwitch)
 end
 
 function GM:CreateMove( cmd )
@@ -19,7 +19,7 @@ function GM:CreateMove( cmd )
 end
 
 function GM:PlayerBindPress( ply, bind, pressed )
-	if nzRound:InProgress() then
+	if nzRound:InProgress() or nzRound:InState(ROUND_GO) then
 		if !ply:GetCurrentWeaponSlot() then ply:SetCurrentWeaponSlot(ply:GetActiveWeapon():GetNWInt("SwitchSlot", 1)) end
 		local slot
 		local curslot = ply:GetCurrentWeaponSlot() or 1

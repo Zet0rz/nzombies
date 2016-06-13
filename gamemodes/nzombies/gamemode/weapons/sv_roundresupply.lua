@@ -1,12 +1,12 @@
-nz.Weps.RoundResupply = {}
+nzWeps.RoundResupply = {}
 
-function nz.Weps.AddAmmoToRoundResupply(ammo, count, max)
-	nz.Weps.RoundResupply[ammo] = {count = count, max = max}
+function nzWeps:AddAmmoToRoundResupply(ammo, count, max)
+	nzWeps.RoundResupply[ammo] = {count = count, max = max}
 end
 
-function nz.Weps.DoRoundResupply()
+function nzWeps:DoRoundResupply()
 	for k,v in pairs(player.GetAllPlaying()) do
-		for k2,v2 in pairs(nz.Weps.RoundResupply) do
+		for k2,v2 in pairs(nzWeps.RoundResupply) do
 			local give = math.Clamp(v2.max - v:GetAmmoCount(k2), 0, v2.count)
 			v:GiveAmmo(give, k2, true)
 		end
@@ -14,4 +14,4 @@ function nz.Weps.DoRoundResupply()
 end
 
 -- Standard grenades
-nz.Weps.AddAmmoToRoundResupply("nz_grenade", 2, 4)
+nzWeps:AddAmmoToRoundResupply("nz_grenade", 2, 4)

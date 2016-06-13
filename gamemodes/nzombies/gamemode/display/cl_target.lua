@@ -60,7 +60,9 @@ local traceents = {
 			if ent:GetPerkID() == "pap" then
 				local wep = LocalPlayer():GetActiveWeapon()
 				if wep.pap then
-					if wep.Attachments and ((wep:IsCW2() and CustomizableWeaponry) or wep:IsFAS2()) then
+					if wep.NZRePaPText then
+						text = "Press E to "..wep.NZRePaPText.." for 2000 points."
+					elseif wep.Attachments and ((wep:IsCW2() and CustomizableWeaponry) or wep:IsFAS2()) then
 						text = "Press E to reroll attachments for 2000 points."
 					else
 						text = "This weapon is already upgraded."
@@ -69,7 +71,7 @@ local traceents = {
 					text = "Press E to buy Pack-a-Punch for 5000 points."
 				end
 			else
-				local perkData = nz.Perks.Functions.Get(ent:GetPerkID())
+				local perkData = nzPerks:Get(ent:GetPerkID())
 				-- Its on
 				text = "Press E to buy " .. perkData.name .. " for " .. ent:GetPrice() .. " points."
 				-- Check if they already own it
@@ -89,7 +91,7 @@ local traceents = {
 		local wep = weapons.Get(wepclass)
 		local name = "UNKNOWN"
 		if wep != nil then
-			name = nz.Display_PaPNames[wepclass] or nz.Display_PaPNames[name] or "Upgraded "..wep.PrintName
+			name = nz.Display_PaPNames[wepclass] or nz.Display_PaPNames[wep.PrintName] or "Upgraded "..wep.PrintName
 		end
 		name = "Press E to take " .. name .. " from the machine."
 
@@ -101,7 +103,7 @@ local traceents = {
 			text = "The Wunderfizz Orb is currently at another location."
 		elseif ent:GetBeingUsed() then
 			if ent:GetUser() == LocalPlayer() and ent:GetPerkID() != "" and !ent:GetIsTeddy() then
-				text = "Press E to take "..nz.Perks.Functions.Get(ent:GetPerkID()).name.." from Der Wunderfizz."
+				text = "Press E to take "..nzPerks:Get(ent:GetPerkID()).name.." from Der Wunderfizz."
 			else
 				text = "Currently in use."
 			end

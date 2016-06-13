@@ -7,6 +7,7 @@ ENT.Author = "Lolle"
 
 function ENT:SetupDataTables()
 	self:NetworkVar("Int", 0, "EmergeSequenceIndex")
+	self:NetworkVar("Bool", 1, "Decapitated")
 end
 
 ENT.Models = {
@@ -193,19 +194,25 @@ function ENT:SpecialInit()
 
 	if CLIENT then
 		--make them invisible for a really short duration to blend the emerge sequences
-		self:SetNoDraw(true)
-		self:TimedEvent( 0.15, function()
-			self:SetNoDraw(false)
-		end)
+		self:TimedEvent(0, function() -- Tiny delay just to make sure they are fully initialized
+			if string.find(self:GetSequenceName(self:GetSequence()), "nz_emerge") then
+				self:SetNoDraw(true)
+				self:TimedEvent( 0.15, function()
+					self:SetNoDraw(false)
+				end)
 
-		self:SetRenderClipPlaneEnabled( true )
-		self:SetRenderClipPlane(self:GetUp(), self:GetUp():Dot(self:GetPos()))
+				self:SetRenderClipPlaneEnabled( true )
+				self:SetRenderClipPlane(self:GetUp(), self:GetUp():Dot(self:GetPos()))
 
-		--local _, dur = self:LookupSequence(self.EmergeSequences[self:GetEmergeSequenceIndex()])
-		local _, dur = self:LookupSequence(self.EmergeSequences[self:GetEmergeSequenceIndex()])
+				--local _, dur = self:LookupSequence(self.EmergeSequences[self:GetEmergeSequenceIndex()])
+				local _, dur = self:LookupSequence(self.EmergeSequences[self:GetEmergeSequenceIndex()])
+				dur = dur - (dur * self:GetCycle()) -- Subtract the time we are already thruogh the animation
+				-- The above is important if the zombie only appears in PVS mid-way through the animation
 
-		self:TimedEvent( dur, function()
-			self:SetRenderClipPlaneEnabled(false)
+				self:TimedEvent( dur, function()
+					self:SetRenderClipPlaneEnabled(false)
+				end)
+			end
 		end)
 
 	end
@@ -386,7 +393,7 @@ function ENT:TriggerBarricadeJump()
 		local id, dur = self:LookupSequence(seq.seq)
 		self:SetSolidMask(MASK_SOLID_BRUSHONLY)
 		--self:SetCollisionGroup(COLLISION_GROUP_DEBRIS_TRIGGER)
-		self.loco:SetAcceleration( 5000 )
+		--self.loco:SetAcceleration( 5000 )
 		self.loco:SetDesiredSpeed(seq.speed)
 		self:SetVelocity(self:GetForward() * seq.speed)
 		self:SetSequence(id)

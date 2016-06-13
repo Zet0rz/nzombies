@@ -88,6 +88,7 @@ function plyMeta:ReSpawn()
 	player_manager.SetPlayerClass( self, "player_ingame" )
 	if !self:Alive() then
 		self:Spawn()
+		self:SetTeam( TEAM_PLAYERS )
 	end
 
 end

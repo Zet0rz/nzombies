@@ -38,7 +38,7 @@ if SERVER then
 			print(self, "Downed with solo revive")
 		end
 
-		self.OldPerks = nz.Perks.Data.Players[self] or {}
+		self.OldPerks = self:GetPerks()
 
 		self:RemovePerks()
 

@@ -44,7 +44,7 @@ properties.Add( "nz_remove", {
 		ed:SetEntity( ent )
 		util.Effect( "entity_remove", ed, true, true )
 	end
-} );
+} )
 
 properties.Add( "nz_editentity", {
 	MenuLabel = "Edit Properties..",
@@ -82,7 +82,7 @@ properties.Add( "nz_editentity", {
 
 		end
 	end
-} );
+} )
 
 properties.Add( "nz_lock", {
 	MenuLabel = "Edit Lock..",
@@ -105,7 +105,7 @@ properties.Add( "nz_lock", {
 	Action = function( self, ent )
 		nz.Interfaces.Functions.DoorProps( {door = ent} )
 	end
-} );
+} )
 
 properties.Add( "nz_unlock", {
 	MenuLabel = "Unlock",
@@ -151,7 +151,7 @@ properties.Add( "nz_unlock", {
 		nzDoors:RemoveLink( ent )
 
 	end
-} );
+} )
 
 properties.Add( "nz_editzspawn", {
 	MenuLabel = "Edit Spawnpoint..",
@@ -190,7 +190,7 @@ properties.Add( "nz_editzspawn", {
 		nz.Interfaces.Functions.SendInterface(player, "ZombLink", {ent = ent, link = ent.link, spawnable = ent.spawnable, respawnable = ent.respawnable})
 
 	end
-} );
+} )
 
 properties.Add( "nz_wepbuy", {
 	MenuLabel = "Edit Properties..",
@@ -229,7 +229,7 @@ properties.Add( "nz_wepbuy", {
 		nz.Interfaces.Functions.SendInterface(player, "WepBuy", {vec = ent:GetPos(), ang = ent:GetAngles(), ent = ent})
 
 	end
-} );
+} )
 
 properties.Add( "nz_editperk", {
 	MenuLabel = "Edit Perk..",
@@ -268,4 +268,69 @@ properties.Add( "nz_editperk", {
 		nz.Interfaces.Functions.SendInterface(player, "PerkMachine", {ent = ent})
 
 	end
-} );
+} )
+
+properties.Add( "nz_nocollide_on", {
+	MenuLabel = "Disable Collisions",
+	Order = 9006,
+	PrependSpacer = true,
+	MenuIcon = "icon16/collision_off.png",
+
+	Filter = function( self, ent, ply )
+
+		if ( !IsValid( ent ) ) then return false end
+		if ( ent:GetClass() != "prop_buys" ) then return false end
+		if !nzRound:InState( ROUND_CREATE ) then return false end
+		if ( !ply:IsAdmin() ) then return false end
+		if ( ent:GetCollisionGroup() == COLLISION_GROUP_WORLD ) then return false end
+
+		return true
+
+	end,
+
+	Action = function( self, ent )
+		self:MsgStart()
+			net.WriteEntity( ent )
+		self:MsgEnd()
+	end,
+
+	Receive = function( self, length, player )
+		local ent = net.ReadEntity()
+		if ( !self:Filter( ent, player ) ) then return false end
+
+		ent:SetCollisionGroup(COLLISION_GROUP_WORLD)
+
+	end
+} )
+
+properties.Add( "nz_nocollide_off", {
+	MenuLabel = "Enable Collisions",
+	Order = 9007,
+	PrependSpacer = true,
+	MenuIcon = "icon16/collision_on.png",
+
+	Filter = function( self, ent, ply )
+
+		if ( !IsValid( ent ) ) then return false end
+		if ( ent:GetClass() != "prop_buys" ) then return false end
+		if !nzRound:InState( ROUND_CREATE ) then return false end
+		if ( !ply:IsAdmin() ) then return false end
+
+		return ( ent:GetCollisionGroup() == COLLISION_GROUP_WORLD )
+
+	end,
+
+	Action = function( self, ent )
+		self:MsgStart()
+			net.WriteEntity( ent )
+		self:MsgEnd()
+	end,
+
+	Receive = function( self, length, player )
+		local ent = net.ReadEntity()
+		if ( !self:Filter( ent, player ) ) then return false end
+
+		ent:SetCollisionGroup(COLLISION_GROUP_NONE)
+
+	end
+} )

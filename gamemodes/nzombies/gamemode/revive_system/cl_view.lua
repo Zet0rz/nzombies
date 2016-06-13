@@ -60,6 +60,7 @@ local function CalcDownViewmodelView(wep, vm, oldpos, oldang, pos, ang)
 	if Revive.Players[LocalPlayer():EntIndex()] then
 		local oldpos = oldpos + Vector(0,0,-30)
 		local oldang = oldang + Angle(0,0,20)
+		if wep:IsCW2() or wep:IsFAS2() then oldpos = oldpos + oldang:Up() * -100 end
 		
 		return oldpos, oldang
 	end

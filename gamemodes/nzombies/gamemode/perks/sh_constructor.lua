@@ -1,8 +1,7 @@
 //Main Tables
-nz.Perks = nz.Perks or {}
-nz.Perks.Functions = {}
-nz.Perks.Data = nz.Perks.Data or {}
+nzPerks = nzPerks or {}
+nzPerks.Data = nzPerks.Data or {}
 
 //_ Variables
 
-nz.Perks.Data.Players = nz.Perks.Data.Players or {}
+nzPerks.Players = nzPerks.Players or {}

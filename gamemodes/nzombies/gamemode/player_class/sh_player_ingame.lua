@@ -32,7 +32,7 @@ function PLAYER:Loadout()
 			self.Player:Give( v )
 		end
 	end
-	nz.Weps.Functions.GiveMaxAmmo(self.Player)
+	nzWeps:GiveMaxAmmo(self.Player)
 
 	if !GetConVar("nz_papattachments"):GetBool() and FAS2_Attachments != nil then
 		for k,v in pairs(FAS2_Attachments) do

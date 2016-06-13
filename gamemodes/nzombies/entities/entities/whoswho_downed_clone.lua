@@ -91,7 +91,11 @@ function ENT:RevivePlayer()
 		for k,v in pairs(self.OwnerData.weps) do
 			local wep = ply:Give(v.class)
 			if v.pap then
-				nz.Weps.Functions.ApplyPaP( ply, wep )
+				timer.Simple(0, function()
+					if IsValid(wep) then
+						wep:ApplyNZModifier("pap")
+					end
+				end)
 			end
 		end
 		for k,v in pairs(self.OwnerData.perks) do
@@ -99,7 +103,7 @@ function ENT:RevivePlayer()
 				ply:GivePerk(v)
 			end
 		end
-		nz.Weps.Functions.GiveMaxAmmo(ply)
+		nzWeps:GiveMaxAmmo(ply)
 	end
 	
 	-- Everything bought as the clone will be refunded, even doors

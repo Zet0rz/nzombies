@@ -8,8 +8,15 @@ if SERVER then
 		local filePath = "nzmapscripts/" .. string.StripExtension(name) .. ".lua"
 
 		if !file.Exists( filePath, "LUA") then
-			PrintMessage(HUD_PRINTTALK, "Attempted to load non-existant map script: "..filePath)
-			return false 
+			local alternative = string.Explode(";", string.StripExtension(name))
+			if alternative[1] and alternative[2] then
+				filePath = "nzmapscripts/"..alternative[1]..";"..alternative[2]..".lua"
+			end
+			
+			if !file.Exists( filePath, "LUA") then
+				PrintMessage(HUD_PRINTTALK, "Attempted to load non-existant map script: "..filePath)
+				return false
+			end
 		end
 
 		self.ScriptHooks = include( filePath )

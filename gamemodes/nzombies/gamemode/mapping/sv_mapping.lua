@@ -227,7 +227,7 @@ function nzMapping:PerkMachine(pos, ang, id, ply)
 		end
 		return perk
 	else
-		local perkData = nz.Perks.Functions.Get(id)
+		local perkData = nzPerks:Get(id)
 
 		local perk = ents.Create("perk_machine")
 		perk:SetPerkID(id)

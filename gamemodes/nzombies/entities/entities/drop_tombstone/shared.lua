@@ -53,11 +53,11 @@ if SERVER then
 			--PrintTable(self.OwnerData)
 			
 			-- Weapons are completely replaced
-			ply:StripWeapons()
+			hitEnt:StripWeapons()
 			for k,v in pairs(self.OwnerData.weps) do
 				local wep = hitEnt:Give(v.class)
 				if v.pap then
-					nz.Weps.Functions.ApplyPaP( hitEnt, wep )
+					wep:ApplyNZModifier("pap")
 				end
 			end
 			for k,v in pairs(self.OwnerData.perks) do
@@ -65,7 +65,7 @@ if SERVER then
 					hitEnt:GivePerk(v)
 				end
 			end
-			nz.Weps.Functions.GiveMaxAmmo(hitEnt)
+			nzWeps:GiveMaxAmmo(hitEnt)
 			
 			timer.Destroy(self:EntIndex().."_deathtimer")
 			self:Remove()

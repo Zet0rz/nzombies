@@ -22,14 +22,19 @@ function nzEnemies:OnEnemyKilled(enemy, attacker, dmginfo, hitgroup)
 
 		-- Chance a powerup spawning
 		if !nzPowerUps:IsPowerupActive("insta") and IsValid(enemy) then -- Don't spawn powerups during instakill
-			if math.random(1, 100 / GetConVar("nz_difficulty_powerup_chance"):GetFloat()) == 1 then -- 1 in 100 chance - you can change this in config
+			if !nzPowerUps:GetPowerUpChance() then nzPowerUps:ResetPowerUpChance() end
+			if math.Rand(0, 100) < nzPowerUps:GetPowerUpChance() then
 				nzPowerUps:SpawnPowerUp(enemy:GetPos())
+				nzPowerUps:ResetPowerUpChance()
+			else
+				nzPowerUps:IncreasePowerUpChance()
 			end
 		end
 
 		print("Killed Enemy: " .. nzRound:GetZombiesKilled() .. "/" .. nzRound:GetZombiesMax() )
 		if nzRound:IsSpecial() and nzRound:GetZombiesKilled() >= nzRound:GetZombiesMax() then
 			nzPowerUps:SpawnPowerUp(enemy:GetPos(), "maxammo")
+			--reset chance here?
 		end
 	end
 	-- Prevent this function from running on this zombie again

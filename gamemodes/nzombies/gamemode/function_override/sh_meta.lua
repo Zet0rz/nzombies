@@ -4,7 +4,7 @@ local wepMeta = FindMetaTable("Weapon")
 if SERVER then
 	
 	function ReplaceReloadFunction(wep)
-		//Either not a weapon, doesn't have a reload function, or is FAS2
+		-- Either not a weapon, doesn't have a reload function, or is FAS2
 		if wep:NZPerkSpecialTreatment() then return end
 		local oldreload = wep.Reload
 		if !oldreload then return end
@@ -64,9 +64,9 @@ if SERVER then
 		wep.PrimaryAttack = function()
 			oldfire(wep)
 			
-			//FAS2 weapons have built-in DTap functionality
+			-- FAS2 weapons have built-in DTap functionality
 			if wep:IsFAS2() then return end
-			//With double tap, reduce the delay for next primary fire to 2/3
+			-- With double tap, reduce the delay for next primary fire to 2/3
 			if wep.Owner:HasPerk("dtap") or wep.Owner:HasPerk("dtap2") then
 				local delay = (wep:GetNextPrimaryFire() - CurTime())*0.80
 				wep:SetNextPrimaryFire(CurTime() + delay)
@@ -83,7 +83,7 @@ if SERVER then
 		
 		wep.SecondaryAttack = function()
 			oldfire(wep)
-			//With deadshot, aim at the head of the entity aimed at
+			-- With deadshot, aim at the head of the entity aimed at
 			if wep.Owner:HasPerk("deadshot") then
 				local tr = wep.Owner:GetEyeTrace()
 				local ent = tr.Entity
@@ -195,20 +195,26 @@ function wepMeta:DefaultReload(act)
 	olddefreload(self, act)
 end
 
+local ghosttraceentities = {
+	["wall_block"] = true,
+	["invis_wall"] = true,
+	["player"] = true,
+}
+
 function GM:EntityFireBullets(ent, data)
 
-	//Fire the PaP shooting sound if the weapon is PaP'd
+	-- Fire the PaP shooting sound if the weapon is PaP'd
 	--print(wep, wep.pap)
 	if ent:IsPlayer() and IsValid(ent:GetActiveWeapon()) and ent:GetActiveWeapon().pap then
-		wep:EmitSound("nz/effects/pap_shoot_glock20.wav", 105, 100)
+		ent:GetActiveWeapon():EmitSound("nz/effects/pap_shoot_glock20.wav", 105, 100)
 	end
 
-	//Perform a trace that filters out wall blocks
+	-- Perform a trace that filters out entities from the table above
 	local tr = util.TraceLine({
 		start = data.Src,
 		endpos = data.Src + (data.Dir*data.Distance),
 		filter = function(ent) 
-			if ent:GetClass() == "wall_block" then
+			if ghosttraceentities[ent:GetClass()] then
 				return false
 			else
 				return true
@@ -218,7 +224,7 @@ function GM:EntityFireBullets(ent, data)
 	
 	--PrintTable(tr)
 	
-	//If we hit anything, move the source of the bullets up to that point
+	-- If we hit anything, move the source of the bullets up to that point
 	if tr.Hit and tr.HitPos then
 		data.Src = tr.HitPos - data.Dir*5
 		if ent:IsPlayer() and ent:HasPerk("dtap2") then
@@ -228,4 +234,59 @@ function GM:EntityFireBullets(ent, data)
 	elseif ent:IsPlayer() and ent:HasPerk("dtap2") then
 		data.Num = data.Num * 2
 	end
+end
+
+-- Create new ammo types for each weapon slot; that way all 3 weapons have seperate ammo even if they share type
+
+game.AddAmmoType( {
+	name = "nz_weapon_ammo_1",
+	dmgtype = DMG_BULLET,
+	tracer = TRACER_LINE,
+	plydmg = 0,
+	npcdmg = 0,
+	force = 2000,
+	minsplash = 10,
+	maxsplash = 5
+} )
+
+game.AddAmmoType( {
+	name = "nz_weapon_ammo_2",
+	dmgtype = DMG_BULLET,
+	tracer = TRACER_LINE,
+	plydmg = 0,
+	npcdmg = 0,
+	force = 2000,
+	minsplash = 10,
+	maxsplash = 5
+} )
+
+-- Third one is pretty much only used with Mule Kick
+game.AddAmmoType( {
+	name = "nz_weapon_ammo_3",
+	dmgtype = DMG_BULLET,
+	tracer = TRACER_LINE,
+	plydmg = 0,
+	npcdmg = 0,
+	force = 2000,
+	minsplash = 10,
+	maxsplash = 5
+} )
+
+local ammoids = {}
+hook.Add("InitPostEntity", "nzRegisterAmmoIDs", function()
+	for i = 1, 3 do
+		local id = game.GetAmmoID("nz_weapon_ammo_"..i)
+		if id != -1 then
+			ammoids[i] = id
+		end
+		--print(i, id)
+	end
+end)
+
+local oldammotype = wepMeta.GetPrimaryAmmoType
+function wepMeta:GetPrimaryAmmoType()
+	local id = self:GetNWInt("SwitchSlot", -1)
+	--PrintTable(ammoids)
+	--if ammoids[id] then print("HKDAHKDH! It's here! "..id) else print("sadface "..id) end
+	return ammoids[id] or oldammotype(self)
 end

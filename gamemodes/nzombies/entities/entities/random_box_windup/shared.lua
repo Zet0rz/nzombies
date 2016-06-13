@@ -49,12 +49,15 @@ function ENT:Initialize()
 				self:SetModel(wep.WM or wep.WorldModel)
 				self:SetLocalVelocity(Vector(0,0,0)) -- Stop
 			end
-			print(self:GetModel())
+			--print(self:GetModel())
 		end)
 		-- If we time out, remove the object
 		timer.Simple(15, function() if IsValid(self) then self:SetLocalVelocity(self:GetAngles():Up()*-2) end end)
 		-- If we time out, remove the object
 		timer.Simple(25, function() if IsValid(self) then self.Box:Close() self:Remove() end end)
+	else
+		local wep = weapons.Get(self:GetWepClass())
+		if wep.DrawWorldModel then self.WorldModelFunc = wep.DrawWorldModel end
 	end
 end
 
@@ -63,7 +66,7 @@ function ENT:Use( activator, caller )
 		if activator == self.Buyer then
 			local class = self:GetWepClass()
 			activator:Give(class)
-			nz.Weps.Functions.GiveMaxAmmoWep(activator, class)
+			nzWeps:GiveMaxAmmoWep(activator, class)
 			self.Box:Close()
 			self:Remove()
 		else
@@ -128,6 +131,12 @@ end
 
 if CLIENT then
 	function ENT:Draw()
-		self:DrawModel()
+		-- If we've stopped winding
+		if !self:GetWinding() then
+			-- We can use the stored world model draw function from the original weapon, but if it doesn't exist or causes errors, then just draw model
+			if !self.WorldModelFunc or !pcall(self.WorldModelFunc, self) then self:DrawModel() end
+		else
+			self:DrawModel()
+		end
 	end
 end

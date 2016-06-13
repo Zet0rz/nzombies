@@ -179,7 +179,7 @@ function nzRound:Start()
 
 	timer.Create( "NZRoundThink", 0.1, 0, function() self:Think() end )
 
-	nz.Weps.DoRoundResupply()
+	nzWeps:DoRoundResupply()
 end
 
 function nzRound:Think()
@@ -429,7 +429,7 @@ function nzRound:SetupGame()
 		nzElec:Reset() -- Reset with no value to play the power down sound
 	end
 
-	nz.Perks.Functions.UpdateQuickRevive()
+	nzPerks:UpdateQuickRevive()
 
 	nzRound:SetNextSpecialRound( GetConVar("nz_round_special_interval"):GetInt() )
 

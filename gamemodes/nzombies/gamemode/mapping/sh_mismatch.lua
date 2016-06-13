@@ -183,7 +183,7 @@ end, function( data )
 			if new == "nz_removeweapon" then
 				v:Remove()
 			else
-				v:GetWepClass(new)
+				v:SetWeapon(new)
 			end
 		end
 	end
@@ -194,7 +194,7 @@ end)
 CreateMismatchCheck("Perks", function()
 	local tbl = {}
 	for k,v in pairs(ents.FindByClass("perk_machine")) do
-		if !nz.Perks.Functions.Get(v:GetPerkID()) then
+		if !nzPerks:Get(v:GetPerkID()) then
 			print("Perk with non-existant perk: " .. v:GetPerkID() .. "!")
 			tbl[v:GetPerkID()] = true
 		end

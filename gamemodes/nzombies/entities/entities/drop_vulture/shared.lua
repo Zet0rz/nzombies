@@ -36,7 +36,7 @@ local vulturedrops = {
 		effect = function(ply)
 			local wep = ply:GetActiveWeapon()
 			if IsValid(wep) then
-				local max = nz.Weps.Functions.CalculateMaxAmmo(wep:GetClass())
+				local max = nzWeps:CalculateMaxAmmo(wep:GetClass())
 				local give = max/math.Rand(9,11)
 				local ammo = wep.Primary.Ammo
 				local cur = ply:GetAmmoCount(ammo)

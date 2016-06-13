@@ -24,8 +24,8 @@ if CLIENT then
 		local choices = vgui.Create( "DComboBox", DermaPanel )
 		choices:SetPos( 10, 30 )
 		choices:SetSize( 280, 30 )
-		choices:SetValue( nz.Perks.Functions.Get(data.ent:GetPerkID()).name )
-		for k,v in pairs(nz.Perks.Functions.GetList()) do
+		choices:SetValue( nzPerks:Get(data.ent:GetPerkID()).name )
+		for k,v in pairs(nzPerks:GetList()) do
 			choices:AddChoice( v, k )
 		end
 		choices.OnSelect = function( panel, index, value, id )

@@ -39,7 +39,7 @@ function ENT:Initialize()
 		self:DrawShadow( false )
 		self:SetUseType( SIMPLE_USE )
 		self:SetBeingUsed(false)
-		local perkData = nz.Perks.Functions.Get(self:GetPerkID())
+		local perkData = nzPerks:Get(self:GetPerkID())
 		self:SetPrice(perkData.price)
 	end
 end
@@ -55,7 +55,7 @@ function ENT:TurnOff()
 end
 
 function ENT:Update()
-	local perkData = nz.Perks.Functions.Get(self:GetPerkID())
+	local perkData = nzPerks:Get(self:GetPerkID())
 	self:SetModel(perkData and (self:IsOn() and perkData.on_model or perkData.off_model) or "")
 end
 
@@ -68,7 +68,7 @@ local MachinesNoDrink = {
 }
 
 function ENT:Use(activator, caller)
-	local perkData = nz.Perks.Functions.Get(self:GetPerkID())
+	local perkData = nzPerks:Get(self:GetPerkID())
 	
 	if self:IsOn() then
 		local price = self:GetPrice()

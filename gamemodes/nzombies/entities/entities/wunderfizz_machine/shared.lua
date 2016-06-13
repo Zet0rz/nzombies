@@ -28,15 +28,15 @@ function ENT:DecideOutcomePerk(specific)
 			["wunderfizz"] = true, -- lol, this would happen
 			["pap"] = true,
 		}
-		local available = nzMapping.Settings.wunderfizzperks or table.GetKeys(nz.Perks.Functions.GetList())
+		local available = nzMapping.Settings.wunderfizzperks or nzPerks:GetList()
 		local tbl = {}
 		for k,v in pairs(available) do
-			if !self:GetUser():HasPerk(v) and !blockedperks[v] then
-				table.insert(tbl, v)
+			if !self:GetUser():HasPerk(k) and !blockedperks[k] then
+				table.insert(tbl, k)
 			end
 		end
 		if #tbl <= 0 then return "teddy" end -- Teddy bear for no more perks D:
-		self.OutcomePerk = tbl[math.random(#tbl)]
+		return tbl[math.random(#tbl)]
 	end
 end
 
@@ -114,7 +114,7 @@ function ENT:Use(activator, caller)
 					self:SetBeingUsed(true)
 					self:SetUser(activator)
 					
-					self:DecideOutcomePerk()
+					self.OutcomePerk = self:DecideOutcomePerk()
 					self.Bottle = ents.Create("wunderfizz_windup")
 					self.Bottle:SetPos(self:GetPos() + Vector(0,0,45))
 					self.Bottle:SetAngles(self:GetAngles() + Angle(0,-90,0))

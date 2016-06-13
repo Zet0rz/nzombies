@@ -36,7 +36,7 @@ function Spawner:Activate()
 		spawn:SetSpawner(self)
 	end
 	-- curently does the costly zombie distribution 3 seconds can be lowered (without any problems)
-	timer.Create("nzZombieSpawnThink" .. self.sUniqueName, 3, 0, function() self:Update() end)
+	timer.Create("nzZombieSpawnThink" .. self.sUniqueName, GetConVar("nz_spawnpoint_update_rate"):GetInt(), 0, function() self:Update() end)
 end
 
 function Spawner:DecrementZombiesToSpawn()
@@ -123,7 +123,7 @@ function Spawner:GetAverageWeight()
 	for _, spawn in pairs(self.tSpawns) do
 		sum = sum + spawn:GetSpawnWeight()
 	end
-	return sum / #self.tSpawns
+	return ((sum / #self.tSpawns) * 0.5) + 1500
 end
 
 function Spawner:GetValidSpawns()

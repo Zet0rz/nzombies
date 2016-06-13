@@ -78,6 +78,11 @@ ENT.ActStages = {
 	},
 }
 
+function ENT:SetupDataTables()
+	-- If you want decapitation in you zombie and overwrote ENT:SetupDataTables() make sure to add self:NetworkVar("Bool", 0, "Decapitated") again.
+	self:NetworkVar("Bool", 0, "Decapitated")
+end
+
 function ENT:Precache()
 
 	for _,v in pairs(self.Models) do
@@ -307,6 +312,8 @@ function ENT:DebugThink()
 			debugoverlay.Text( self:GetPos() + spacing, "ERROR", FrameTime() * 2 )
 		end
 		spacing = spacing + Vector(0,0,8)
+		debugoverlay.Text( self:GetPos() + spacing, "HitPoints: " .. tostring(self:Health()), FrameTime() * 2 )
+		spacing = spacing + Vector(0,0,8)
 		debugoverlay.Text( self:GetPos() + spacing, tostring(self), FrameTime() * 2 )
 	end
 end
@@ -446,12 +453,12 @@ function ENT:OnBarricadeBlocking( barricade )
 			if stillBlocked then
 				self:OnBarricadeBlocking(stillBlocked)
 			end
-			
+
 			-- Attacking a new barricade resets the counter
 			self.BarricadeJumpTries = 0
 		elseif barricade:GetTriggerJumps() and self.TriggerBarricadeJump then
 			local dist = barricade:GetPos():DistToSqr(self:GetPos())
-			if dist <= 3500 + (1000 * self.BarricadeJumpTries) then 
+			if dist <= 3500 + (1000 * self.BarricadeJumpTries) then
 				self:TriggerBarricadeJump()
 				self.BarricadeJumpTries = 0
 			else
@@ -582,7 +589,19 @@ end
 
 function ENT:OnKilled(dmgInfo)
 
-	self:OnZombieDeath(dmgInfo)
+	if dmgInfo then
+		self:OnZombieDeath(dmgInfo)
+	end
+
+	local headPos = self:GetBonePosition(self:LookupBone("ValveBiped.Bip01_Head1"))
+	local dmgPos = dmgInfo:GetDamagePosition()
+
+	-- it wil lnot always trigger since the offset can be larger than 12
+	-- but i think its fine not to decapitate every headshotted zombie
+	if headPos and dmgPos and headPos:Distance(dmgPos) < 12 then
+		self:SetDecapitated(true)
+	end
+
 	hook.Call("OnZombieKilled", GAMEMODE, self, dmgInfo)
 
 end
@@ -857,7 +876,7 @@ function ENT:CheckForBarricade()
 	dataL.filter = function( ent ) if ( ent:GetClass() == "breakable_entry" ) then return true end end
 	dataL.ignoreworld = true
 	local trL = util.TraceLine( dataL )
-	
+
 	--debugoverlay.Line(self:GetPos() + Vector( 0, 0, self:OBBCenter().z ), self:GetPos() + Vector( 0, 0, self:OBBCenter().z ) + self.BarricadeCheckDir * 32)
 	--debugoverlay.Cross(self:GetPos() + Vector( 0, 0, self:OBBCenter().z ), 1)
 
@@ -1034,7 +1053,9 @@ function ENT:Explode( dmg, suicide)
 end
 
 function ENT:Kill()
-	self:TakeDamage( 10000, self, self )
+	self:Fire("Kill",0,0)
+	self:OnKilled(DamageInfo())
+	--self:TakeDamage( 10000, self, self )
 end
 
 function ENT:RespawnZombie()

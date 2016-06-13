@@ -77,11 +77,11 @@ nz.Tools.Functions.CreateTool("inviswall", {
 		pnl:Dock(FILL)
 		
 		local chk = vgui.Create("DCheckBoxLabel", pnl)
-		chk:SetPos( 85, 50 )
-		chk:SetText( "Draw Invisible Walls" )
+		chk:SetPos( 100, 50 )
+		chk:SetText( "Preview Config" )
 		chk:SetTextColor( Color(50,50,50) )
-		chk:SetConVar( "nz_drawinviswalls" )
-		chk:SetValue( GetConVar("nz_drawinviswalls"):GetBool() )
+		chk:SetConVar( "nz_creative_preview" )
+		chk:SetValue( GetConVar("nz_creative_preview"):GetBool() )
 		chk:SizeToContents()
 		
 		local textw = vgui.Create("DLabel", pnl)

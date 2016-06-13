@@ -8,7 +8,7 @@ ENT.Contact			= "youtube.com/Zet0r"
 ENT.Purpose			= ""
 ENT.Instructions	= ""
 
-local perk_materials = {
+--[[local perk_materials = {
 	["jugg"] = "models/perk_bottle/c_perk_bottle_jugg",
 	["speed"] = "models/perk_bottle/c_perk_bottle_speed",
 	["dtap"] = "models/perk_bottle/c_perk_bottle_dtap",
@@ -23,7 +23,9 @@ local perk_materials = {
 	["whoswho"] = "models/perk_bottle/c_perk_bottle_whoswho",
 	["vulture"] = "models/perk_bottle/c_perk_bottle_vulture",
 	["teddy"] = "models/perk_bottle/c_perk_bottle_teddy",
-}
+}]]
+
+local teddymat = "models/perk_bottle/c_perk_bottle_teddy"
 
 function ENT:SetupDataTables()
 	self:NetworkVar( "Bool", 0, "Winding" )
@@ -32,9 +34,9 @@ end
 function ENT:RandomizeSkin()
 	local skin
 	if nzMapping.Settings.wunderfizzperks then
-		skin = table.Random(perk_materials)
+		skin = nzPerks:Get(table.Random(table.GetKeys(nzMapping.Settings.wunderfizzperks))).material
 	else
-		skin = table.Random(perk_materials)
+		skin = nzPerks:Get(table.Random(table.GetKeys(nzPerks:GetList()))).material
 	end
 	
 	if skin then
@@ -58,8 +60,9 @@ function ENT:Initialize()
 		//Stop winding up
 		timer.Simple(5, function()
 			self:SetWinding(false)
-			self:SetMaterial(perk_materials[self.Perk])
-			if self.Perk == "teddy" then 
+			
+			if self.Perk == "teddy" then
+				self:SetMaterial(teddymat)
 				machine:SetIsTeddy(true)
 				machine:GetUser():GivePoints(machine:GetPrice())
 				timer.Simple(5, function() 
@@ -68,6 +71,8 @@ function ENT:Initialize()
 						machine:MoveLocation()
 					end
 				end)
+			else
+				self:SetMaterial(nzPerks:Get(self.Perk).material)
 			end
 			machine:SetPerkID(self.Perk)
 		end)

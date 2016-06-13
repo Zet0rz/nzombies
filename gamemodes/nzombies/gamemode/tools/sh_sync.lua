@@ -1,8 +1,8 @@
-//Client Server Syncing
+-- Client Server Syncing
 
 if SERVER then
 
-	//Server to client (Server)
+	-- Server to client (Server)
 	util.AddNetworkString( "nz.Tools.Sync" )
 	util.AddNetworkString( "nz.Tools.Update" )
 	
@@ -15,18 +15,18 @@ if SERVER then
 		local id = net.ReadString()
 		local wep = ply:GetActiveWeapon()
 		
-		//Call holster on the old tool
+		-- Call holster on the old tool
 		if nz.Tools.ToolData[wep.ToolMode] then
 			nz.Tools.ToolData[wep.ToolMode].OnHolster(wep, ply, ply.NZToolData)
 		end
 		
 		ply:SetActiveNZTool( id )
-		//Only read the data if the tool has any - as shown by the bool
+		-- Only read the data if the tool has any - as shown by the bool
 		if net.ReadBool() then
 			ply:SetNZToolData( net.ReadTable() )
 		end
 		
-		//Then call equip on the new one
+		-- Then call equip on the new one
 		if nz.Tools.ToolData[id] then
 			nz.Tools.ToolData[id].OnEquip(wep, ply, ply.NZToolData)
 		end
@@ -41,19 +41,19 @@ if CLIENT then
 		if data then
 			net.Start("nz.Tools.Update")
 				net.WriteString(tool)
-				//Let the server know we're also sending a table of data
+				-- Let the server know we're also sending a table of data
 				net.WriteBool(true)
 				net.WriteTable(data)
 			net.SendToServer()
 		else
-			//This tool doesn't have any data
+			-- This tool doesn't have any data
 			net.Start("nz.Tools.Update")
 				net.WriteString(tool)
 				net.WriteBool(false)
 			net.SendToServer()
 		end
 		
-		//Always save on submit - if a special table of savedata is provided, use that
+		-- Always save on submit - if a special table of savedata is provided, use that
 		if savedata then
 			nz.Tools.Functions.SaveData( savedata, tool )
 		else
@@ -66,11 +66,8 @@ if CLIENT then
 		nz.Tools.SavedData[tool] = data
 	end
 	
-	//Server to client (Client)
+	-- Server to client (Client)
 	function nz.Tools.Functions.ReceiveSync( length )
 	
 	end
-	
-	//Receivers 
-	net.Receive( "nz.Tools.Sync", nz.Perks.Functions.ReceiveSync )
 end

@@ -25,15 +25,15 @@ function ENT:Initialize()
 	--self:SetFilter(true, true)
 end
 
-
-if not ConVarExists("nz_drawinviswalls") then CreateClientConVar("nz_drawinviswalls", "1") end
-
 local mat = Material("color")
 local white = Color(255,150,0,30)
 
 if CLIENT then
+
+	if not ConVarExists("nz_creative_preview") then CreateClientConVar("nz_creative_preview", "0") end
+
 	function ENT:Draw()
-		if ConVarExists("nz_drawinviswalls") and GetConVar("nz_drawinviswalls"):GetBool() and nzRound:InState( ROUND_CREATE ) then
+		if ConVarExists("nz_creative_preview") and !GetConVar("nz_creative_preview"):GetBool() and nzRound:InState( ROUND_CREATE ) then
 			cam.Start3D()
 				render.SetMaterial(mat)
 				render.DrawBox(self:GetPos(), self:GetAngles(), Vector(0,0,0), self:GetMaxBound(), white, true)

@@ -82,7 +82,7 @@ end]]
 
 if CLIENT then
 	function ENT:Draw()
-		if nzRound:InState( ROUND_CREATE ) then
+		if ConVarExists("nz_creative_preview") and !GetConVar("nz_creative_preview"):GetBool() and nzRound:InState( ROUND_CREATE ) then
 			self:DrawModel()
 		end
 	end

@@ -20,11 +20,13 @@ function nz.Players.Functions.FullSync( ply )
 	--Doors
 	--nzDoors.SendSync( ply )
 	--Perks
-	nz.Perks.Functions.SendSync()
+	--nz.Perks.Functions.SendSync()
 	--Rounds
 	--nzRound:SendSync( ply ) --handled differently since feb 2016
 	--Revival System
 	--nz.Revive.Functions.SendSync() -- Now sends full sync using the module below
+	
+	-- Looks like all old modules now have their FullSync functions instead
 
 	-- A full sync module using the new rewrites
 	if IsValid(ply) then

@@ -3,19 +3,19 @@ local wonderweapons = {}
 -- Wonder Weapon system does NOT apply to weapons like Monkey Bombs or Ray Gun
 -- ONLY to those that you can only have 1 of at a time
 
-function nz.Weps.Functions.AddWonderWeapon(class)
+function nzWeps:AddWonderWeapon(class)
 	wonderweapons[class] = true
 end
 
-function nz.Weps.Functions.RemoveWonderWeapon(class)
+function nzWeps:RemoveWonderWeapon(class)
 	wonderweapons[class] = nil
 end
 
-function nz.Weps.Functions.IsWonderWeapon(class)
+function nzWeps:IsWonderWeapon(class)
 	return wonderweapons[class] or false
 end
 
-function nz.Weps.Functions.GetHeldWonderWeapons(ply) -- No arguments means all players
+function nzWeps:GetHeldWonderWeapons(ply) -- No arguments means all players
 	local tbl = {}
 	if IsValid(ply) and ply:IsPlayer() then
 		for k,v in pairs(ply:GetWeapons()) do
@@ -36,7 +36,7 @@ function nz.Weps.Functions.GetHeldWonderWeapons(ply) -- No arguments means all p
 	return tbl
 end
 
-function nz.Weps.Functions.IsWonderWeaponOut(class, ignorewonder)
+function nzWeps:IsWonderWeaponOut(class, ignorewonder)
 	if (wonderweapons[class] or ignorewonder) then
 		for k,v in pairs(player.GetAll()) do
 			for k2,v2 in pairs(v:GetWeapons()) do
@@ -57,15 +57,20 @@ function nz.Weps.Functions.IsWonderWeaponOut(class, ignorewonder)
 end
 
 -- Now let's add some!
-nz.Weps.Functions.AddWonderWeapon("freeze_gun")
-nz.Weps.Functions.AddWonderWeapon("wunderwaffe")
-nz.Weps.Functions.AddWonderWeapon("weapon_hoff_thundergun")
-nz.Weps.Functions.AddWonderWeapon("weapon_teslagun")
+nzWeps:AddWonderWeapon("freeze_gun")
+nzWeps:AddWonderWeapon("wunderwaffe")
+nzWeps:AddWonderWeapon("weapon_hoff_thundergun")
+nzWeps:AddWonderWeapon("weapon_teslagun")
 
 -- We can also add all weapons which have SWEP.NZWonderWeapon = true set in their files
 hook.Add("InitPostEntity", "nzRegisterWonderWeaponsByKey", function()
 	for k,v in pairs(weapons.GetList()) do
-		if v.NZWonderWeapon then nz.Weps.Functions.AddWonderWeapon(v.ClassName) end
+		-- Add Wonder Weapons to the list
+		if v.NZWonderWeapon then nzWeps:AddWonderWeapon(v.ClassName) end
+		-- If it has a PaP replacement, blacklist that weapon so it can't be gotten in the box
+		if v.NZPaPReplacement then nzConfig.AddWeaponToBlacklist(v.NZPaPReplacement) end
+		-- Total blacklisted weapons also need to be added to the box blacklist
+		if v.NZTotalBlacklist then nzConfig.AddWeaponToBlacklist(v.ClassName) end
 	end	
 end)
 

@@ -34,7 +34,7 @@ local ee_bat_charging
 
 local gascanobject = nzItemCarry:CreateCategory("gascan")
 gascanobject:SetIcon("spawnicons/models/props_junk/gascan001a.png")
-gascanobject:SetText("Press E to pick up Gas Can.")
+gascanobject:SetText("Press E to pick up the Gas Can.")
 gascanobject:SetDropOnDowned(true)
 
 gascanobject:SetDropFunction( function(self, ply)
@@ -74,7 +74,7 @@ gascanobject:Update()
 
 local keyobject = nzItemCarry:CreateCategory("ee_key")
 keyobject:SetIcon("icon16/key.png")
-keyobject:SetText("Press E to pick up key.")
+keyobject:SetText("Press E to pick up the Key.")
 keyobject:SetDropOnDowned(false)
 keyobject:SetResetFunction( function(self)
 	local key = ents.Create("nz_prop_effect")
@@ -90,7 +90,7 @@ keyobject:Update()
 
 local batteryobject = nzItemCarry:CreateCategory("ee_battery")
 batteryobject:SetIcon("spawnicons/models/items/car_battery01.png")
-batteryobject:SetText("Press E to pick up battery.")
+batteryobject:SetText("Press E to pick up the Battery.")
 batteryobject:SetDropOnDowned(true)
 batteryobject:SetResetFunction( function(self)
 	local bat = ents.Create("nz_script_prop")
@@ -120,7 +120,7 @@ batteryobject:Update()
 
 local chargedbatteryobject = nzItemCarry:CreateCategory("ee_chargedbattery")
 chargedbatteryobject:SetIcon("spawnicons/models/items/car_battery01.png")
-chargedbatteryobject:SetText("Press E to pick up charged battery.")
+chargedbatteryobject:SetText("Press E to pick up the Charged Battery.")
 chargedbatteryobject:SetDropOnDowned(true)
 chargedbatteryobject:SetResetFunction( function(self)
 	local bat = ents.Create("nz_script_prop")
@@ -425,7 +425,7 @@ function mapscript.OnGameBegin()
 	button2.OnUsed = function(self)
 		if !scripthasusedelev then
 			scripthasusedelev = true
-			scriptgenerator:SetNWString("NZText", "Elevator is currently on the lower floor.")
+			scriptgenerator:SetNWString("NZText", "The Elevator is currently on a lower floor.")
 			local ent = ents.FindByName("alarm_obj")[1]
 			timer.Simple(50, function()
 				ent:Fire("PlaySound")
@@ -433,7 +433,7 @@ function mapscript.OnGameBegin()
 			timer.Simple(60, function()
 				ent:Fire("StopSound")
 				scripthasusedelev = false
-				scriptgenerator:SetNWString("NZText", "You need a gas can to power the elevator.")
+				scriptgenerator:SetNWString("NZText", "You need a Gas Can to power the Elevator.")
 				for k,v in pairs(player.GetAllPlaying()) do
 					local pos = v:GetPos()
 					if pos.z < -1000 then
@@ -476,9 +476,9 @@ function mapscript.OnGameBegin()
 	scriptgenerator:SetPos(Vector(3275, -254, -275))
 	scriptgenerator:SetAngles(Angle(0, 90, 0))
 	scriptgenerator:SetModel("models/props_vehicles/generatortrailer01.mdl")
-	scriptgenerator:SetNWString("NZText", "You need a gas can to power the elevator.")
+	scriptgenerator:SetNWString("NZText", "You need a Gas Can to power the Elevator.")
 	scriptgenerator:SetNWString("NZRequiredItem", "gascan")
-	scriptgenerator:SetNWString("NZHasText", "Press E to fuel generator with Gas Can.")
+	scriptgenerator:SetNWString("NZHasText", "Press E to fuel the Generator with a Gas Can.")
 	scriptgenerator:Spawn()
 	scriptgenerator:Activate()
 	-- Function when it is used (E)
@@ -489,13 +489,13 @@ function mapscript.OnGameBegin()
 			if button3:GetPos().z < -1000 then
 				button3:Fire("Unlock") -- Call the elevator up
 				button3:Fire("Press")
-				scriptgenerator:SetNWString("NZText", "Elevator is on its way up.") -- Update text
+				scriptgenerator:SetNWString("NZText", "The Elevator is on its way up.") -- Update text
 			end
 		end
 	end
 	
 	local door = ents.GetMapCreatedEntity(1836)
-	if IsValid(door) then door:SetNWString("NZText", "You need to disable security.") end
+	if IsValid(door) then door:SetNWString("NZText", "You need to disable the security system.") end
 	
 	for k,v in pairs(ents.FindInSphere(Vector(3315, -1280, 55), 10)) do
 		if v:GetClass() == "prop_buys" then v:BlockUnlock() end
@@ -513,7 +513,7 @@ function mapscript.OnGameBegin()
 	ee_lock:SetModel("models/props_wasteland/prison_padlock001a.mdl")
 	ee_lock:SetPos(Vector(4126, 659, 171))
 	ee_lock:SetAngles(Angle(0,-90,0))
-	ee_lock:SetNWString("NZText", "You need a key.")
+	ee_lock:SetNWString("NZText", "You need a Key.")
 	ee_lock:SetNWString("NZRequiredItem", "ee_key")
 	ee_lock:SetNWString("NZHasText", "Press E to unlock.")
 	ee_lock.OnUsed = function(self, ply)

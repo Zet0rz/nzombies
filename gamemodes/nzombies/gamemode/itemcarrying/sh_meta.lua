@@ -49,11 +49,13 @@ end
 
 -- On player downed
 hook.Add("PlayerDowned", "nzDropCarryItems", function(ply)
-	for k,v in pairs(ply:GetCarryItems()) do
-		local item = nzItemCarry.Items[v]
-		if item.dropondowned and item.dropfunction then
-			item:dropfunction(ply)
-			ply:RemoveCarryItem(v)
+	if ply.GetCarryItems then
+		for k,v in pairs(ply:GetCarryItems()) do
+			local item = nzItemCarry.Items[v]
+			if item.dropondowned and item.dropfunction then
+				item:dropfunction(ply)
+				ply:RemoveCarryItem(v)
+			end
 		end
 	end
 end)

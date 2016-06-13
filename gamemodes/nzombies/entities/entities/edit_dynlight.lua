@@ -54,7 +54,7 @@ function ENT:SetupDataTables()
 	self:NetworkVar( "Vector",	0, "LightColor", { KeyName = "color", Edit = { type = "VectorColor", order = 2 } }  )
 	self:NetworkVar( "Int",	1, "Size", { KeyName = "size", Edit = { type = "Int", min = 0, max = 1000, order = 3 } }  )
 	
-	self:NetworkVar( "Int",	0, "Style", { KeyName = "style", Edit = { type = "Int", min = 0, max = 12, order = 4 } }  )
+	self:NetworkVar( "Int",	2, "Style", { KeyName = "style", Edit = { type = "Int", min = 0, max = 12, order = 4 } }  )
 
 	if ( SERVER ) then
 

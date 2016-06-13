@@ -1,4 +1,4 @@
-function nz.Perks.Functions.UpdateQuickRevive()
+function nzPerks:UpdateQuickRevive()
 	if #player.GetAllPlaying() <= 1 then
 		for k,v in pairs(ents.FindByClass("perk_machine")) do
 			if v:GetPerkID() == "revive" then
@@ -21,9 +21,9 @@ function nz.Perks.Functions.UpdateQuickRevive()
 end
 
 hook.Add("OnPlayerDropIn", "UpdateRevive", function()
-	nz.Perks.Functions.UpdateQuickRevive()
+	nzPerks:UpdateQuickRevive()
 end)
 
 hook.Add("OnPlayerDropOut", "UpdateRevive", function()
-	nz.Perks.Functions.UpdateQuickRevive()
+	nzPerks:UpdateQuickRevive()
 end)

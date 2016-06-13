@@ -36,8 +36,8 @@ nz.Tools.Functions.CreateTool("perk", {
 		local choices = vgui.Create( "DComboBox", frame )
 		choices:SetPos( 10, 10 )
 		choices:SetSize( 280, 30 )
-		choices:SetValue( nz.Perks.Functions.Get(data.perk).name )
-		for k,v in pairs(nz.Perks.Functions.GetList()) do
+		choices:SetValue( nzPerks:Get(data.perk).name )
+		for k,v in pairs(nzPerks:GetList()) do
 			choices:AddChoice( v, k )
 		end
 		choices.OnSelect = function( panel, index, value, id )

@@ -233,7 +233,8 @@ local function DrawPointsNotification()
 	end
 end
 
-local perk_icons = {
+-- Now handled via perks individual icon table entries
+--[[local perk_icons = {
 	["jugg"] = Material("perk_icons/jugg.png", "smooth unlitgeneric"),
 	["speed"] = Material("perk_icons/speed.png", "smooth unlitgeneric"),
 	["dtap"] = Material("perk_icons/dtap.png", "smooth unlitgeneric"),
@@ -250,14 +251,14 @@ local perk_icons = {
 
 	-- Only used to see PaP through walls with Vulture Aid
 	["pap"] = Material("vulture_icons/pap.png", "smooth unlitgeneric"),
-}
+}]]
 
 local function PerksHud()
 	local scale = (ScrW()/1920 + 1)/2
 	local w = -20
 	local size = 50
 	for k,v in pairs(LocalPlayer():GetPerks()) do
-		surface.SetMaterial(perk_icons[v])
+		surface.SetMaterial(nzPerks:Get(v).icon)
 		surface.SetDrawColor(255,255,255)
 		surface.DrawTexturedRect(w + k*(size*scale + 10), ScrH() - 200, size*scale, size*scale)
 	end
@@ -285,9 +286,12 @@ local function VultureVision()
 		elseif target == "perk_machine" then
 			local data = v:WorldSpaceCenter():ToScreen()
 			if data.visible then
-				surface.SetMaterial(perk_icons[v:GetPerkID()])
-				surface.SetDrawColor(255,255,255,150)
-				surface.DrawTexturedRect(data.x - 15*scale, data.y - 15*scale, 30*scale, 30*scale)
+				local icon = nzPerks:Get(v:GetPerkID()).icon
+				if icon then
+					surface.SetMaterial(icon)
+					surface.SetDrawColor(255,255,255,150)
+					surface.DrawTexturedRect(data.x - 15*scale, data.y - 15*scale, 30*scale, 30*scale)
+				end
 			end
 		end
 	end
@@ -295,7 +299,7 @@ end
 
 local round_white = 0
 local round_alpha = 255
-local round_num = 0 --nz.Rounds.Data.CurrentRound or 0
+local round_num = 0
 local function RoundHud()
 
 	local text = ""
@@ -463,4 +467,59 @@ function GM:HUDWeaponPickedUp( wep )
 	table.insert( self.PickupHistory, pickup )
 	self.PickupHistoryLast = pickup.time
 
+end
+
+function GM:HUDAmmoPickedUp( itemname, amount )
+	if ( !IsValid( LocalPlayer() ) || !LocalPlayer():Alive() ) then return end
+	
+	-- If we pick up special nz ammo, then we need to find and display the old ammo type
+	if string.sub(itemname, 1, 14) == "nz_weapon_ammo" then
+		local slot = tonumber(string.sub(itemname, 16, #itemname))
+		for k,v in pairs(LocalPlayer():GetWeapons()) do
+			if v:GetNWInt("SwitchSlot", -1) == slot then
+				local wep = weapons.Get(v:GetClass())
+				if wep and wep.Primary then
+					itemname = wep.Primary.Ammo or itemname
+				end
+				break
+			end
+		end
+	end
+	
+	-- Try to tack it onto an exisiting ammo pickup
+	if ( self.PickupHistory ) then
+		for k, v in pairs( self.PickupHistory ) do
+			if ( v.name == "#" .. itemname .. "_ammo" ) then
+				v.amount = tostring( tonumber( v.amount ) + amount )
+				v.time = CurTime() - v.fadein
+				return
+			end
+		end
+	end
+	
+	local pickup = {}
+	pickup.time			= CurTime()
+	pickup.name			= "#" .. itemname .. "_ammo"
+	pickup.holdtime		= 5
+	pickup.font			= "DermaDefaultBold"
+	pickup.fadein		= 0.04
+	pickup.fadeout		= 0.3
+	pickup.color		= Color( 180, 200, 255, 255 )
+	pickup.amount		= tostring( amount )
+	
+	surface.SetFont( pickup.font )
+	local w, h = surface.GetTextSize( pickup.name )
+	pickup.height	= h
+	pickup.width	= w
+	
+	local w, h = surface.GetTextSize( pickup.amount )
+	pickup.xwidth	= w
+	pickup.width	= pickup.width + w + 16
+
+	if ( self.PickupHistoryLast >= pickup.time ) then
+		pickup.time = self.PickupHistoryLast + 0.05
+	end
+	
+	table.insert( self.PickupHistory, pickup )
+	self.PickupHistoryLast = pickup.time
 end

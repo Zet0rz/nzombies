@@ -51,7 +51,7 @@ function ENT:Think()
 	if SERVER then
 	    if nzRound:InState( ROUND_PROG ) and self:GetZombiesToSpawn() > 0 then
 			if self:GetSpawner() and self:GetSpawner():GetNextSpawn() < CurTime() and self:GetNextSpawn() < CurTime() then
-				if self:IsSuitable() then
+				if self:IsSuitable() and nzEnemies:TotalAlive() < GetConVar("nz_difficulty_max_zombies_alive"):GetInt() then
 					local class = nzMisc.WeightedRandom(self:GetZombieData(), "chance")
 					local zombie = ents.Create(class)
 					zombie:SetPos(self:GetPos())
@@ -73,7 +73,7 @@ end
 
 if CLIENT then
 	function ENT:Draw()
-		if nzRound:InState( ROUND_CREATE ) then
+		if ConVarExists("nz_creative_preview") and !GetConVar("nz_creative_preview"):GetBool() and nzRound:InState( ROUND_CREATE ) then
 			self:DrawModel()
 		end
 	end

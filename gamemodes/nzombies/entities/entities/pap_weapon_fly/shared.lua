@@ -8,6 +8,10 @@ ENT.Contact			= "Don't"
 ENT.Purpose			= ""
 ENT.Instructions	= ""
 
+function ENT:SetupDataTables()
+	self:NetworkVar( "String", 0, "WeaponClass")
+end
+
 function ENT:Initialize()
 
 	self:SetMoveType( MOVETYPE_FLY )
@@ -23,6 +27,10 @@ function ENT:Initialize()
 	
 	if SERVER then
 		self:SetUseType( SIMPLE_USE )
+		self:SetWeaponClass(self.WepClass)
+	else
+		local wep = weapons.Get(self:GetWeaponClass())
+		if wep.DrawWorldModel then self.WorldModelFunc = wep.DrawWorldModel end
 	end
 end
 
@@ -30,6 +38,7 @@ function ENT:SetWepClass(class)
 	if IsValid(self.button) then
 		self.button:SetWepClass(class)
 	end
+	self:SetWeaponClass(class)
 end
 
 function ENT:CreateTriggerZone(reroll)
@@ -52,6 +61,7 @@ end
 
 if CLIENT then
 	function ENT:Draw()
-		self:DrawModel()
+		-- We can use the stored world model draw function from the original weapon, but if it doesn't exist or errors, then just draw model
+		if !self.WorldModelFunc or !pcall(self.WorldModelFunc, self) then self:DrawModel() end
 	end
 end

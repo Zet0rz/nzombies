@@ -1,6 +1,4 @@
 //Main Tables
-nz.Weps = {}
-nz.Weps.Functions = {}
-nz.Weps.Data = {}
+nzWeps = nzWeps or {}
 
 //_ Variables

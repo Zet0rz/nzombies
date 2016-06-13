@@ -46,10 +46,12 @@ nz.Tools.Functions.CreateTool("settings", {
 		local Row1 = DProperties:CreateRow( "Map Settings", "Starting Weapon" )
 		Row1:Setup( "Combo" )
 		for k,v in pairs(weapons.GetList()) do
-			if v.Category and v.Category != "" then
-				Row1:AddChoice(v.PrintName and v.PrintName != "" and v.Category.. " - "..v.PrintName or v.ClassName, v.ClassName, false)
-			else
-				Row1:AddChoice(v.PrintName and v.PrintName != "" and v.PrintName or v.ClassName, v.ClassName, false)
+			if !v.NZTotalBlacklist then
+				if v.Category and v.Category != "" then
+					Row1:AddChoice(v.PrintName and v.PrintName != "" and v.Category.. " - "..v.PrintName or v.ClassName, v.ClassName, false)
+				else
+					Row1:AddChoice(v.PrintName and v.PrintName != "" and v.PrintName or v.ClassName, v.ClassName, false)
+				end
 			end
 		end
 		if data.startwep then
@@ -188,10 +190,12 @@ nz.Tools.Functions.CreateTool("settings", {
 			wepentry:SetSize( 146, 20 )
 			wepentry:SetValue( "Weapon ..." )
 			for k,v in pairs(weapons.GetList()) do
-				if v.Category and v.Category != "" then
-					wepentry:AddChoice(v.PrintName and v.PrintName != "" and v.Category.. " - "..v.PrintName or v.ClassName, v.ClassName, false)
-				else
-					wepentry:AddChoice(v.PrintName and v.PrintName != "" and v.PrintName or v.ClassName, v.ClassName, false)
+				if !v.NZTotalBlacklist then
+					if v.Category and v.Category != "" then
+						wepentry:AddChoice(v.PrintName and v.PrintName != "" and v.Category.. " - "..v.PrintName or v.ClassName, v.ClassName, false)
+					else
+						wepentry:AddChoice(v.PrintName and v.PrintName != "" and v.PrintName or v.ClassName, v.ClassName, false)
+					end
 				end
 			end
 			wepentry.OnSelect = function( panel, index, value )
@@ -246,7 +250,7 @@ nz.Tools.Functions.CreateTool("settings", {
 					local cat = morecat:GetOptionData(morecat:GetSelectedID())
 					if cat and cat != "" then
 						for k,v in pairs(weapons.GetList()) do
-							if  v.Category and v.Category == cat and !nzConfig.WeaponBlackList[v.ClassName] and !v.NZPreventBox then
+							if  v.Category and v.Category == cat and !nzConfig.WeaponBlackList[v.ClassName] and !v.NZPreventBox and !v.NZTotalBlacklist then
 								InsertWeaponToList(v.PrintName and v.PrintName != "" and v.PrintName.." ["..v.Category.."]" or v.ClassName, v.ClassName)
 							end
 						end
@@ -299,7 +303,7 @@ nz.Tools.Functions.CreateTool("settings", {
 					if prefix and prefix != "" then
 						for k,v in pairs(weapons.GetList()) do
 							local wepprefix = string.sub(v.ClassName, 0, string.find(v.ClassName, "_"))
-							if wepprefix and wepprefix == prefix and !nzConfig.WeaponBlackList[v.ClassName] and !v.NZPreventBox then
+							if wepprefix and wepprefix == prefix and !nzConfig.WeaponBlackList[v.ClassName] and !v.NZPreventBox and !v.NZTotalBlacklist then
 								if v.Category and v.Category != "" then
 									InsertWeaponToList(v.PrintName and v.PrintName != "" and v.PrintName.." ["..v.Category.."]" or v.ClassName, v.ClassName)
 								else
@@ -360,7 +364,7 @@ nz.Tools.Functions.CreateTool("settings", {
 					end
 					for k,v in pairs(weapons.GetList()) do
 						-- By default, add all weapons that have print names unless they are blacklisted
-						if v.PrintName and v.PrintName != "" and !nzConfig.WeaponBlackList[v.ClassName] and v.PrintName != "Scripted Weapon" and !v.NZPreventBox then
+						if v.PrintName and v.PrintName != "" and !nzConfig.WeaponBlackList[v.ClassName] and v.PrintName != "Scripted Weapon" and !v.NZPreventBox and !v.NZTotalBlacklist then
 							if v.Category and v.Category != "" then
 								InsertWeaponToList(v.PrintName and v.PrintName != "" and v.PrintName.." ["..v.Category.."]" or v.ClassName, v.ClassName)
 							else
@@ -420,7 +424,7 @@ nz.Tools.Functions.CreateTool("settings", {
 			perkchecklist:SetSpaceY( 5 )
 			perkchecklist:SetSpaceX( 5 )
 			
-			for k,v in pairs(nz.Perks.Functions.GetList()) do
+			for k,v in pairs(nzPerks:GetList()) do
 				if k != "wunderfizz" and k != "pap" then
 					local perkitem = perkchecklist:Add( "DPanel" )
 					perkitem:SetSize( 130, 20 )

@@ -2,7 +2,7 @@
 
 chatcommand.Add("/help", function(ply, text)
 	ply:PrintMessage( HUD_PRINTTALK, "-----" )
-	ply:PrintMessage( HUD_PRINTTALK, "NZ Available commands:" )
+	ply:PrintMessage( HUD_PRINTTALK, "[nZ] Available commands:" )
 	ply:PrintMessage( HUD_PRINTTALK, "Arguments in [] are optional." )
 	for _, cmd in pairs(chatcommand.commands) do
 		local cmdText = cmd[1]
@@ -39,13 +39,13 @@ end, false, "   Respawn in creative mode.")
 
 chatcommand.Add("/generate", function(ply, text)
 	if navmesh.IsLoaded() then
-		ply:PrintMessage( HUD_PRINTTALK, "NZ Navmesh already exists, couldn't generate." )
+		ply:PrintMessage( HUD_PRINTTALK, "[nZ] Navmesh already exists, couldn't generate." )
 	else
-		ply:PrintMessage( HUD_PRINTTALK, "NZ Starting Navmesh Generation, this may take a while." )
+		ply:PrintMessage( HUD_PRINTTALK, "[nZ] Starting Navmesh Generation, this may take a while." )
 		navmesh.BeginGeneration()
 		--force generate
 		if !navmesh.IsGenerating() then
-			ply:PrintMessage( HUD_PRINTTALK, "NZ No walkable seeds found, forcing generation..." )
+			ply:PrintMessage( HUD_PRINTTALK, "[nZ] No walkable seeds found, forcing generation..." )
 			local sPoint = GAMEMODE.SpawnPoints[ math.random( #GAMEMODE.SpawnPoints ) ]
 			local tr = util.TraceLine( {
 				start = sPoint:GetPos(),
@@ -60,8 +60,8 @@ chatcommand.Add("/generate", function(ply, text)
 		end
 
 		if !navmesh.IsGenerating() then
-			--Will not happen but jsut in case
-			ply:PrintMessage( HUD_PRINTTALK, "NZ Navmesh Generation failed! Please try this command again or generate the navmesh manually." )
+			--Will not happen but just in case
+			ply:PrintMessage( HUD_PRINTTALK, "[nZ] Navmesh Generation failed! Please try this command again or generate the navmesh manually." )
 		end
 	end
 end, false, "   Generate a new naviagtion mesh.")
@@ -73,15 +73,15 @@ chatcommand.Add("/save", function(ply, text)
 		net.Start("nz_SaveConfig")
 		net.Send(ply)
 	else
-		ply:PrintMessage( HUD_PRINTTALK, "NZ You can't save outside of create mode." )
+		ply:PrintMessage( HUD_PRINTTALK, "[nZ] You can't save a config outside of creative mode." )
 	end
-end, false, "   Save your cahnges to a config.")
+end, false, "   Save your changes to a config.")
 
 chatcommand.Add("/load", function(ply, text)
 	if nzRound:InState( ROUND_CREATE) or nzRound:InState( ROUND_WAITING ) then
 		nz.Interfaces.Functions.SendInterface(ply, "ConfigLoader", {configs = file.Find( "nz/nz_*", "DATA" ), workshopconfigs = file.Find( "nz/nz_*", "LUA" ), officialconfigs = file.Find("gamemodes/nzombies/officialconfigs/*", "GAME")})
 	else
-		ply:PrintMessage( HUD_PRINTTALK, "NZ You can't load while playing!" )
+		ply:PrintMessage( HUD_PRINTTALK, "[nZ] You can't load while playing!" )
 	end
 end, false, "   Open the map config load dialog.")
 
@@ -89,7 +89,7 @@ chatcommand.Add("/clean", function(ply, text)
 	if nzRound:InState( ROUND_CREATE) or nzRound:InState( ROUND_WAITING ) then
 		nzMapping:ClearConfig()
 	else
-		ply:PrintMessage( HUD_PRINTTALK, "NZ You can't clean while playing!" )
+		ply:PrintMessage( HUD_PRINTTALK, "[nZ] You can't clean while playing!" )
 	end
 end)
 
@@ -97,7 +97,7 @@ end)
 
 chatcommand.Add("/spectate", function(ply, text)
 	if !nzRound:InProgress() or nzRound:InState( ROUND_INIT ) then
-		ply:PrintMessage( HUD_PRINTTALK, "No round in progress, couldnt set you to spectator!" )
+		ply:PrintMessage( HUD_PRINTTALK, "[nZ] No round in progress, couldnt set you to spectator!" )
 	elseif ply:IsReady() then
 		ply:UnReady()
 		ply:SetSpectator()
@@ -125,7 +125,7 @@ chatcommand.Add("/revive", function(ply, text)
 	if IsValid(plyToRev) and !ply:GetNotDowned() then
 		plyToRev:RevivePlayer()
 	else
-		ply:ChatPrint("Player could not have been revived, are you sure he is downed?")
+		ply:ChatPrint("[nZ] Player could not have been revived, are you sure he is downed?")
 	end
 end, false, "[playerName]   Revive yourself or another player.")
 
@@ -144,10 +144,10 @@ chatcommand.Add("/givepoints", function(ply, text)
 		if points then
 			plyToGiv:GivePoints(points)
 		else
-			ply:ChatPrint("No valid number provided.")
+			ply:ChatPrint("[nZ] No valid number provided.")
 		end
 	else
-		ply:ChatPrint("The player you have selected is either not valid or not alive.")
+		ply:ChatPrint("[nZ] The player you have selected is either not valid or not alive.")
 	end
 end, false, "[playerName] pointAmount   Give points to yourself or another player.")
 
@@ -166,10 +166,10 @@ chatcommand.Add("/giveweapon", function(ply, text)
 		if wep then
 			plyToGiv:Give(wep.ClassName)
 		else
-			ply:ChatPrint("No valid weapon provided.")
+			ply:ChatPrint("[nZ] No valid weapon provided.")
 		end
 	else
-		ply:ChatPrint("The player you have selected is either not valid or not alive.")
+		ply:ChatPrint("[nZ] The player you have selected is either not valid or not alive.")
 	end
 end, false, "[playerName] weaponName   Give a weapon to yourself or another player.")
 
@@ -185,13 +185,13 @@ chatcommand.Add("/giveperk", function(ply, text)
 		perk = text[2]
 	end
 	if IsValid(plyToGiv) and plyToGiv:Alive() and (plyToGiv:IsPlaying() or nzRound:InState(ROUND_CREATE)) then
-		if nz.Perks.Functions.Get(perk) then
+		if nzPerks:Get(perk) then
 			plyToGiv:GivePerk(perk)
 		else
-			ply:ChatPrint("No valid perk provided.")
+			ply:ChatPrint("[nZ] No valid perk provided.")
 		end
 	else
-		ply:ChatPrint("They player you have selected is either not valid or not alive.")
+		ply:ChatPrint("[nZ] They player you have selected is either not valid or not alive.")
 	end
 end, false, "[playerName] perkID   Give a perk to yourself or another player.")
 
@@ -220,10 +220,10 @@ chatcommand.Add("/targetpriority", function(ply, text)
 		if priority then
 			plyToGiv:SetTargetPriority(priority)
 		else
-			ply:ChatPrint("No valid priority provided.")
+			ply:ChatPrint("[nZ] No valid priority provided.")
 		end
 	else
-		ply:ChatPrint("They player you have selected is either not valid or not alive.")
+		ply:ChatPrint("[nZ] The player you have selected is either not valid or not alive.")
 	end
 end)
 
@@ -233,5 +233,5 @@ end)
 
 chatcommand.Add("/navflush", function(ply, text)
 	nzNav.FlushAllNavModifications()
-	PrintMessage(HUD_PRINTTALK, "Navlocks successfully flushed. Remember to redo them for best playing experience.")
+	PrintMessage(HUD_PRINTTALK, "[nZ] Navlocks successfully flushed. Remember to redo them for best playing experience.")
 end)

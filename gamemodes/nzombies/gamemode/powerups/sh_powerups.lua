@@ -149,7 +149,7 @@ nzPowerUps:NewPowerUp("maxammo", {
 		nz.Notifications.Functions.PlaySound("nz/powerups/max_ammo.mp3", 2)
 		-- Give everyone ammo
 		for k,v in pairs(player.GetAll()) do
-			nz.Weps.Functions.GiveMaxAmmo(v)
+			nzWeps:GiveMaxAmmo(v)
 		end
 	end),
 })

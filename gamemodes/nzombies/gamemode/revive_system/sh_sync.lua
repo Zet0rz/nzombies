@@ -18,9 +18,11 @@ if SERVER then
 		return receiver and net.Send(receiver) or net.Broadcast()
 	end
 
-	function Revive:SendPlayerDowned(ply, receiver)
+	function Revive:SendPlayerDowned(ply, receiver, attdata)
+		attdata = attdata or {}
 		net.Start( "nzRevivePlayerDowned" )
 			net.WriteInt(ply:EntIndex(), 13)
+			net.WriteTable(attdata)
 		return receiver and net.Send(receiver) or net.Broadcast()
 	end
 
@@ -61,8 +63,16 @@ if CLIENT then
 
 	local function ReceivePlayerDowned()
 		local id = net.ReadInt(13)
+		local attached = net.ReadTable()
+		
 		Revive.Players[id] = Revive.Players[id] or {}
 		Revive.Players[id].DownTime = CurTime()
+		
+		for k,v in pairs(attached) do
+			print(k,v)
+			Revive.Players[id][k] = v
+		end
+		
 		local ply = Entity(id)
 		if IsValid(ply) and ply:IsPlayer() then
 			ply:AnimRestartGesture(GESTURE_SLOT_GRENADE, ACT_HL2MP_SIT_PISTOL)
