@@ -27,7 +27,7 @@
 		{
 			"name"		"nz_randombox_maplist"
 			"text"		"Use maps Weapon List"
-			"help"		"Whether to replace the white- and blacklist with the config's Map Settings list - turn off to always use the above lists"
+			"help"		"Whether or not to replace the whitelist/blacklist with the config's Map Settings list - turn off to always use the above lists"
 			"type"		"CheckBox"
 			"default"	"1"
 		}
@@ -35,7 +35,7 @@
 		{
 			"name"		"nz_nav_grouptargeting"
 			"text"		"Use navgroups if available"
-			"help"		"Whether zombies and spawnpoints will check if Nav Group IDs are the same as their target player's before spawning"
+			"help"		"Whether or not zombies and spawnpoints will check if Nav Group IDs are the same as their target player's before spawning"
 			"type"		"CheckBox"
 			"default"	"1"
 		}
@@ -43,7 +43,7 @@
 		{
 			"name"		"nz_round_special_interval"
 			"text"		"Special round interval."
-			"help"		"How often a special round should occur."
+			"help"		"How often a special round should occur (rounds)."
 			"type"		"Numeric"
 			"default"	"6"
 		}
@@ -51,7 +51,7 @@
 		{
 			"name"		"nz_round_prep_time"
 			"text"		"Round preparation duration"
-			"help"		"The duration of a rounds preperation phase.."
+			"help"		"The duration of a round's preperation phase.."
 			"type"		"Numeric"
 			"default"	"10"
 		}
@@ -67,7 +67,7 @@
 		{
 			"name"		"nz_difficulty_zombie_amount_base"
 			"text"		"Base Zombie amount"
-			"help"		"The base amount of zombies."
+			"help"		"The base amount of zombies (round 1)."
 			"type"		"Numeric"
 			"default"	"5"
 		}
@@ -107,7 +107,7 @@
 		{
 			"name"		"nz_difficulty_barricade_planks_max"
 			"text"		"Barricade plank amount"
-			"help"		"The maximum amount of planks on a barricade."
+			"help"		"The amount of planks on a barricade."
 			"type"		"Numeric"
 			"default"	"6"
 		}
@@ -115,7 +115,7 @@
 		{
 			"name"		"nz_difficulty_powerup_chance"
 			"text"		"Powerup drop chance in %"
-			"help"		"The chance of a powerup beeing dropped after a zobmies death."
+			"help"		"The chance of a powerup beeing dropped after a zombie's death."
 			"type"		"Numeric"
 			"default"	"2"
 		}
