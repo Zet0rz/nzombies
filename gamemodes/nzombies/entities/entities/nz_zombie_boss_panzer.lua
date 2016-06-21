@@ -111,6 +111,7 @@ function ENT:Initialize()
 		end
 		
 		self.HelmetDamage = 0 -- Used to save how much damage the light has taken
+		self:SetUsingClaw(false)
 	end
 
 end
@@ -145,6 +146,12 @@ function ENT:SpecialInit()
 	end
 end
 
+function ENT:InitDataTables()
+	self:NetworkVar("Entity", 0, "ClawHook")
+	self:NetworkVar("Bool", 1, "UsingClaw")
+	self:NetworkVar("Bool", 2, "Flamethrowing")
+end
+
 function ENT:OnSpawn()
 	local seq = "nz_entry"
 	local tr = util.TraceLine({
@@ -173,6 +180,8 @@ end
 
 function ENT:OnZombieDeath(dmgInfo)
 
+	self:ReleasePlayer()
+	self:StopFlames()
 	self:SetRunSpeed(0)
 	self.loco:SetVelocity(Vector(0,0,0))
 	self:Stop()
@@ -305,11 +314,48 @@ function ENT:IsValidTarget( ent )
 	-- Won't go for special targets (Monkeys), but still MAX, ALWAYS and so on
 end
 
+-- This function is run every time a path times out, once every 1 seconds of pathing
+function ENT:OnPathTimeOut()
+	-- 50/50 chance to try either claw or flamethrower
+	if true then --math.random(0,1) == 0 then
+		-- Claw
+		if self:IsValidTarget(self:GetTarget()) then
+			local tr = util.TraceLine({
+				start = self:GetPos() + Vector(0,50,0),
+				endpos = self:GetTarget():GetPos() + Vector(0,0,50),
+				filter = self,
+			})
+			
+			if IsValid(tr.Entity) and self:IsValidTarget(tr.Entity) and !IsValid(self.ClawHook) then
+				self:Stop()
+				self:PlaySequenceAndWait("nz_grapple_aim")
+				self.loco:SetDesiredSpeed(0)
+				--self:SetSequence(self:LookupSequence("nz_grapple_loop"))
+				self:SetBodygroup(2, 1)
+				
+				local clawpos = self:GetAttachment(self:LookupAttachment("clawlight")).Pos
+				self.ClawHook = ents.Create("nz_panzer_claw")
+				self.ClawHook:SetPos(clawpos)
+				self.ClawHook:Spawn()
+				self.ClawHook:Launch(((tr.Entity:GetPos() + Vector(0,0,50)) - self.ClawHook:GetPos()):GetNormalized())
+				self:SetClawHook(self.ClawHook)
+				self:SetUsingClaw(true)
+				self.ClawHook:SetPanzer(self)
+			end
+		end
+	else
+		-- Flamethrower
+	
+	end
+end
+
 if CLIENT then
 	local eyeGlow =  Material( "sprites/redglow1" )
 	local white = Color( 255, 255, 255, 255 )
-	local lightglow = Material ( "sprites/physg_glow1_noz" )
+	local lightglow = Material( "sprites/physg_glow1_noz" )
 	local lightyellow = Color( 255, 255, 200, 200 )
+	local clawglow = Material( "sprites/orangecore1" )
+	local clawred = Color( 255, 100, 100, 255 )
 	function ENT:Draw()
 		self:DrawModel()
 		
@@ -351,13 +397,14 @@ if CLIENT then
 			render.DrawWireframeSphere(self:GetPos(), self:GetAttackRange(), 10, 10, Color(255,165,0), true)
 		end
 		
-		local bone = self:LookupBone("j_helmet")
-		local pos, ang = self:GetBonePosition(bone)
-		local finalpos = pos + ang:Forward()*20 + ang:Up()*10
 		--debugoverlay.Cross(finalpos, 5)
 		--debugoverlay.Line(finalpos, finalpos + ang:Forward()*10, 1, Color(0,255,0))
 		--debugoverlay.Line(finalpos, finalpos + ang:Right()*5, 1, Color(0,255,0))
 		if self:GetBodygroup(1) == 0 then
+			local bone = self:LookupBone("j_helmet")
+			local pos, ang = self:GetBonePosition(bone)
+			local finalpos = pos + ang:Forward()*20 + ang:Up()*10
+		
 			cam.Start3D2D(finalpos, ang, 1)
 				surface.SetMaterial(lightglow)
 				surface.SetDrawColor(lightyellow)
@@ -373,6 +420,21 @@ if CLIENT then
 				surface.SetMaterial(lightglow)
 				surface.SetDrawColor(lightyellow)
 				surface.DrawTexturedRect(-50,-10,100,20)
+			cam.End3D2D()
+		end
+		
+		if self:GetBodygroup(2) == 1 then
+			local att = self:GetAttachment(self:LookupAttachment("clawlight"))
+			local pos, ang = att.Pos, att.Ang
+			ang:RotateAroundAxis(ang:Right(),-90)
+			
+			--debugoverlay.Line(pos, pos + ang:Forward()*10, 1, Color(0,255,0))
+			--debugoverlay.Line(pos, pos + ang:Right()*5, 1, Color(0,255,0))
+			
+			cam.Start3D2D(pos, ang, 1)
+				surface.SetMaterial(clawglow)
+				surface.SetDrawColor(clawred)
+				surface.DrawTexturedRect(-5,-5,10,10)
 			cam.End3D2D()
 		end
 		
@@ -395,6 +457,8 @@ function ENT:OnInjured( dmgInfo )
 				self:SetBodygroup(1, 1)
 				self:SetSpecialAnimation(true)
 				self:SetBlockAttack(true)
+				self:ReleasePlayer()
+				self:StopFlames()
 				local id, dur = self:LookupSequence("nz_crit_head")
 				self:ResetSequence(id)
 				self:SetCycle(0)
@@ -421,4 +485,157 @@ function ENT:OnInjured( dmgInfo )
 			dmgInfo:ScaleDamage(0.1) -- When the helmet is lost, a non-headshot still only deals 10%
 		end
 	end
+	
+	if self:GetUsingClaw() then
+		local pos = self:GetAttachment(self:LookupAttachment("clawlight")).Pos
+		if hitpos:DistToSqr(pos) <= 25 then
+			self:SetSpecialAnimation(true)
+			self:SetBlockAttack(true)
+			self:ReleasePlayer()
+			self:StopFlames()
+			local id, dur = self:LookupSequence("nz_crit_grapple")
+			self:ResetSequence(id)
+			self:SetCycle(0)
+			self:SetPlaybackRate(1)
+			self.loco:SetDesiredSpeed(0)
+			self:SetVelocity(Vector(0,0,0))
+			self:TimedEvent(dur, function()
+				self.loco:SetDesiredSpeed(self:GetRunSpeed())
+				self:SetSpecialAnimation(false)
+				self:SetBlockAttack(false)
+			end)
+		end
+	end
+end
+
+function ENT:OnRemove()
+	if IsValid(self.ClawHook) then self.ClawHook:Remove() end
+	if IsValid(self.GrabbedPlayer) then self.GrabbedPlayer:SetMoveType(MOVETYPE_WALK) end
+	if self.FireEmitter then self.FireEmitter:Finish() end
+end
+
+function ENT:StartFlames(time)
+	self:Stop()
+	self:SetFlamethrowing(true)
+	
+	if time then self:TimedEvent(time, function() self:StopFlames() end) end
+end
+
+function ENT:StopFlames()
+	self:SetFlamethrowing(false)
+	self:SetStop(false)
+end
+
+function ENT:OnThink()
+	if self:GetFlamethrowing() then
+		if !self.NextFireParticle or self.NextFireParticle < CurTime() then
+			local bone = self:LookupBone("j_elbow_ri")
+			local pos, ang = self:GetBonePosition(bone)
+			pos = pos - ang:Forward() * 40 - ang:Up()*10
+			if CLIENT then
+				if !IsValid(self.FireEmitter) then self.FireEmitter = ParticleEmitter(self:GetPos(), false) end
+				
+				local p = self.FireEmitter:Add("particles/fire1.vmt", pos)
+				if p then
+					p:SetColor(math.random(30,60), math.random(40,70), math.random(0,50))
+					p:SetStartAlpha(255)
+					p:SetEndAlpha(0)
+					p:SetVelocity(ang:Forward() * -100 + ang:Up()*math.random(-5,5) + ang:Right()*math.random(-5,5))
+					p:SetLifeTime(0.25)
+
+					p:SetDieTime(math.Rand(0.75, 1.5))
+
+					p:SetStartSize(math.random(1, 5))
+					p:SetEndSize(math.random(20, 30))
+					p:SetRoll(math.random(-180, 180))
+					p:SetRollDelta(math.Rand(-0.1, 0.1))
+					p:SetAirResistance(50)
+
+					p:SetCollide(false)
+
+					p:SetLighting(false)
+				end
+			else
+				if IsValid(self.GrabbedPlayer) then
+					if self.GrabbedPlayer:GetPos():DistToSqr(self:GetPos()) > 10000 then
+						self:ReleasePlayer()
+						self:StopFlames()
+					else
+						local dmg = DamageInfo()
+						dmg:SetAttacker(self)
+						dmg:SetInflictor(self)
+						dmg:SetDamage(2)
+						dmg:SetDamageType(DMG_BURN)
+						
+						self.GrabbedPlayer:TakeDamageInfo(dmg)
+						self.GrabbedPlayer:Ignite(1, 0)
+					end
+				else
+					local tr = util.TraceLine({
+						start = pos,
+						endpos = pos - ang:Forward()*40,
+						filter = self,
+						mask = MASK_NPCSOLID,
+					})
+					if IsValid(tr.Entity) and self:IsValidTarget(tr.Entity) then
+						local dmg = DamageInfo()
+						dmg:SetAttacker(self)
+						dmg:SetInflictor(self)
+						dmg:SetDamage(2)
+						dmg:SetDamageType(DMG_BURN)
+						
+						tr.Entity:TakeDamageInfo(dmg)
+						tr.Entity:Ignite(1, 0)
+					end
+				end
+			end
+			
+			self.NextFireParticle = CurTime() + 0.05
+		end
+	elseif CLIENT and self.FireEmitter then
+		self.FireEmitter:Finish()
+		self.FireEmitter = nil
+	end
+	
+	if SERVER and IsValid(self.GrabbedPlayer) and !self:IsValidTarget(self.GrabbedPlayer) then
+		self:ReleasePlayer()
+		self:StopFlames()
+	end
+end
+
+function ENT:GrabPlayer(ply)
+	self:SetBodygroup(2,0)
+	self:SetUsingClaw(false)
+	
+	if self:IsValidTarget(ply) then
+		self.GrabbedPlayer = ply
+		
+		self:TimedEvent(0, function()
+			local att = self:GetAttachment(self:LookupAttachment("clawlight"))
+			local pos = att.Pos + att.Ang:Forward()*10
+			
+			ply:SetPos(pos - Vector(0,0,50))
+			ply:SetMoveType(MOVETYPE_NONE)
+		end)
+		
+		
+		self:SetSequence(self:LookupSequence("nz_grapple_flamethrower"))
+		self:SetCycle(0)
+		self:StartFlames()
+	else
+		self:SetStop(false)
+	end
+end
+
+function ENT:ReleasePlayer()
+	if IsValid(self.GrabbedPlayer) then
+		self.GrabbedPlayer:SetMoveType(MOVETYPE_WALK)
+	end
+	if IsValid(self.ClawHook) then
+		self.ClawHook:Release()
+	end
+	if !self:GetFlamethrowing() then
+		self:SetStop(false)
+	end
+	self:SetUsingClaw(false)
 end

@@ -237,6 +237,7 @@ function nzMapping:ClearConfig(noclean)
 		["edit_sky"] = true,
 		["edit_color"] = true,
 		["edit_sun"] = true,
+		["edit_dynlight"] = true,
 		["nz_triggerzone"] = true,
 		["power_box"] = true,
 		["invis_wall"] = true,

@@ -147,7 +147,7 @@ function SWEP:OnRemove()
 			local vm = LocalPlayer():GetViewModel()
 			vm:SetMaterial(oldmat)
 		end
-		if !IsValid(self.Owner:GetActiveWeapon()) or !self.Owner:GetActiveWeapon():IsSpecial() then
+		if !IsValid(self.Owner:GetActiveWeapon()) or !self.Owner:GetActiveWeapon():IsSpecial() and self.Owner.SetUsingSpecialWeapon then
 			self.Owner:SetUsingSpecialWeapon(false)
 		end
 	end

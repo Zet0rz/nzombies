@@ -8,9 +8,14 @@ AccessorFunc( plymeta, "fStaminaLossAmount", "StaminaLossAmount", FORCE_NUMBER )
 AccessorFunc( plymeta, "fStaminaRecoverAmount", "StaminaRecoverAmount", FORCE_NUMBER )
 AccessorFunc( plymeta, "fMaxRunSpeed", "MaxRunSpeed", FORCE_NUMBER )
 AccessorFunc( plymeta, "bSprinting", "Sprinting", FORCE_BOOL )
+AccessorFunc( plymeta, "bSpawned", "Spawned", FORCE_BOOL )
 
 function plymeta:IsSprinting()
 	return self:GetSprinting()
+end
+
+function plymeta:IsSpawned()
+	return self:GetSpawned()
 end
 
 hook.Add( "PlayerSpawn", "PlayerSprintSpawn", function( ply )
@@ -27,7 +32,13 @@ hook.Add( "PlayerSpawn", "PlayerSprintSpawn", function( ply )
 	ply:SetLastStaminaRecover( 0 )
 	
 	-- Delay this a bit - it seems like it takes the old sprint speed from last round state (Creative speed)
-	timer.Simple(0.1, function() if IsValid(ply) then ply:SetMaxRunSpeed( ply:GetRunSpeed() ) end end)
+	timer.Simple(0.1, function()
+		if IsValid(ply) then
+			ply:SetMaxRunSpeed( ply:GetRunSpeed() )
+			-- player variables (especially spritn vars) have been initialized
+			ply:SetSpawned(true)
+		end
+	end)
 	--print(player_manager.GetPlayerClass(ply))
 
 end )
@@ -51,19 +62,20 @@ hook.Add( "Think", "PlayerSprint", function()
 				ply:SetStamina( math.Clamp( ply:GetStamina() + ply:GetStaminaRecoverAmount(), 0, ply:GetMaxStamina() ) )
 				ply:SetLastStaminaRecover( CurTime() )
 			end
-			--print( ply:GetStamina() )
 		end
 	end
 end )
 
 hook.Add( "KeyPress", "OnSprintKeyPressed", function( ply, key )
-	if !nzRound:InState( ROUND_CREATE ) and ( key == IN_SPEED ) then
+	if !nzRound:InState( ROUND_CREATE ) and ( key == IN_SPEED ) and IsValid(ply) and ply:Alive() then
 		ply:SetSprinting( true )
 	end
 end )
 
 hook.Add( "KeyRelease", "OnSprintKeyReleased", function( ply, key )
-	if !nzRound:InState( ROUND_CREATE ) and ( key == IN_SPEED ) then
+	-- Always reset sprint sate even if player is dead.
+	-- Reason: player can die while holding shift.
+	if !nzRound:InState( ROUND_CREATE ) and ( key == IN_SPEED ) and ply:IsSpawned() then
 		ply:SetSprinting( false )
 		ply:SetRunSpeed( ply:GetMaxRunSpeed() )
 	end

@@ -320,6 +320,7 @@ function nzMapping:CleanUpMap()
 		"edit_fog_special",
 		"edit_sky",
 		"edit_sun",
+		"edit_dynlight",
 		"nz_prop_effect",
 		"nz_prop_effect_attachment",
 		"nz_fire_effect",

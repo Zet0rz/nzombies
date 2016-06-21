@@ -81,6 +81,7 @@ ENT.ActStages = {
 function ENT:SetupDataTables()
 	-- If you want decapitation in you zombie and overwrote ENT:SetupDataTables() make sure to add self:NetworkVar("Bool", 0, "Decapitated") again.
 	self:NetworkVar("Bool", 0, "Decapitated")
+	if self.InitDataTables then self:InitDataTables() end
 end
 
 function ENT:Precache()
@@ -593,13 +594,17 @@ function ENT:OnKilled(dmgInfo)
 		self:OnZombieDeath(dmgInfo)
 	end
 
-	local headPos = self:GetBonePosition(self:LookupBone("ValveBiped.Bip01_Head1"))
-	local dmgPos = dmgInfo:GetDamagePosition()
+	local headbone = self:LookupBone("ValveBiped.Bip01_Head1")
+	if !headbone then headbone = self:LookupBone("j_head") end
+	if headbone then
+		local headPos = self:GetBonePosition(headbone)
+		local dmgPos = dmgInfo:GetDamagePosition()
 
-	-- it wil lnot always trigger since the offset can be larger than 12
-	-- but i think its fine not to decapitate every headshotted zombie
-	if headPos and dmgPos and headPos:Distance(dmgPos) < 12 then
-		self:SetDecapitated(true)
+		-- it will not always trigger since the offset can be larger than 12
+		-- but I think it's fine not to decapitate every headshotted zombie
+		if headPos and dmgPos and headPos:Distance(dmgPos) < 12 then
+			self:SetDecapitated(true)
+		end
 	end
 
 	hook.Call("OnZombieKilled", GAMEMODE, self, dmgInfo)
