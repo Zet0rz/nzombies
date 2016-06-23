@@ -1,8 +1,12 @@
+if not ConVarExists("nz_ragdolltime") then CreateConVar("nz_ragdolltime", 30, {FCVAR_ARCHIVE}, "How long Zombie ragdolls will stay in the map.") end
+
 function GM:CreateClientsideRagdoll( ent, ragdoll )
-	local dTime = math.random( 30, 60 )
+	local convar = GetConVar("nz_ragdolltime"):GetInt()
+	local dTime = math.random( convar*0.75, convar*1.25 )
 
 	if ent:GetDecapitated() then
 		local bone = ragdoll:LookupBone("ValveBiped.Bip01_Head1")
+		if !bone then bone = ragdoll:LookupBone("j_head") end
 
 		if bone then
 			ragdoll:ManipulateBoneScale(bone, Vector(0.00001,0.00001,0.00001))
@@ -35,4 +39,6 @@ function GM:CreateClientsideRagdoll( ent, ragdoll )
 	end)
 	]]--
 	SafeRemoveEntityDelayed( ragdoll, dTime + 2.5 )
+	
+	--print("Client side ragdoll")
 end

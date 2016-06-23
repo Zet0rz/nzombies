@@ -53,7 +53,7 @@ if SERVER then
 			end
 		end
 	end
-	hook.Add("WeaponEquip", "ModifyWeaponReloads", ReplaceReloadFunction)
+	hook.Add("WeaponEquip", "nzModifyWeaponReloads", ReplaceReloadFunction)
 	
 	function ReplacePrimaryFireCooldown(wep)
 		local oldfire = wep.PrimaryAttack
@@ -73,7 +73,7 @@ if SERVER then
 			end
 		end
 	end
-	hook.Add("WeaponEquip", "ModifyWeaponNextFires", ReplacePrimaryFireCooldown)
+	hook.Add("WeaponEquip", "nzModifyWeaponNextFires", ReplacePrimaryFireCooldown)
 	
 	function ReplaceAimDownSight(wep)
 		local oldfire = wep.SecondaryAttack
@@ -97,9 +97,9 @@ if SERVER then
 			end
 		end
 	end
-	hook.Add("WeaponEquip", "ModifyAimDownSights", ReplaceAimDownSight)
+	hook.Add("WeaponEquip", "nzModifyAimDownSights", ReplaceAimDownSight)
 	
-	hook.Add("DoAnimationEvent", "ReloadCherry", function(ply, event, data)
+	hook.Add("DoAnimationEvent", "nzReloadCherry", function(ply, event, data)
 		--print(ply, event, data)
 		if event == PLAYERANIMEVENT_RELOAD then
 			if ply:HasPerk("cherry") then

@@ -19,7 +19,7 @@ function ENT:Initialize()
 	self:SetModel("models/props_c17/gravestone003a.mdl")
 	
 	--self:PhysicsInit(SOLID_VPHYSICS)
-	self:PhysicsInitSphere(50, "default_silent")
+	self:PhysicsInitSphere(60, "default_silent")
 	self:SetMoveType(MOVETYPE_NONE)
 	self:SetSolid(SOLID_NONE)
 	if SERVER then
@@ -36,14 +36,16 @@ function ENT:Initialize()
 		self:SetUseType(SIMPLE_USE)
 	end
 	
-	timer.Create( self:EntIndex().."_deathtimer", 100, 1, function()
+	--[[timer.Create( self:EntIndex().."_deathtimer", 100, 1, function()
 		if self:IsValid() then
 			timer.Destroy(self:EntIndex().."_deathtimer")
 			if SERVER then
 				self:Remove()
 			end
 		end
-	end)
+	end)]]
+	
+	--self.RemoveTime = CurTime() + 120
 end
 
 if SERVER then
@@ -67,7 +69,23 @@ if SERVER then
 			end
 			nzWeps:GiveMaxAmmo(hitEnt)
 			
-			timer.Destroy(self:EntIndex().."_deathtimer")
+			--timer.Destroy(self:EntIndex().."_deathtimer")
+			self:Remove()
+		end
+	end
+	
+	function ENT:Think()
+		if !self.RemoveTime then
+			local ply = self:GetPerkOwner()
+			if IsValid(ply) then
+				if ply:Alive() and ply:GetNotDowned() and (ply:IsPlaying() or ply:IsInCreative()) then
+					self.RemoveTime = CurTime() + 90
+				end
+			else
+				-- Man, the player must've disconnected or crashed :/
+				self:Remove()
+			end
+		elseif self.RemoveTime and CurTime() > self.RemoveTime then
 			self:Remove()
 		end
 	end

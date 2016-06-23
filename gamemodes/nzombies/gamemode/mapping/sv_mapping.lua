@@ -361,13 +361,14 @@ function nzMapping:CleanUpMap()
 	end
 	
 	-- Remove gamemode-specific entities if their gamemode hasn't be enabled in the Map Settings menu
-	for k,v in pairs(ents.GetAll()) do
+	--[[for k,v in pairs(ents.GetAll()) do
 		if v.NZGamemodeExtension then
 			if !nzMapping.Settings.gamemodeentities[v.NZGamemodeExtension] then
 				v:Remove()
 			end
 		end
-	end
+	end]]
+	-- No longer done here, done in the entities' Initialize function
 end
 
 function nzMapping:SpawnEntity(pos, ang, ent, ply)

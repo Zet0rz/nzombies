@@ -58,10 +58,12 @@ nz.Tools.Functions.CreateTool("wallbuy", {
 		local Row1 = DProperties:CreateRow( "Weapon Settings", "Weapon Class" )
 		Row1:Setup( "Combo" )
 		for k,v in pairs(weapons.GetList()) do
-			if v.Category and v.Category != "" then
-				Row1:AddChoice(v.PrintName and v.PrintName != "" and v.Category.. " - "..v.PrintName or v.ClassName, v.ClassName, false)
-			else
-				Row1:AddChoice(v.PrintName and v.PrintName != "" and v.PrintName or v.ClassName, v.ClassName, false)
+			if !v.NZTotalBlacklist then
+				if v.Category and v.Category != "" then
+					Row1:AddChoice(v.PrintName and v.PrintName != "" and v.Category.. " - "..v.PrintName or v.ClassName, v.ClassName, false)
+				else
+					Row1:AddChoice(v.PrintName and v.PrintName != "" and v.PrintName or v.ClassName, v.ClassName, false)
+				end
 			end
 		end
 		Row1.DataChanged = function( _, val ) valz["Row1"] = val UpdateData() end

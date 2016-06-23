@@ -70,7 +70,7 @@ function ENT:Use( activator, caller )
 			self.Box:Close()
 			self:Remove()
 		else
-			if self.Buyer:IsValid() then
+			if IsValid(self.Buyer) then
 				activator:PrintMessage( HUD_PRINTTALK, "This is " .. self.Buyer:Nick() .. "'s gun. You cannot take it." )
 			end
 		end

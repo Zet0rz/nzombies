@@ -42,7 +42,7 @@ local function initialSpawn( ply )
 end
 
 local function playerLeft( ply )
-	-- this was previously hooked to  PlayerDisconnected
+	-- this was previously hooked to PlayerDisconnected
 	-- it will now detect leaving players via entity removed, to take kicking banning etc into account.
 	if ply:IsPlayer() then
 		ply:DropOut()

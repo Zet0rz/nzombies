@@ -88,7 +88,7 @@ function ENT:Initialize()
 	end
 	self:SetModel(vulturedrops[self:GetDropType()].model)
 
-	self:PhysicsInitSphere(50, "default_silent")
+	self:PhysicsInitSphere(60, "default_silent")
 	self:SetMoveType(MOVETYPE_NONE)
 	self:SetSolid(SOLID_NONE)
 	if SERVER then
@@ -101,14 +101,16 @@ function ENT:Initialize()
 	self:DrawShadow(false)
 	self.DeathTimer = 30
 
-	timer.Create( self:EntIndex().."_deathtimer", vulturedrops[self:GetDropType()].timer, 1, function()
+	--[[timer.Create( self:EntIndex().."_deathtimer", vulturedrops[self:GetDropType()].timer, 1, function()
 		if IsValid(self) then
 			timer.Destroy(self:EntIndex().."_deathtimer")
 			if SERVER then
 				self:Remove()
 			end
 		end
-	end)
+	end)]]
+	
+	self.RemoveTime = CurTime() + vulturedrops[self:GetDropType()].timer
 
 	vulturedrops[self:GetDropType()].initialize(self)
 end
@@ -122,6 +124,12 @@ if SERVER then
 					self:Remove()
 				end
 			end
+		end
+	end
+	
+	function ENT:Think()
+		if self.RemoveTime and CurTime() > self.RemoveTime then
+			self:Remove()
 		end
 	end
 end
