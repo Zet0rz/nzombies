@@ -12,8 +12,8 @@ if not ConVarExists("nz_round_special_interval") then CreateConVar("nz_round_spe
 if not ConVarExists("nz_round_prep_time") then CreateConVar("nz_round_prep_time", 10, {FCVAR_SERVER_CAN_EXECUTE, FCVAR_ARCHIVE, FCVAR_REPLICATED}) end
 if not ConVarExists("nz_randombox_maplist") then CreateConVar("nz_randombox_maplist", 1, {FCVAR_SERVER_CAN_EXECUTE, FCVAR_ARCHIVE, FCVAR_REPLICATED}) end
 if not ConVarExists("nz_round_dropins_allow") then CreateConVar("nz_round_dropins_allow", 1, {FCVAR_SERVER_CAN_EXECUTE, FCVAR_ARCHIVE, FCVAR_REPLICATED}) end
-if not ConVarExists("nz_difficulty_zombie_amount_base") then CreateConVar("nz_difficulty_zombie_amount_base", 5, {FCVAR_SERVER_CAN_EXECUTE, FCVAR_ARCHIVE, FCVAR_REPLICATED}) end
-if not ConVarExists("nz_difficulty_zombie_amount_scale") then CreateConVar("nz_difficulty_zombie_amount_scale", 1.01, {FCVAR_SERVER_CAN_EXECUTE, FCVAR_ARCHIVE, FCVAR_REPLICATED}) end
+if not ConVarExists("nz_difficulty_zombie_amount_base") then CreateConVar("nz_difficulty_zombie_amount_base", 6, {FCVAR_SERVER_CAN_EXECUTE, FCVAR_ARCHIVE, FCVAR_REPLICATED}) end
+if not ConVarExists("nz_difficulty_zombie_amount_scale") then CreateConVar("nz_difficulty_zombie_amount_scale", 0.35, {FCVAR_SERVER_CAN_EXECUTE, FCVAR_ARCHIVE, FCVAR_REPLICATED}) end
 if not ConVarExists("nz_difficulty_zombie_health_base") then CreateConVar("nz_difficulty_zombie_health_base", 75, {FCVAR_SERVER_CAN_EXECUTE, FCVAR_ARCHIVE, FCVAR_REPLICATED}) end
 if not ConVarExists("nz_difficulty_zombie_health_scale") then CreateConVar("nz_difficulty_zombie_health_scale", 1.1, {FCVAR_SERVER_CAN_EXECUTE, FCVAR_ARCHIVE, FCVAR_REPLICATED}) end
 if not ConVarExists("nz_difficulty_max_zombies_alive") then CreateConVar("nz_difficulty_max_zombies_alive", 35, {FCVAR_SERVER_CAN_EXECUTE, FCVAR_ARCHIVE, FCVAR_REPLICATED}) end

@@ -18,7 +18,9 @@ ROUND_GO = 5
 
 TEAM_SPECS = 1
 TEAM_PLAYERS = 2
+TEAM_ZOMBIES = 3
 
 --Setup Teams
 team.SetUp( TEAM_SPECS, "Spectators", Color( 255, 255, 255 ) )
 team.SetUp( TEAM_PLAYERS, "Players", Color( 255, 0, 0 ) )
+team.SetUp( TEAM_ZOMBIES, "Zombies", Color( 0, 255, 0 ) )

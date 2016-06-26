@@ -3,11 +3,17 @@ if SERVER then
 	nzCurves = nzCurves or {}
 
 	function nzCurves.GenerateHealthCurve(round)
-		return math.Round(GetConVar("nz_difficulty_zombie_health_base"):GetFloat()*math.pow(GetConVar("nz_difficulty_zombie_health_scale"):GetFloat(),round - 1))
+		local base = GetConVar("nz_difficulty_zombie_health_base"):GetFloat()
+		local scale = GetConVar("nz_difficulty_zombie_health_scale"):GetFloat()
+		
+		return math.Round(base*math.pow(scale,round - 1))
 	end
 
 	function nzCurves.GenerateMaxZombies(round)
-		return math.Round(GetConVar("nz_difficulty_zombie_amount_base"):GetInt()*math.pow(round,GetConVar("nz_difficulty_zombie_amount_scale"):GetFloat()))
+		local base = GetConVar("nz_difficulty_zombie_amount_base"):GetInt()
+		local scale = GetConVar("nz_difficulty_zombie_amount_scale"):GetFloat()
+		
+		return math.Round((base + (scale * (#player.GetAllPlaying() - 1))) * round)
 	end
 
 	function nzCurves.GenerateSpeedTable(round)

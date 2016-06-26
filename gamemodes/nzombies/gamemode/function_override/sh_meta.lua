@@ -272,7 +272,7 @@ game.AddAmmoType( {
 	maxsplash = 5
 } )
 
-local ammoids = {}
+local ammoids = ammoids or {}
 hook.Add("InitPostEntity", "nzRegisterAmmoIDs", function()
 	for i = 1, 3 do
 		local id = game.GetAmmoID("nz_weapon_ammo_"..i)

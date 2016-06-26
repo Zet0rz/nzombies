@@ -61,7 +61,7 @@
 			"text"		"Base Zombie amount"
 			"help"		"The base amount of zombies."
 			"type"		"Numeric"
-			"default"	"5"
+			"default"	"6"
 		}
 		7
 		{
@@ -69,7 +69,7 @@
 			"text"		"Zombie amount scale"
 			"help"		"How much the Zombie amount increases each round."
 			"type"		"Numeric"
-			"default"	"1.01"
+			"default"	"0.35"
 		}
 		8
 		{

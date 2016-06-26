@@ -54,10 +54,11 @@ function plyMeta:UnReady()
 end
 
 function plyMeta:DropIn()
-	if GetConVar("nz_round_dropins_allow"):GetBool() == true and !self:IsPlaying() then
+	if GetConVar("nz_round_dropins_allow"):GetBool() and !self:IsPlaying() then
 		self:SetReady( true )
 		self:SetPlaying( true )
 		self:SetTeam( TEAM_PLAYERS )
+		self:RevivePlayer()
 		hook.Call( "OnPlayerDropIn", nzRound, self )
 		if nzRound:GetNumber() == 1 and nzRound:InState(ROUND_PREP) then
 			PrintMessage( HUD_PRINTTALK, self:Nick() .. " is dropping in!" )

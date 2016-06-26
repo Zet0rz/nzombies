@@ -112,6 +112,10 @@ function ENT:Initialize()
 		
 		self.HelmetDamage = 0 -- Used to save how much damage the light has taken
 		self:SetUsingClaw(false)
+		
+		self.NextAction = 0
+		self.NextClawTime = 0
+		self.NextFlameTime = 0
 	end
 
 end
@@ -316,13 +320,15 @@ end
 
 -- This function is run every time a path times out, once every 1 seconds of pathing
 function ENT:OnPathTimeOut()
-	-- 50/50 chance to try either claw or flamethrower
-	if true then --math.random(0,1) == 0 then
+	local target = self:GetTarget()
+	if CurTime() < self.NextAction then return end
+	
+	if math.random(0,5) == 0 and CurTime() > self.NextClawTime then
 		-- Claw
-		if self:IsValidTarget(self:GetTarget()) then
+		if self:IsValidTarget(target) then
 			local tr = util.TraceLine({
 				start = self:GetPos() + Vector(0,50,0),
-				endpos = self:GetTarget():GetPos() + Vector(0,0,50),
+				endpos = target:GetPos() + Vector(0,0,50),
 				filter = self,
 			})
 			
@@ -341,11 +347,39 @@ function ENT:OnPathTimeOut()
 				self:SetClawHook(self.ClawHook)
 				self:SetUsingClaw(true)
 				self.ClawHook:SetPanzer(self)
+				self:SetAngles((target:GetPos() - self:GetPos()):Angle())
+				
+				self.NextAction = CurTime() + math.random(1, 5)
+				self.NextClawTime = CurTime() + math.random(3, 15)
 			end
 		end
-	else
+	elseif CurTime() > self.NextFlameTime then
 		-- Flamethrower
-	
+		if self:IsValidTarget(target) and self:GetPos():DistToSqr(target:GetPos()) <= 75000 then	
+			self:Stop()
+			self:PlaySequenceAndWait("nz_flamethrower_aim")
+			self.loco:SetDesiredSpeed(0)
+			local ang = (target:GetPos() - self:GetPos()):Angle()
+			self:SetAngles(Angle(ang[1], ang[2] + 10, ang[3]))
+			
+			self:StartFlames()
+			local seq = math.random(0,1) == 0 and "nz_flamethrower_loop" or "nz_flamethrower_sweep"
+			local id, dur = self:LookupSequence(seq)
+			self:ResetSequence(id)
+			self:SetCycle(0)
+			self:SetPlaybackRate(1)
+			self:SetVelocity(Vector(0,0,0))
+			
+			self:TimedEvent(dur, function()
+				self.loco:SetDesiredSpeed(self:GetRunSpeed())
+				self:SetSpecialAnimation(false)
+				self:SetBlockAttack(false)
+				self:StopFlames()
+			end)
+			
+			self.NextAction = CurTime() + math.random(1, 5)
+			self.NextFlameTime = CurTime() + math.random(1, 10)
+		end
 	end
 end
 
@@ -540,7 +574,7 @@ function ENT:OnThink()
 					p:SetColor(math.random(30,60), math.random(40,70), math.random(0,50))
 					p:SetStartAlpha(255)
 					p:SetEndAlpha(0)
-					p:SetVelocity(ang:Forward() * -100 + ang:Up()*math.random(-5,5) + ang:Right()*math.random(-5,5))
+					p:SetVelocity(ang:Forward() * -150 + ang:Up()*math.random(-5,5) + ang:Right()*math.random(-5,5))
 					p:SetLifeTime(0.25)
 
 					p:SetDieTime(math.Rand(0.75, 1.5))
@@ -560,6 +594,10 @@ function ENT:OnThink()
 					if self.GrabbedPlayer:GetPos():DistToSqr(self:GetPos()) > 10000 then
 						self:ReleasePlayer()
 						self:StopFlames()
+						self.loco:SetDesiredSpeed(self:GetRunSpeed())
+						self:SetSpecialAnimation(false)
+						self:SetBlockAttack(false)
+						self:SetStop(false)
 					else
 						local dmg = DamageInfo()
 						dmg:SetAttacker(self)
@@ -571,13 +609,18 @@ function ENT:OnThink()
 						self.GrabbedPlayer:Ignite(1, 0)
 					end
 				else
-					local tr = util.TraceLine({
+					local tr = util.TraceHull({
 						start = pos,
-						endpos = pos - ang:Forward()*40,
+						endpos = pos - ang:Forward()*150,
 						filter = self,
-						mask = MASK_NPCSOLID,
+						--mask = MASK_SHOT,
+						mins = Vector( -5, -5, -10 ),
+						maxs = Vector( 5, 5, 10 ),
 					})
-					if IsValid(tr.Entity) and self:IsValidTarget(tr.Entity) then
+					
+					debugoverlay.Line(pos, pos - ang:Forward()*150)
+					
+					if self:IsValidTarget(tr.Entity) then
 						local dmg = DamageInfo()
 						dmg:SetAttacker(self)
 						dmg:SetInflictor(self)
@@ -585,7 +628,7 @@ function ENT:OnThink()
 						dmg:SetDamageType(DMG_BURN)
 						
 						tr.Entity:TakeDamageInfo(dmg)
-						tr.Entity:Ignite(1, 0)
+						tr.Entity:Ignite(2, 0)
 					end
 				end
 			end
@@ -604,6 +647,8 @@ function ENT:OnThink()
 end
 
 function ENT:GrabPlayer(ply)
+	if CLIENT then return end
+	
 	self:SetBodygroup(2,0)
 	self:SetUsingClaw(false)
 	
@@ -623,6 +668,9 @@ function ENT:GrabPlayer(ply)
 		self:SetCycle(0)
 		self:StartFlames()
 	else
+		self.loco:SetDesiredSpeed(self:GetRunSpeed())
+		self:SetSpecialAnimation(false)
+		self:SetBlockAttack(false)
 		self:SetStop(false)
 	end
 end

@@ -34,47 +34,51 @@ function ENT:Initialize()
 end
 
 function ENT:Launch(dir)
-	self:SetLocalVelocity(dir * 200)
+	self:SetLocalVelocity(dir * 300)
 	self:SetAngles((dir*-1):Angle())
 	self:SetSequence(self:LookupSequence("anim_close"))
+	
+	self.AutoReturnTime = CurTime() + 5
 end
 
-function ENT:Grab(ply, pos) -- Return with player
+function ENT:Grab(ply, pos) -- Pos is used for clients who may not have the Panzer valid yet
 	if !IsValid(ply) then return end
+	
+	self.HasGrabbed = true
 	
 	local panzer = self:GetPanzer()
 	local speed = 200
-	local pos = pos or panzer:GetAttachment(panzer:LookupAttachment("clawlight")).Pos
-	self.plyindex = ply:EntIndex()
-	self.GrabbedPlayer = ply
-	self.IsReturning = true
+	local pos = pos or IsValid(panzer) and panzer:GetAttachment(panzer:LookupAttachment("clawlight")).Pos
 	
+	self.GrabbedPlayer = ply
 	local breaktime = CurTime() + 10
-	hook.Add("SetupMove", "PanzerGrab"..self.plyindex, function(pl, mv, cmd)
+	local index = self:EntIndex()
+	
+	hook.Add("SetupMove", "PanzerGrab"..index, function(pl, mv, cmd)
 		if !IsValid(ply) then self:Release() end
+		
 		if pl == ply then
 			local dir = (pos - (pl:GetPos() + Vector(0,0,50))):GetNormalized()
 			mv:SetVelocity(dir * speed)
 			
-			if !IsValid(panzer) or !IsValid(self) then
-				hook.Remove("SetupMove", "PanzerGrab"..self.plyindex)
+			if !IsValid(panzer) or !IsValid(Entity(index)) then
+				hook.Remove("SetupMove", "PanzerGrab"..index)
 			else
 				local dist = (pl:GetPos() + Vector(0,0,50)):Distance(pos)
 				if dist < 25 then
-					self:Release(pl, true)
+					self:Reattach()
 				end
 			end
 			
 			if mv:GetVelocity():Length() > 100 then -- Keep a speed over 100
 				breaktime = CurTime() + 3 -- Then we keep delaying when to "break" the hook
 			elseif CurTime() > breaktime then -- But if you haven't been over 100 speed for the time
-				self:Release(ply) -- Break the hook!				
+				self:Release() -- Break the hook!				
 			end
 			
 			if SERVER then
 				self:SetPos(pl:GetPos() + Vector(0,0,50))
 			end
-			--return
 		end
 	end)
 	
@@ -88,30 +92,28 @@ function ENT:Grab(ply, pos) -- Return with player
 		
 		self:SetSequence(self:LookupSequence("anim_open"))
 	end
+	
 end
 
-function ENT:Release(ply, catch) -- Release held player and return	
-	ply = ply or self.GrabbedPlayer
-	local index = self.plyindex or IsValid(self.GrabbedPlayer) and self.GrabbedPlayer:EntIndex()
-	
-	if index then
-		hook.Remove("SetupMove", "PanzerGrab"..index)
-	end
-	
-	if SERVER then
-		if IsValid(ply) then
+function ENT:Release()
+	if IsValid(self.GrabbedPlayer) then
+		hook.Remove("SetupMove", "PanzerGrab"..self:EntIndex())
+		
+		if SERVER then
 			net.Start("nz_panzer_grab")
 				net.WriteBool(false)
 				net.WriteEntity(self)
-			net.Send(ply)
-		end
-	
-		if !catch then
+			net.Send(self.GrabbedPlayer)
+			
+			self:SetSequence(self:LookupSequence("anim_open"))
 			self:Return()
-		else
-			local panzer = self:GetPanzer()
-			panzer:GrabPlayer(ply)
-			self:Remove()
+		end
+	else
+		if SERVER then
+			net.Start("nz_panzer_grab")
+				net.WriteBool(false)
+				net.WriteEntity(self)
+			net.Broadcast()
 		end
 	end
 end
@@ -127,17 +129,17 @@ if CLIENT then
 			if grab then
 				ent:Grab(LocalPlayer(), pos)
 			else
-				ent:Release(LocalPlayer())
+				ent:Release()
 			end
 		end
 	end)
 end
 
-function ENT:Return(clean) -- Return without player
+function ENT:Return() -- Emptyhanded return - Grab is with player
+	self.HasGrabbed = true
+
 	local panzer = self:GetPanzer()
 	if !IsValid(panzer) then self:Remove() return end
-	
-	if clean then panzer:GrabPlayer() return end
 
 	self:SetMoveType(MOVETYPE_FLY)
 	self:SetSolid(SOLID_NONE)
@@ -148,12 +150,20 @@ function ENT:Return(clean) -- Return without player
 	local att = panzer:LookupAttachment("clawlight")
 	local pos = att and panzer:GetAttachment(att).Pos or panzer:GetPos()
 	self:SetLocalVelocity((pos - self:GetPos()):GetNormalized() * 1000)
-	self.IsReturning = true
+end
+
+function ENT:Reattach(removed)
+	if !removed then self:Remove() end
+	
+	local panzer = self:GetPanzer()
+	if !IsValid(panzer) then return end
+	
+	panzer:GrabPlayer(self.GrabbedPlayer)
 end
 
 function ENT:StartTouch(ent)
 	local panzer = self:GetPanzer()
-	if IsValid(panzer) and !self.IsReturning then
+	if IsValid(panzer) and !self.HasGrabbed then
 		if ent:IsPlayer() and panzer:IsValidTarget(ent) then
 			self:Grab(ent)
 		elseif !IsValid(self.GrabbedPlayer) then
@@ -164,11 +174,6 @@ function ENT:StartTouch(ent)
 	else
 		self:Remove()
 	end
-end
-
-function ENT:PhysicsCollide(data, phys)
-	--print("Collided!")
-	--print(data.HitEntity)
 end
 
 if CLIENT then
@@ -193,22 +198,25 @@ end
 
 
 function ENT:Think()
-	if SERVER and self.IsReturning then
-		local panzer = self:GetPanzer()
-		if !IsValid(panzer) then self:Remove() return end
-		
-		if !IsValid(self.GrabbedPlayer) and self:GetPos():DistToSqr(panzer:GetAttachment(panzer:LookupAttachment("clawlight")).Pos) <= 10000 then
-			self:Release()
-			panzer:GrabPlayer()
-			self:Remove()
-		end
-		
-		if IsValid(panzer) and self.GrabbedPlayer and !panzer:IsValidTarget(self.GrabbedPlayer) then
-			self:Release(self.GrabbedPlayer)
+	if SERVER then
+		if self.HasGrabbed then
+			local panzer = self:GetPanzer()
+			if !IsValid(panzer) then self:Remove() return end
+			
+			if !IsValid(self.GrabbedPlayer) and self:GetPos():DistToSqr(panzer:GetAttachment(panzer:LookupAttachment("clawlight")).Pos) <= 10000 then
+				self:Reattach()
+			end
+			
+			if IsValid(panzer) and self.GrabbedPlayer and !panzer:IsValidTarget(self.GrabbedPlayer) then
+				self:Release()
+			end
+		elseif CurTime() > self.AutoReturnTime then 
+			self:Return()
 		end
 	end
 end
 
 function ENT:OnRemove()
 	self:Release()
+	self:Reattach(true)
 end
