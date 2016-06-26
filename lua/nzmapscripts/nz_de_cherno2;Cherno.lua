@@ -3,10 +3,16 @@ local mapscript = {}
 function mapscript.OnGameBegin()
 	mapscript.genButton = ents.FindByName("GenButton01")[1]
     mapscript.IsElectricityOn = false
+    engine.LightStyle( 0, "d" )
+    for k, v in pairs( player.GetAll() ) do
+        v:SendLua( "render.RedownloadAllLightmaps()" )
+    end
 end
 
 function mapscript.RoundStart()
-
+    for k, v in pairs player.GetAll() do
+        v:AllowFlashlight( IsElec() )
+    end
 end
 
 function mapscript.RoundThink()
@@ -18,10 +24,8 @@ function mapscript.RoundEnd()
 end
 
 function mapscript.ElectricityOn()
-
 	mapscript.genButton:Fire("Press")
 	mapscript.IsElectricityOn = true
-
 end
 
 function mapscript.ElectricityOff()
@@ -30,8 +34,5 @@ function mapscript.ElectricityOff()
         mapscript.IsElectricityOn = false
     end
 end
-
-mapscript.TestPrint = "v0.0"
-local testprint2 = "This is cool"
 
 return mapscript
