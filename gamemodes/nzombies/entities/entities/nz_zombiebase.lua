@@ -183,6 +183,8 @@ function ENT:Initialize()
 		self:SetBodygroup( i-1, math.random(0, self:GetBodygroupCount(i-1) - 1))
 	end
 	self:SetSkin( math.random(self:SkinCount()) - 1 )
+	
+	self.ZombieAlive = true
 
 end
 
@@ -588,6 +590,10 @@ function ENT:OnZombieDeath()
 	self:BecomeRagdoll(dmgInfo)
 end
 
+function ENT:Alive()
+	return self.ZombieAlive
+end
+
 function ENT:OnKilled(dmgInfo)
 
 	if dmgInfo then
@@ -606,6 +612,8 @@ function ENT:OnKilled(dmgInfo)
 			self:SetDecapitated(true)
 		end
 	end
+	
+	self.ZombieAlive = false
 
 	hook.Call("OnZombieKilled", GAMEMODE, self, dmgInfo)
 
@@ -1040,7 +1048,7 @@ function ENT:Flames( state )
 	end
 end
 
-function ENT:Explode( dmg, suicide)
+function ENT:Explode(dmg, suicide)
 
 	suicide = suicide or true
 
