@@ -78,43 +78,48 @@ function Spawner:UpdateWeights()
 	for _, spawn in pairs(self.tSpawns) do
 		-- reset
 		spawn:SetSpawnWeight(0)
+		local weight = math.huge
 		for _, ply in pairs(plys) do
 			local dist = spawn:GetPos():Distance(ply:GetPos())
-			spawn:SetSpawnWeight(spawn:GetSpawnWeight() + dist)
+			if dist < weight then
+				weight = dist
+			end
 		end
-		spawn:SetSpawnWeight(spawn:GetSpawnWeight() / #plys)
+		spawn:SetSpawnWeight(weight)
 	end
 end
 
 function Spawner:UpdateValidSpawns()
 
+	if self.iZombiesToSpawn <= 0 then return end
+
 	-- reset
 	self.tValidSpawns = {}
 
 	local average = self:GetAverageWeight()
+	local total = 0
 	for _, spawn in pairs(self.tSpawns) do
 		-- reset the zombiesToSpawn value on every Spawnpoint
 		spawn:SetZombiesToSpawn(0)
 		if spawn:GetSpawnWeight() <= average then
 			if spawn.link == nil or nzDoors.OpenedLinks[tonumber(spawn.link)] then
 				table.insert(self.tValidSpawns, spawn)
+				total = total + spawn:GetSpawnWeight()
 			end
 		end
 	end
 	table.sort(self.tValidSpawns, function(a, b) return a:GetSpawnWeight() < b:GetSpawnWeight() end )
 
-	-- distri bute zombies to spawn on to the valid spawnpoints
-	local zombiesToSpawn = self.iZombiesToSpawn / 2
+	-- distribute zombies to spawn on to the valid spawnpoints
+	local zombiesToSpawn = self.iZombiesToSpawn
 	local totalDistributed = 0
 	for k, vspawn in pairs(self.tValidSpawns) do
-		if k < #self.tValidSpawns then
-			vspawn:SetZombiesToSpawn(math.ceil(zombiesToSpawn))
-			totalDistributed = totalDistributed + math.ceil(zombiesToSpawn)
-			zombiesToSpawn = math.floor(zombiesToSpawn / 2)
-		else
-			-- add the remaining zombies to the last spawn in list
-			vspawn:SetZombiesToSpawn(self.iZombiesToSpawn - totalDistributed)
+		local toSpawn = math.Round((total - vspawn:GetSpawnWeight()) / total)
+		if zombiesToSpawn - totalDistributed - toSpawn <= 0 then
+			toSpawn = zombiesToSpawn - totalDistributed
 		end
+		vspawn:SetZombiesToSpawn(toSpawn)
+		totalDistributed = totalDistributed + toSpawn
 	end
 end
 
@@ -138,5 +143,8 @@ end
 
 function Spawner:Remove()
 	timer.Remove("nzZombieSpawnThink" .. self.sUniqueName)
+	for _, spawn in pairs(self.tSpawns) do
+		spawn:SetSpawner(nil)
+	end
 	self = nil
 end

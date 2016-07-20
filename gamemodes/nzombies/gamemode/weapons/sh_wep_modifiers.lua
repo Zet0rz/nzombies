@@ -34,7 +34,7 @@ end
 -- Let's add the base perks!
 -- Dtap2 applies the same modifier, the extra bullets are handled in the EntityFireBullets hook
 nzWeps:AddWeaponModifier("dtap", function(wep)
-	if wep:IsFAS2() and wep.dtap != true then
+	if wep:NZPerkSpecialTreatment() and wep.dtap != true then
 		print("Applying Dtap to: " .. wep.ClassName)
 		local data = {}
 		//Normal
@@ -59,7 +59,7 @@ nzWeps:AddWeaponModifier("dtap", function(wep)
 		-- In this case it's because we handle it differently via function_override
 	end
 end, function(wep)
-	if wep:IsFAS2() and wep.dtap then
+	if wep:NZPerkSpecialTreatment() and wep.dtap then
 		print("Removing Dtap from: " .. wep.ClassName)
 		local data = {}
 		//Normal
@@ -83,7 +83,7 @@ end)
 
 -- Speed Cola
 nzWeps:AddWeaponModifier("speed", function(wep)
-	if wep:IsFAS2() and wep.speed != true then
+	if wep:NZPerkSpecialTreatment() and wep.speed != true then
 		print("Applying Speed to: " .. wep.ClassName)
 		local data = {}
 		//Normal
@@ -120,10 +120,24 @@ nzWeps:AddWeaponModifier("speed", function(wep)
 				wep[k] = val
 			end
 		end
+		
+		if wep.ReloadTimes then
+			wep.old_ReloadTimes = table.Copy(wep.ReloadTimes)
+			for k,v in pairs(wep.ReloadTimes) do
+				if type(v) == "table" then
+					for k2,v2 in pairs(v) do
+						v[k2] = v2/2
+					end
+				elseif type(v) == "number" then
+					v = v/2
+				end
+			end
+		end
+		
 		wep["speed"] = true
 	else return true end
 end, function(wep)
-	if wep:IsFAS2() and wep.speed then
+	if wep:NZPerkSpecialTreatment() and wep.speed then
 		print("Removing Speed from: " .. wep.ClassName)
 		local data = {}
 		//Normal
@@ -157,6 +171,12 @@ end, function(wep)
 				wep["old_"..k] = nil
 			end
 		end
+		
+		if wep.ReloadTimes and wep.old_ReloadTimes then
+			wep.ReloadTimes = wep.old_ReloadTimes
+			wep.old_ReloadTimes = nil
+		end
+		
 		wep["speed"] = nil
 	else return true end
 end)

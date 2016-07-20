@@ -55,6 +55,16 @@ function nzElec:Reset(nochat)
 		v:SetSwitch(false)
 	end
 	
+	-- Turn off all perk machines
+	for k,v in pairs(ents.FindByClass("perk_machine")) do
+		v:TurnOff()
+	end
+	
+	-- And Wunderfizz Machines
+	for k,v in pairs(ents.FindByClass("wunderfizz_machine")) do
+		v:TurnOff()
+	end
+	
 	self:SendSync()
 	
 	if !nochat then

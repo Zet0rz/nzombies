@@ -49,28 +49,43 @@ function GM:EntityTakeDamage(zombie, dmginfo)
 	if zombie.Alive and zombie:Alive() and zombie:Health() < 0 then zombie:SetHealth(1) end
 
 	if !dmginfo:GetAttacker():IsPlayer() then return end
-	if IsValid(zombie) and nzConfig.ValidEnemies[zombie:GetClass()] and nzConfig.ValidEnemies[zombie:GetClass()].Valid then
-		local hitgroup = util.QuickTrace( dmginfo:GetDamagePosition( ), dmginfo:GetDamagePosition( ) ).HitGroup
+	if IsValid(zombie) then
+		if nzConfig.ValidEnemies[zombie:GetClass()] and nzConfig.ValidEnemies[zombie:GetClass()].Valid then
+			if zombie.IsInvulnerable and zombie:IsInvulnerable() then return true end
+			local hitgroup = util.QuickTrace( dmginfo:GetDamagePosition( ), dmginfo:GetDamagePosition( ) ).HitGroup
 
-		if nzPowerUps:IsPowerupActive("insta") then
-			dmginfo:SetDamage(zombie:Health())
-			nzEnemies:OnEnemyKilled(zombie, dmginfo:GetAttacker(), dmginfo, hitgroup)
-		return end
+			if nzPowerUps:IsPowerupActive("insta") then
+				dmginfo:SetDamage(zombie:Health())
+				nzEnemies:OnEnemyKilled(zombie, dmginfo:GetAttacker(), dmginfo, hitgroup)
+			return end
 
 
-		nzConfig.ValidEnemies[zombie:GetClass()].ScaleDMG(zombie, hitgroup, dmginfo)
+			nzConfig.ValidEnemies[zombie:GetClass()].ScaleDMG(zombie, hitgroup, dmginfo)
 
-		--  Pack-a-Punch doubles damage
-		if dmginfo:GetAttacker():GetActiveWeapon().pap then dmginfo:ScaleDamage(2) end
+			--  Pack-a-Punch doubles damage
+			if dmginfo:GetAttacker():GetActiveWeapon().pap then dmginfo:ScaleDamage(2) end
 
-		if zombie:Health() > dmginfo:GetDamage() then
-			if zombie.HasTakenDamageThisTick then return end
-			nzConfig.ValidEnemies[zombie:GetClass()].OnHit(zombie, dmginfo, hitgroup)
-			zombie.HasTakenDamageThisTick = true
-			--  Prevent multiple damages in one tick (FA:S 2 Bullet penetration makes them hit 1 zombie 2-3 times per bullet)
-			timer.Simple(0, function() if IsValid(zombie) then zombie.HasTakenDamageThisTick = false end end)
-		else
-			nzEnemies:OnEnemyKilled(zombie, dmginfo:GetAttacker(), dmginfo, hitgroup)
+			if zombie:Health() > dmginfo:GetDamage() then
+				if zombie.HasTakenDamageThisTick then return end
+				nzConfig.ValidEnemies[zombie:GetClass()].OnHit(zombie, dmginfo, hitgroup)
+				zombie.HasTakenDamageThisTick = true
+				--  Prevent multiple damages in one tick (FA:S 2 Bullet penetration makes them hit 1 zombie 2-3 times per bullet)
+				timer.Simple(0, function() if IsValid(zombie) then zombie.HasTakenDamageThisTick = false end end)
+			else
+				nzEnemies:OnEnemyKilled(zombie, dmginfo:GetAttacker(), dmginfo, hitgroup)
+			end
+		elseif zombie.NZBossType then
+			if zombie.IsInvulnerable and zombie:IsInvulnerable() then return true end -- Bosses can still be invulnerable
+			
+			local data = nzRound.BossData[zombie.NZBossType] -- Just in case it was switched mid-game, use the id stored on zombie
+			if data then -- If we got the boss data
+				local hitgroup = util.QuickTrace( dmginfo:GetDamagePosition(), dmginfo:GetDamagePosition() ).HitGroup
+				if zombie:Health() > dmginfo:GetDamage() then
+					if data.onhit then data.onhit(zombie, dmginfo:GetAttacker(), dmginfo, hitgroup) end
+				else
+					if data.deathfunc then data.deathfunc(zombie, dmginfo:GetAttacker(), dmginfo, hitgroup) end
+				end
+			end
 		end
 	end
 end

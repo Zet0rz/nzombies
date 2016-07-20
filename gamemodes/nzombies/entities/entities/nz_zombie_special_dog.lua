@@ -124,6 +124,7 @@ function ENT:OnSpawn()
 	effectData:SetEntity(nil)
 	util.Effect("lightning_prespawn", effectData)
 	self:SetNoDraw(true)
+	self:SetInvulnerable(true)
 
 	timer.Simple(1.4, function()
 		if IsValid(self) then
@@ -142,6 +143,7 @@ function ENT:OnSpawn()
 			self:SetStop(false)
 
 			self:SetTarget(self:GetPriorityTarget())
+			self:SetInvulnerable(nil)
 		end
 	end)
 

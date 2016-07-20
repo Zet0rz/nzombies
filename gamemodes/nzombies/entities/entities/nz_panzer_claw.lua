@@ -34,7 +34,7 @@ function ENT:Initialize()
 end
 
 function ENT:Launch(dir)
-	self:SetLocalVelocity(dir * 300)
+	self:SetLocalVelocity(dir * 500)
 	self:SetAngles((dir*-1):Angle())
 	self:SetSequence(self:LookupSequence("anim_close"))
 	

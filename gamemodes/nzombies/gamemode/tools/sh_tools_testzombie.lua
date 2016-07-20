@@ -84,6 +84,9 @@ nz.Tools.Functions.CreateTool("testzombie", {
 		for k,v in pairs(nzConfig.ValidEnemies) do
 			drop:AddChoice(k, k, data.type == k and true or false)
 		end
+		for k,v in pairs(nzRound.BossData) do
+			drop:AddChoice(v, v, data.type == v and true or false)
+		end
 		
 		local function UpdateData()
 			nz.Tools.Functions.SendData( data, "testzombie" )

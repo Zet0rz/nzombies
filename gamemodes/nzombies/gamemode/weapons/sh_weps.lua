@@ -19,6 +19,11 @@ end
 function wepMeta:IsCW2()
 	if self.Category == "CW 2.0" or self.Base == "cw_base" then
 		return true
+	else
+		local base = weapons.Get(self.Base)
+		if base and base.Base == "cw_base" then 
+			return true
+		end
 	end
 
 	return false

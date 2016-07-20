@@ -41,3 +41,7 @@ if CLIENT then
 		end
 	end
 end
+
+hook.Add("PhysgunPickup", "nzInvisWallNotPickup", function(ply, wall)
+	if wall:GetClass() == "invis_wall" then return false end
+end)

@@ -66,7 +66,7 @@ function nzRandomBox.DecideWep(ply)
 
 	--Add all guns with no model or wonder weapons that are out to the blacklist
 	for k,v in pairs( weapons.GetList() ) do
-		if !blacklist[v.ClassName] then
+		if !blacklist[v.ClassName] and !v.NZPreventBox then
 			if v.WorldModel == nil or nzWeps:IsWonderWeaponOut(v.ClassName) then
 				blacklist[v.ClassName] = true
 			end

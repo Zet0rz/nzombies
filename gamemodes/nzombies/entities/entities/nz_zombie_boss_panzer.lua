@@ -100,6 +100,9 @@ function ENT:Initialize()
 
 	self:StatsInitialize()
 	self:SpecialInit()
+	
+	-- Fallback for buggy tool
+	if !self:GetRunSpeed() then self:SetRunSpeed(150) end
 
 	if SERVER then
 		self.loco:SetDeathDropHeight( self.DeathDropHeight )
@@ -162,7 +165,7 @@ function ENT:OnSpawn()
 		start = self:GetPos() + Vector(0,0,500),
 		endpos = self:GetPos(),
 		filter = self,
-		mask = MASK_NPCSOLID,
+		mask = MASK_SOLID_BRUSHONLY,
 	})
 	if tr.Hit then seq = "nz_entry_instant" end
 	local _, dur = self:LookupSequence(seq)
@@ -170,6 +173,21 @@ function ENT:OnSpawn()
 	-- play emerge animation on spawn
 	-- if we have a coroutine else just spawn the zombie without emerging for now.
 	if coroutine.running() then
+		
+		local pos = self:GetPos() + (seq == "nz_entry_instant" and Vector(0,0,100) or Vector(0,0,450))
+		
+		local effectData = EffectData()
+		effectData:SetStart( pos )
+		effectData:SetOrigin( pos )
+		effectData:SetMagnitude(dur)
+		util.Effect("panzer_spawn_tp", effectData)
+		
+		--[[effectData = EffectData()
+		effectData:SetStart( pos + Vector(0, 0, 1000) )
+		effectData:SetOrigin( pos )
+		effectData:SetMagnitude( 0.75 )
+		util.Effect("lightning_strike", effectData)]]
+		
 		self:TimedEvent(dur - 2.1, function()
 			--dust cloud
 			local effectData = EffectData()
@@ -206,7 +224,7 @@ function ENT:OnZombieDeath(dmgInfo)
 			effectData:SetStart( self:GetPos() )
 			effectData:SetOrigin( self:GetPos() )
 			effectData:SetMagnitude(2)
-			util.Effect("HelicopterMegaBomb", effectData)
+			util.Effect("Explosion", effectData)
 		end
 	end)
 

@@ -443,9 +443,10 @@ function ENT:OnBarricadeBlocking( barricade )
 			self:SetAngles(Angle(0,(barricade:GetPos()-self:GetPos()):Angle()[2],0))
 			local seq = self.AttackSequences[math.random( #self.AttackSequences )].seq
 			local dur = self:SequenceDuration(self:LookupSequence(seq))
+			self:SetAttacking(true)
 			self:PlaySequenceAndWait(seq, 1)
 			self:SetLastAttack(CurTime())
-			self:SetAttacking(true)
+			self:SetAttacking(false)
 			self:UpdateSequence()
 			if coroutine.running() then
 				coroutine.wait(2 - dur)
@@ -469,6 +470,8 @@ function ENT:OnBarricadeBlocking( barricade )
 				self.BarricadeJumpTries = self.BarricadeJumpTries + 1
 				-- Otherwise they'd get continuously stuck on slightly bigger props :(
 			end
+		else
+			self:SetAttacking(false)
 		end
 	end
 end
@@ -1053,6 +1056,7 @@ function ENT:Explode(dmg, suicide)
 	suicide = suicide or true
 
 	local ex = ents.Create("env_explosion")
+	if !IsValid(ex) then return end
 	ex:SetPos(self:GetPos())
 	ex:SetKeyValue( "iMagnitude", tostring( dmg ) )
 	ex:SetOwner(self)
@@ -1352,4 +1356,12 @@ end
 
 function ENT:IsTimedOut()
 	return self:GetTimedOut()
+end
+
+function ENT:SetInvulnerable(bool)
+	self.Invulnerable = bool
+end
+
+function ENT:IsInvulnerable()
+	return self.Invulnerable
 end
