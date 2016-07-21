@@ -1,0 +1,1 @@
+nzEffects = nzEffects or {}
