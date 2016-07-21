@@ -73,16 +73,6 @@ function nzPowerUps:Nuke(pos, nopoints, noeffect)
 	end
 end
 
--- Add the sound so we can stop it again
-sound.Add( {
-	name = "nz_firesale_jingle",
-	channel = CHAN_STATIC,
-	volume = 1.0,
-	level = 75,
-	pitch = { 100, 100 },
-	sound = "nz/randombox/fire_sale.wav"
-} )
-
 function nzPowerUps:FireSale()
 	--print("Running")
 	-- Get all spawns
@@ -107,10 +97,6 @@ function nzPowerUps:FireSale()
 				print("No random box spawns have been set.")
 			end
 		end
-	end
-	
-	for k,v in pairs(ents.FindByClass("random_box")) do
-		v:EmitSound("nz_firesale_jingle")
 	end
 end
 
