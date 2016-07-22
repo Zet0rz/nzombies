@@ -116,14 +116,3 @@ end, function(panzer, killer, dmginfo, hitgroup)
 		attacker:GivePoints(500) -- Give killer 500 points if not downed
 	end
 end) -- No onhit function, we don't give points on hit for this guy
-
-if file.Exists("nz_zombie_boss_napalm","LUA") then
-	nzRound:AddBossType("Napalm Zombie", "nz_zombie_boss_napalm", true, function()
-		nzRound:SetNextBossRound(7) -- Always spawn in at round 7.
-	end, function(panzer, killer, dmginfo, hitgroup) -- No need for health function, the nextbot handles it.
-		nzRound:SetNextBossRound(nzRound:GetNumber() + math.random(2,3))
-		if IsValid(attacker) and attacker:IsPlayer() and attacker:GetNotDowned() then
-			attacker:GivePoints(750) -- Give killer 500 points if not downed
-		end
-	end) -- No onhit function, we don't give points on hit for this guy
-end
