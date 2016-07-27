@@ -12,8 +12,8 @@ end
 
 function ENT:Initialize()
 	if SERVER then
-		self:SetModel("models/weapons/w_eq_fraggrenade_thrown.mdl")
-		self:PhysicsInitSphere(2, "solidmetal")
+		self:SetModel("models/weapons/v_grenade.mdl")
+		self:PhysicsInitSphere(2, "grenade")
 		self:SetMoveType(MOVETYPE_VPHYSICS)
 		self:SetCollisionGroup(COLLISION_GROUP_NONE)
 		self:SetSolid(SOLID_VPHYSICS)
