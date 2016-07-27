@@ -21,6 +21,16 @@ function nzRound:SetZombiesMax( num )
 	self.ZombiesMax = num
 end
 
+function nzRound:GetZombiesToSpawn()
+	return self.ZombiesToSpawn
+end
+function nzRound:SetZombiesToSpawn( num )
+	self.ZombiesToSpawn = num
+end
+function nzRound:GetZombiesSpawned()
+	return self.ZombiesMax - self.ZombiesToSpawn
+end
+
 function nzRound:GetZombieHealth()
 	return self.ZombieHealth
 end

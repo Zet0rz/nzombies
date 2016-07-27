@@ -107,9 +107,20 @@ function MenuToolBar:Init()
 	end
 
 	local spectate = self:AddEntry( "SPECTATE", "medium", "say", "/spectate" )
+	
+	local creative = self:AddEntry( "CREATIVE MODE", "medium", "say", "/create" )
+	function creative:Think()
+		if LocalPlayer():IsInCreative() then
+			self:SetText("SURVIVAL MODE")
+		else
+			self:SetText("CREATIVE MODE")
+		end
+	end
 
-	self:AddEntry( "WORKSHOP PAGE", "medium", function() gui.OpenURL( "http://steamcommunity.com" ) end )
-
+	self:AddEntry( "WORKSHOP PAGE", "medium", function() gui.OpenURL( "http://steamcommunity.com/sharedfiles/filedetails/?id=675138912" ) end )
+	
+	self:AddEntry( "Press F1 to toggle this menu", "small", function() RunConsoleCommand("nz_settings") end )
+	
 	--Settings Button / Close button
 	if LocalPlayer():IsSuperAdmin() then
 		self.SettingsButton = vgui.Create( "DImageButton", self )
@@ -150,8 +161,9 @@ function MenuToolBar:Init()
 
 end
 
+local col = Color( 130, 45, 45, 255 ) 
 function MenuToolBar:Paint( w, h )
-	draw.RoundedBox( 0, 0, 0, w, h, Color( 130, 45, 45, 255 ) )
+	draw.RoundedBox( 0, 0, 0, w, h, col )
 	--draw.RoundedBox( 0, 0, h-5, w, 5, Color( 255, 255, 255, 255 ) )
 end
 
@@ -219,35 +231,59 @@ vgui.Register( "NZMainMenuToolBarEntry", MenuToolBarEntry, "DButton")
 
 local MenuSettingsPanel = {}
 
-function MenuSettingsPanel:Init()
-	self:SetPos( ScrW() - 256, 80 )
-	self:SetSize( 256, 256)
-	self.List = vgui.Create( "NZMainMenuSettingsList", self )
-end
+local white = Color(255,255,255,255)
+local green = Color(230,255,230,255)
 
-function MenuSettingsPanel:Paint( w, h )
-	draw.RoundedBox( 0, 0, 0, w, h, Color( 255, 255, 255, 255 ) )
-end
-
-vgui.Register( "NZMainMenuSettingsPanel", MenuSettingsPanel, "DScrollPanel" )
-
-local MenuSettingsList = {}
-
-function MenuSettingsList:Init()
+local function MenuSettingsListInit(self)
 	self:SetWide( 256 )
-	local btnMode = self:AddButton( "Creative Mode", function() RunConsoleCommand( "say", "/create" ) RunConsoleCommand( "nz_settings" ) end )
+	local btnMode = self:AddButton( "< Toggle Creative Mode ...", "say", "/create" )
 	function btnMode:Think()
-		if player_manager.GetPlayerClass( LocalPlayer() ) == "player_create" then
-			self:SetText( "Return to Survival Mode")
+		if self:IsHovered() or IsValid(self.ExtendedList) and (self.ExtendedList:IsHovered() or self.ExtendedList:IsChildHovered()) then
+			if !IsValid(self.ExtendedList) then
+				self.ExtendedList = vgui.Create("DScrollPanel", self:GetParent():GetParent():GetParent():GetParent())
+				function self.ExtendedList:Paint( w, h )
+					draw.RoundedBox( 0, 0, 0, w, h, white )
+				end
+				
+				self.ExtendedList:SetPos( ScrW() - 512, 80 )
+				self.ExtendedList:SetSize( 256, math.Clamp(#player.GetAll() * 42, 0, 1024) )
+				self.ExtendedList.PlayerList = vgui.Create("NZMainMenuSettingsList", self.ExtendedList)
+				self.ExtendedList.PlayerList:SetWide( 256 )
+				
+				for k,v in pairs(player.GetAll()) do
+					local plybtn = self.ExtendedList.PlayerList:AddButton( v:Nick(), "say", "/create "..v:Nick())
+					function plybtn:Paint( w, h )
+						draw.RoundedBox( 0, 0, 1, w, h-1, v:IsInCreative() and green or white )
+					end
+				end
+			end
 		else
-			self:SetText( "Creative Mode")
+			if IsValid(self.ExtendedList) then
+				self.ExtendedList:Remove()
+			end
 		end
 	end
+	
 	self:AddButton( "Load Map config", "say", "/load" )
 	self:AddButton( "Save Map config", "say", "/save" )
 	self:AddButton( "Generate Navmesh", "say", "/generate" )
 	self:AddButton( "Cheats (Beta)", "say", "/cheats" )
 end
+
+function MenuSettingsPanel:Init()
+	self:SetPos( ScrW() - 256, 80 )
+	self:SetSize( 256, 256)
+	self.List = vgui.Create( "NZMainMenuSettingsList", self )
+	MenuSettingsListInit(self.List)
+end
+
+function MenuSettingsPanel:Paint( w, h )
+	draw.RoundedBox( 0, 0, 0, w, h, white )
+end
+
+vgui.Register( "NZMainMenuSettingsPanel", MenuSettingsPanel, "DScrollPanel" )
+
+local MenuSettingsList = {}
 
 function MenuSettingsList:AddButton( lbl, cmd, args )
 	local button = vgui.Create( "DButton", self )
@@ -264,7 +300,22 @@ function MenuSettingsList:AddButton( lbl, cmd, args )
 
 	end
 
-	return self:Add( button )
+	if !self.ButtonContent then self.ButtonContent = {} end
+	local btn = self:Add( button )
+	table.insert(self.ButtonContent, btn)
+	return btn
+end
+
+function MenuSettingsList:Paint( w, h )
+	for k,v in ipairs(self.ButtonContent) do
+		local nextbtn = self.ButtonContent[k + 1]
+		if IsValid(nextbtn) then
+			local x, y = nextbtn:GetPos()
+			local mid = y - 0
+			surface.SetDrawColor(230, 230, 230)
+			surface.DrawLine(20, mid, self:GetWide() - 20, mid)
+		end
+	end
 end
 
 vgui.Register( "NZMainMenuSettingsList", MenuSettingsList, "DListLayout" )

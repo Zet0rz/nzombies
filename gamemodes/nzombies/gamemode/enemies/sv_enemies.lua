@@ -8,3 +8,7 @@ function nzEnemies:TotalAlive()
 
 	return c
 end
+
+function nzEnemies:OnZombieSpawned(zombie, spawnpoint)
+
+end

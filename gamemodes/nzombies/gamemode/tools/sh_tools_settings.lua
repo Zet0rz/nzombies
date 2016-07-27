@@ -32,6 +32,8 @@ nz.Tools.Functions.CreateTool("settings", {
 		valz["Row4"] = data.script or false
 		valz["Row5"] = data.scriptinfo or ""
 		valz["Row6"] = data.gamemodeentities or false
+		valz["Row7"] = data.specialroundtype or "Hellhounds"
+		valz["Row8"] = data.bosstype or "Panzer"
 		valz["RBoxWeps"] = data.RBoxWeps or {}
 
 		local sheet = vgui.Create( "DPropertySheet", frame )
@@ -95,6 +97,37 @@ nz.Tools.Functions.CreateTool("settings", {
 			Row6:SetValue( valz["Row6"] )
 			Row6.DataChanged = function( _, val ) valz["Row6"] = val end
 			Row6:SetTooltip("Sets whether the gamemode should spawn in map entities from other gamemodes, such as ZS.")
+			
+			local Row7 = DProperties:CreateRow( "Map Settings", "Special Round" )
+			Row7:Setup( "Combo" )
+			local found = false
+			for k,v in pairs(nzRound.SpecialData) do
+				if k == valz["Row7"] then
+					Row7:AddChoice(k, k, true)
+					found = true
+				else
+					Row7:AddChoice(k, k, false)
+				end
+			end
+			Row7:AddChoice(" None", "None", !found)
+			Row7.DataChanged = function( _, val ) valz["Row7"] = val end
+			Row7:SetTooltip("Sets what type of special round will appear.")
+			
+			local Row8 = DProperties:CreateRow( "Map Settings", "Boss" )
+			Row8:Setup( "Combo" )
+			local found = false
+			for k,v in pairs(nzRound.BossData) do
+				if k == valz["Row8"] then
+					Row8:AddChoice(k, k, true)
+					found = true
+				else
+					Row8:AddChoice(k, k, false)
+				end
+			end
+			Row8:AddChoice(" None", "None", !found)
+			Row8.DataChanged = function( _, val ) valz["Row8"] = val end
+			Row8:SetTooltip("Sets what type of boss will appear.")
+			
 		end
 		
 		local function UpdateData()
@@ -104,6 +137,8 @@ nz.Tools.Functions.CreateTool("settings", {
 			if !valz["Row4"] then data.script = nil else data.script = valz["Row4"] end
 			if !valz["Row5"] or valz["Row5"] == "" then data.scriptinfo = nil else data.scriptinfo = valz["Row5"] end
 			if !valz["Row6"] or valz["Row6"] == "0" then data.gamemodeentities = nil else data.gamemodeentities = tobool(valz["Row6"]) end
+			if !valz["Row7"] then data.specialroundtype = "Hellhounds" else data.specialroundtype = valz["Row7"] end
+			if !valz["Row8"] then data.bosstype = "Panzer" else data.bosstype = valz["Row8"] end
 			if !valz["RBoxWeps"] or !valz["RBoxWeps"][1] then data.rboxweps = nil else data.rboxweps = valz["RBoxWeps"] end
 			if !valz["WMPerks"] or !valz["WMPerks"][1] then data.wunderfizzperks = nil else data.wunderfizzperks = valz["WMPerks"] end
 			PrintTable(data)
@@ -113,7 +148,7 @@ nz.Tools.Functions.CreateTool("settings", {
 
 		local DermaButton = vgui.Create( "DButton", DProperties )
 		DermaButton:SetText( "Submit" )
-		DermaButton:SetPos( 0, 180 )
+		DermaButton:SetPos( 0, 185 )
 		DermaButton:SetSize( 260, 30 )
 		DermaButton.DoClick = UpdateData
 
@@ -165,10 +200,12 @@ nz.Tools.Functions.CreateTool("settings", {
 			if nzMapping.Settings.rboxweps then
 				for k,v in pairs(nzMapping.Settings.rboxweps) do
 					local wep = weapons.Get(v)
-					if wep.Category and wep.Category != "" then
-						InsertWeaponToList(wep.PrintName and wep.PrintName != "" and wep.PrintName.." ["..wep.Category.."]" or v, v)
-					else
-						InsertWeaponToList(wep.PrintName and wep.PrintName != "" and wep.PrintName.." [No Category]" or v, v)
+					if wep then
+						if wep.Category and wep.Category != "" then
+							InsertWeaponToList(wep.PrintName and wep.PrintName != "" and wep.PrintName.." ["..wep.Category.."]" or v, v)
+						else
+							InsertWeaponToList(wep.PrintName and wep.PrintName != "" and wep.PrintName.." [No Category]" or v, v)
+						end
 					end
 				end
 			else
@@ -207,10 +244,12 @@ nz.Tools.Functions.CreateTool("settings", {
 			wepadd:SetSize( 53, 20 )
 			wepadd.DoClick = function()
 				local v = weapons.Get(wepentry:GetOptionData(wepentry:GetSelectedID()))
-				if v.Category and v.Category != "" then
-					InsertWeaponToList(v.PrintName and v.PrintName != "" and v.PrintName.." ["..v.Category.."]" or v.ClassName, v.ClassName)
-				else
-					InsertWeaponToList(v.PrintName and v.PrintName != "" and v.PrintName.." [No Category]" or v.ClassName, v.ClassName)
+				if v then
+					if v.Category and v.Category != "" then
+						InsertWeaponToList(v.PrintName and v.PrintName != "" and v.PrintName.." ["..v.Category.."]" or v.ClassName, v.ClassName)
+					else
+						InsertWeaponToList(v.PrintName and v.PrintName != "" and v.PrintName.." [No Category]" or v.ClassName, v.ClassName)
+					end
 				end
 				wepentry:SetValue( "Weapon..." )
 			end
@@ -266,16 +305,18 @@ nz.Tools.Functions.CreateTool("settings", {
 					if cat and cat != "" then
 						for k,v in pairs(weplist) do
 							local wep = weapons.Get(k)
-							if wep.Category and wep.Category == cat then
-								if table.HasValue(valz["RBoxWeps"], k) then table.RemoveByValue(valz["RBoxWeps"], k) end
-								weplist[k]:Remove()
-								weplist[k] = nil
-								local num = 0
-								for k,v in pairs(weplist) do
-									v:SetPos(0, num*16)
-									num = num + 1
+							if wep then
+								if wep.Category and wep.Category == cat then
+									if table.HasValue(valz["RBoxWeps"], k) then table.RemoveByValue(valz["RBoxWeps"], k) end
+									weplist[k]:Remove()
+									weplist[k] = nil
+									local num = 0
+									for k,v in pairs(weplist) do
+										v:SetPos(0, num*16)
+										num = num + 1
+									end
+									numweplist = numweplist - 1
 								end
-								numweplist = numweplist - 1
 							end
 						end
 					end
@@ -390,10 +431,12 @@ nz.Tools.Functions.CreateTool("settings", {
 					if nzMapping.Settings.rboxweps then
 						for k,v in pairs(nzMapping.Settings.rboxweps) do
 							local wep = weapons.Get(v)
-							if wep.Category and wep.Category != "" then
-								InsertWeaponToList(wep.PrintName and wep.PrintName != "" and wep.PrintName.." ["..wep.Category.."]" or v, v)
-							else
-								InsertWeaponToList(wep.PrintName and wep.PrintName != "" and wep.PrintName.." [No Category]" or v, v)
+							if wep then
+								if wep.Category and wep.Category != "" then
+									InsertWeaponToList(wep.PrintName and wep.PrintName != "" and wep.PrintName.." ["..wep.Category.."]" or v, v)
+								else
+									InsertWeaponToList(wep.PrintName and wep.PrintName != "" and wep.PrintName.." [No Category]" or v, v)
+								end
 							end
 						end
 					end
@@ -402,7 +445,7 @@ nz.Tools.Functions.CreateTool("settings", {
 			
 			local DermaButton2 = vgui.Create( "DButton", rboxpanel )
 			DermaButton2:SetText( "Submit" )
-			DermaButton2:SetPos( 0, 180 )
+			DermaButton2:SetPos( 0, 185 )
 			DermaButton2:SetSize( 260, 30 )
 			DermaButton2.DoClick = UpdateData
 			

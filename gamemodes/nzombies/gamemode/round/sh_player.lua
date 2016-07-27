@@ -8,6 +8,8 @@ function plyMeta:IsPlaying() return self:GetPlaying() end
 
 function plyMeta:IsSpectating() return self:Team() == TEAM_SPECTATOR end
 
+function plyMeta:IsInCreative() return player_manager.GetPlayerClass( self ) == "player_create" end
+
 local player = player
 
 --player.utils

@@ -34,7 +34,14 @@ chatcommand.Add("/dropout", function(ply, text)
 end, true, "   Drop out of the current round.")
 
 chatcommand.Add("/create", function(ply, text)
-	nzRound:Create()
+	local plyToCreate
+	if text[1] then plyToCreate = player.GetByName(text[1]) else plyToCreate = ply end
+	
+	if IsValid(plyToCreate) then
+		plyToCreate:ToggleCreativeMode()
+	else
+		ply:ChatPrint("[nZ] Could not find player '"..text[1].."', are you sure he exists?")
+	end
 end, false, "   Respawn in creative mode.")
 
 chatcommand.Add("/generate", function(ply, text)

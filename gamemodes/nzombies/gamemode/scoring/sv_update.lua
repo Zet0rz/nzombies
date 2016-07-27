@@ -13,6 +13,6 @@ end )
 
 hook.Add("PlayerDowned", "nzupdateDownedScore", function(ply)
 	if IsValid(ply) and ply:IsPlayer() then
-		ply:IncrementTotalRevives()
+		ply:IncrementTotalDowns()
 	end
 end )

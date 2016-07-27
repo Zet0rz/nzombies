@@ -183,6 +183,8 @@ function ENT:Initialize()
 		self:SetBodygroup( i-1, math.random(0, self:GetBodygroupCount(i-1) - 1))
 	end
 	self:SetSkin( math.random(self:SkinCount()) - 1 )
+	
+	self.ZombieAlive = true
 
 end
 
@@ -441,9 +443,10 @@ function ENT:OnBarricadeBlocking( barricade )
 			self:SetAngles(Angle(0,(barricade:GetPos()-self:GetPos()):Angle()[2],0))
 			local seq = self.AttackSequences[math.random( #self.AttackSequences )].seq
 			local dur = self:SequenceDuration(self:LookupSequence(seq))
+			self:SetAttacking(true)
 			self:PlaySequenceAndWait(seq, 1)
 			self:SetLastAttack(CurTime())
-			self:SetAttacking(true)
+			self:SetAttacking(false)
 			self:UpdateSequence()
 			if coroutine.running() then
 				coroutine.wait(2 - dur)
@@ -467,6 +470,8 @@ function ENT:OnBarricadeBlocking( barricade )
 				self.BarricadeJumpTries = self.BarricadeJumpTries + 1
 				-- Otherwise they'd get continuously stuck on slightly bigger props :(
 			end
+		else
+			self:SetAttacking(false)
 		end
 	end
 end
@@ -588,6 +593,10 @@ function ENT:OnZombieDeath()
 	self:BecomeRagdoll(dmgInfo)
 end
 
+function ENT:Alive()
+	return self.ZombieAlive
+end
+
 function ENT:OnKilled(dmgInfo)
 
 	if dmgInfo then
@@ -606,6 +615,8 @@ function ENT:OnKilled(dmgInfo)
 			self:SetDecapitated(true)
 		end
 	end
+	
+	self.ZombieAlive = false
 
 	hook.Call("OnZombieKilled", GAMEMODE, self, dmgInfo)
 
@@ -1040,11 +1051,12 @@ function ENT:Flames( state )
 	end
 end
 
-function ENT:Explode( dmg, suicide)
+function ENT:Explode(dmg, suicide)
 
 	suicide = suicide or true
 
 	local ex = ents.Create("env_explosion")
+	if !IsValid(ex) then return end
 	ex:SetPos(self:GetPos())
 	ex:SetKeyValue( "iMagnitude", tostring( dmg ) )
 	ex:SetOwner(self)
@@ -1344,4 +1356,12 @@ end
 
 function ENT:IsTimedOut()
 	return self:GetTimedOut()
+end
+
+function ENT:SetInvulnerable(bool)
+	self.Invulnerable = bool
+end
+
+function ENT:IsInvulnerable()
+	return self.Invulnerable
 end
