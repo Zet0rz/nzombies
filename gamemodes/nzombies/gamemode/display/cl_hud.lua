@@ -130,7 +130,7 @@ local function GunHud()
 end
 
 local function PowerUpsHud()
-	if nzRound:InProgress() then
+	if nzRound:InProgress() or nzRound:InState(ROUND_CREATE) then
 		local font = "nz.display.hud.main"
 		local w = ScrW() / 2
 		local offset = 40

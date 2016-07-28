@@ -55,6 +55,7 @@ function GM:EntityTakeDamage(zombie, dmginfo)
 			local hitgroup = util.QuickTrace( dmginfo:GetDamagePosition( ), dmginfo:GetDamagePosition( ) ).HitGroup
 
 			if nzPowerUps:IsPowerupActive("insta") then
+				zombie:SetHealth(1)
 				dmginfo:SetDamage(zombie:Health())
 				nzEnemies:OnEnemyKilled(zombie, dmginfo:GetAttacker(), dmginfo, hitgroup)
 			return end

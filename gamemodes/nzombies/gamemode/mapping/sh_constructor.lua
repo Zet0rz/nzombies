@@ -10,3 +10,15 @@ nzMapping.ScriptHooks = nzMapping.ScriptHooks or {}
 nzMapping.GamemodeExtensions = nzMapping.GamemodeExtensions or {
 	["Zombie Survival"] = false,
 }
+
+-- Prevent undo without being in creative
+-- This can be circumvented with "alias", but it's more for accidental undos than exploit fixing
+if CLIENT then
+	hook.Add("PlayerBindPress", "nzUndoHandling", function(ply, bind, pressed)
+		if string.find(bind, "undo") then
+			if !ply:IsInCreative() then
+				return true
+			end
+		end
+	end)
+end

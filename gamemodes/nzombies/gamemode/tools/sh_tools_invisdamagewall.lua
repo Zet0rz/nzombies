@@ -1,30 +1,12 @@
 local mat = Material("color")
-local white = Color(255,150,0,50)
+local white = Color(255,0,0,50)
 local point1, point2, height
 
-if SERVER then
-	util.AddNetworkString("nz_InvisWallCreation")
-	
-	net.Receive("nz_InvisWallCreation", function(len, ply)
-		if !ply:IsInCreative() then return end
-		local vec1 = net.ReadVector()
-		local vec2 = net.ReadVector()
-		
-		if net.ReadBool() then
-			nzMapping:CreateInvisibleWall(vec1, vec2, ply)
-		else
-			local data = ply.NZToolData
-			local radiation = data.dmgtype == 1
-			local poison = data.dmgtype == 2
-			local tesla = data.dmgtype == 3
-			nzMapping:CreateInvisibleDamageWall(vec1, vec2, ply, data.dmg or 1, data.delay or 0.5, radiation, poison, tesla)
-		end
-	end)
-end
+-- Networking is in the invis wall tool, the bool makes it a normal invis wall
 
-nz.Tools.Functions.CreateTool("inviswall", {
-	displayname = "Invisible Wall Creator",
-	desc = "LMB: Set Corners, RMB: Remove Invisible Wall at spot, R: Reset corners",
+nz.Tools.Functions.CreateTool("damagewall", {
+	displayname = "Damage Wall Creator",
+	desc = "LMB: Set Corners, RMB: Remove Damage Wall at spot, R: Reset corners",
 	condition = function(wep, ply)
 		return true
 	end,
@@ -34,7 +16,7 @@ nz.Tools.Functions.CreateTool("inviswall", {
 	SecondaryAttack = function(wep, ply, tr, data)
 		local walls = ents.FindInSphere(tr.HitPos, 5)
 		for k,v in pairs(walls) do
-			if v:GetClass() == "invis_wall" then v:Remove() end
+			if v:GetClass() == "invis_damage_wall" then v:Remove() end
 		end
 	end,
 	Reload = function(wep, ply, tr, data)
@@ -47,12 +29,12 @@ nz.Tools.Functions.CreateTool("inviswall", {
 
 	end
 }, {
-	displayname = "Invisible Wall Creator",
-	desc = "LMB: Set Corners, RMB: Remove Invisible Wall at spot, R: Reset corners",
-	icon = "icon16/shape_handles.png",
-	weight = 16,
+	displayname = "Damage Wall Creator",
+	desc = "LMB: Set Corners, RMB: Remove Damage Wall at spot, R: Reset corners",
+	icon = "icon16/shape_square_error.png",
+	weight = 17,
 	condition = function(wep, ply)
-		return true
+		return nz.Tools.Advanced
 	end,
 	interface = function(frame, data)
 	end,
@@ -69,7 +51,7 @@ nz.Tools.Functions.CreateTool("inviswall", {
 			net.Start("nz_InvisWallCreation")
 				net.WriteVector(point1)
 				net.WriteVector(Vector(point2.x, point2.y, height))
-				net.WriteBool(true)
+				net.WriteBool(false)
 			net.SendToServer()
 			point1 = nil
 			point2 = nil
@@ -85,27 +67,51 @@ nz.Tools.Functions.CreateTool("inviswall", {
 		local pnl = vgui.Create("DPanel", frame)
 		pnl:Dock(FILL)
 		
+		local data = data or {}
+		
+		local valz = {}
+		if data then
+			valz["Dmg"] = data.dmg or 10
+			valz["Delay"] = data.delay or 0.5
+			valz["DmgType"] = data.dmgtype or 1
+		end
+		
+		local function UpdateData()
+			data.dmg = valz["Dmg"]
+			data.delay = valz["Delay"]
+			data.dmgtype = valz["DmgType"]
+
+			nz.Tools.Functions.SendData(data, "damagewall")
+		end
+		
 		local chk = vgui.Create("DCheckBoxLabel", pnl)
-		chk:SetPos( 100, 50 )
+		chk:SetPos( 100, 20 )
 		chk:SetText( "Preview Config" )
 		chk:SetTextColor( Color(50,50,50) )
 		chk:SetConVar( "nz_creative_preview" )
 		chk:SetValue( GetConVar("nz_creative_preview"):GetBool() )
 		chk:SizeToContents()
 		
-		local textw = vgui.Create("DLabel", pnl)
-		textw:SetText("Warning: Rotating Invis Walls does not work")
-		textw:SetFont("Trebuchet18")
-		textw:SetTextColor( Color(150, 50, 50) )
-		textw:SizeToContents()
-		textw:SetPos(30, 70)
-
-		local textw2 = vgui.Create("DLabel", pnl)
-		textw2:SetText("correctly at the moment and will not save!")
-		textw2:SetFont("Trebuchet18")
-		textw2:SetTextColor( Color(150, 50, 50) )
-		textw2:SizeToContents()
-		textw2:SetPos(32, 80)
+		local properties = vgui.Create("DProperties", pnl)
+		properties:SetPos(5, 50)
+		properties:SetSize(290, 100)
+		
+		local dmg = properties:CreateRow( "Damage Properties", "Damage" )
+		dmg:Setup( "Int", {min = 1, max = 250} )
+		dmg:SetValue( data.dmg )
+		dmg.DataChanged = function( _, val ) valz["Dmg"] = val UpdateData() end
+		
+		local delay = properties:CreateRow( "Damage Properties", "Delay" )
+		delay:Setup( "Float", {min = 0, max = 10} )
+		delay:SetValue( data.delay )
+		delay.DataChanged = function( _, val ) valz["Delay"] = val UpdateData() end
+		
+		local dmgtype = properties:CreateRow( "Damage Properties", "Type" )
+		dmgtype:Setup( "Combo", {text = "Select type ..."} )
+		dmgtype:AddChoice( "Radiation", 1 )
+		dmgtype:AddChoice( "Poison", 2 )
+		dmgtype:AddChoice( "Tesla", 3 )
+		dmgtype.DataChanged = function( _, val ) valz["DmgType"] = val UpdateData() end
 		
 		return pnl
 	end,
@@ -130,4 +136,9 @@ nz.Tools.Functions.CreateTool("inviswall", {
 			end
 		cam.End3D()
 	end,
+	defaultdata = {
+		dmg = 10,
+		delay = 0.5,
+		dmgtype = 1,
+	}
 })

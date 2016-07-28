@@ -412,6 +412,35 @@ function nzMapping:CreateInvisibleWall(vec1, vec2, ply)
 	return wall
 end
 
+function nzMapping:CreateInvisibleDamageWall(vec1, vec2, ply, dmg, delay, radiation, poison, tesla)
+	local wall = ents.Create( "invis_damage_wall" )
+	wall:SetPos( vec1 )
+	wall:SetMaxBound(vec2)
+	wall:Spawn()
+	wall:PhysicsInitBox( Vector(0,0,0), vec2 )
+	wall:SetNotSolid(true)
+	wall:SetTrigger(true)
+	wall:SetDamage(dmg)
+	wall:SetDelay(delay)
+	
+	wall:SetRadiation(radiation)
+	wall:SetPoison(poison)
+	wall:SetTesla(tesla)
+
+	local phys = wall:GetPhysicsObject()
+	if IsValid(phys) then
+		phys:EnableMotion(false)
+	end
+
+	if ply then
+		undo.Create( "Damage Wall" )
+			undo.SetPlayer( ply )
+			undo.AddEntity( wall )
+		undo.Finish( "Effect (" .. tostring( model ) .. ")" )
+	end
+	return wall
+end
+
 //Physgun Hooks
 local ghostentities = {
 	["prop_buys"] = true,

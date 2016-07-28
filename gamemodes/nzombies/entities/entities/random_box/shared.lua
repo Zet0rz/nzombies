@@ -169,7 +169,7 @@ function ENT:MoveAway()
 end
 
 function ENT:MoveToNewSpot(oldspot)
-	//Calls mapping function excluding the current spot
+	-- Calls mapping function excluding the current spot
 	nzRandomBox.Spawn(oldspot)
 end
 

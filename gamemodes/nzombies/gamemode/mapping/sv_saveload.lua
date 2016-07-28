@@ -176,6 +176,19 @@ function nzMapping:SaveConfig(name)
 			maxbound = v:GetMaxBound(),
 		})
 	end
+	
+	local invis_damage_walls = {}
+	for _, v in pairs(ents.FindByClass("invis_damage_wall")) do
+		table.insert(invis_damage_walls, {
+			pos = v:GetPos(),
+			maxbound = v:GetMaxBound(),
+			damage = v:GetDamage(),
+			delay = v:GetDelay(),
+			radiation = v:GetRadiation(),
+			poison = v:GetPoison(),
+			tesla = v:GetTesla(),
+		})
+	end
 
 	main["ZedSpawns"] = zed_spawns
 	main["ZedSpecialSpawns"] = zed_special_spawns
@@ -193,6 +206,7 @@ function nzMapping:SaveConfig(name)
 	main["SpecialEntities"] = special_entities
 	main["InvisWalls"] = invis_walls
 	main["WunderfizzMachines"] = wunderfizz_machines
+	main["DamageWalls"] = invis_damage_walls
 
 	main["NavTable"] = nzNav.Locks
 
@@ -245,6 +259,7 @@ function nzMapping:ClearConfig(noclean)
 		["nz_script_prop"] = true,
 		["wunderfizz_machine"] = true,
 		["wunderfizz_windup"] = true,
+		["invis_damage_wall"] = true,
 	}
 
 	--jsut loop once over all entities isntead of seperate findbyclass calls
@@ -482,6 +497,12 @@ function nzMapping:LoadConfig( name, loader )
 		if data.InvisWalls then
 			for k,v in pairs(data.InvisWalls) do
 				nzMapping:CreateInvisibleWall(v.pos, v.maxbound)
+			end
+		end
+		
+		if data.DamageWalls then
+			for k,v in pairs(data.DamageWalls) do
+				nzMapping:CreateInvisibleDamageWall(v.pos, v.maxbound, nil, v.damage, v.delay, v.radiation, v.poison, v.tesla)
 			end
 		end
 

@@ -200,7 +200,13 @@ nzPowerUps:NewPowerUp("firesale", {
 		local tbl = ents.FindByClass("random_box_spawns")
 		for k,v in pairs(tbl) do
 			if IsValid(v.FireSaleBox) then
+				v.FireSaleBox:StopSound("nz_firesale_jingle")
+				v.FireSaleBox.FireSaling = false
 				v.FireSaleBox:MarkForRemoval()
+			end
+			if IsValid(v.Box) then
+				v.Box:StopSound("nz_firesale_jingle")
+				v.Box.FireSaling = false
 			end
 		end
 	end,

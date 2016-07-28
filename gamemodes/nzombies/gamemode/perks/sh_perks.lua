@@ -117,9 +117,9 @@ nzPerks:NewPerk("revive", {
 	icon = Material("perk_icons/revive.png", "smooth unlitgeneric"),
 	func = function(self, ply, machine)
 			if #player.GetAllPlaying() <= 1 then
-				if !ply.SoloRevive or ply.SoloRevive < 3 then
+				if !ply.SoloRevive or ply.SoloRevive < 3 or !IsValid(machine) then
 					ply:ChatPrint("You got Quick Revive (Solo)!")
-				else 
+				else
 					ply:ChatPrint("You can only get Quick Revive Solo 3 times.")
 					return false
 				end

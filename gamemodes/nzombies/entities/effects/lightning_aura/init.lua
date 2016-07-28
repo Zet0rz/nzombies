@@ -59,7 +59,7 @@ function EFFECT:Think()
 		end
 	end
 
-	return IsValid(self.Parent) and self.Parent.LightningAura
+	return IsValid(self.Parent) and (type(self.Parent.LightningAura) == "number" and CurTime() < self.Parent.LightningAura or self.Parent.LightningAura)
 end
 
 function EFFECT:GenerateArc(startPos, endPos, branchChance, detail)

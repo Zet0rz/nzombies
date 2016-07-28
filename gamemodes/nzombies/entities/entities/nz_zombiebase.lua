@@ -786,30 +786,26 @@ function ENT:ChaseTargetPath( options )
 	local goal = navmesh.GetNearestNavArea(targetPos, false, 100)
 	goal = goal and goal:GetClosestPointOnArea(targetPos) or targetPos--]]
 
-	--Custom path computer, the same as default but not pathing through locked nav areas.
+	-- Custom path computer, the same as default but not pathing through locked nav areas.
 	path:Compute( self, options.target:GetPos(),  function( area, fromArea, ladder, elevator, length )
 		if ( !IsValid( fromArea ) ) then
-			--first area in path, no cost
+			-- First area in path, no cost
 			return 0
 		else
 			if ( !self.loco:IsAreaTraversable( area ) ) then
-				--our locomotor says we can't move here
+				-- Our locomotor says we can't move here
 				return -1
 			end
-			--Prevent movement through either locked navareas or areas with closed doors
+			-- Prevent movement through either locked navareas or areas with closed doors
 			if (nzNav.Locks[area:GetID()]) then
-				--print("Has area")
 				if nzNav.Locks[area:GetID()].link then
-					--print("Area has door link")
 					if !nzDoors.OpenedLinks[nzNav.Locks[area:GetID()].link] then
-						--print("Door link is not opened")
 						return -1
 					end
 				elseif nzNav.Locks[area:GetID()].locked then
-					--print("Area is locked")
 				return -1 end
 			end
-			--compute distance traveled along path so far
+			-- Compute distance traveled along path so far
 			local dist = 0
 			--[[if ( IsValid( ladder ) ) then
 				dist = ladder:GetLength()

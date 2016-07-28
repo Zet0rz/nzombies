@@ -1,5 +1,7 @@
 
--- A copy paste of the sandbox one, but only for mdoels
+-- A copy paste of the sandbox one, but only for models
+
+local HasCreated = HasCreated or false
 
 local function GetAllFiles( tab, folder, extension, path )
 
@@ -30,34 +32,36 @@ local model_list = nil
 --
 -- Model Search
 --
-search.AddProvider( function( str )
+if !HasCreated then
+	search.AddProvider( function( str )
 
-	str = str:PatternSafe()
+		str = str:PatternSafe()
 
-	if ( model_list == nil ) then
+		if ( model_list == nil ) then
 
-		model_list = {}
-		GetAllFiles( model_list, "models/", ".mdl", "GAME" )
-		timer.Simple( 1, function() hook.Run( "SearchUpdate" ) end )
-
-	end
-
-	local list = {}
-
-	for k, v in pairs( model_list ) do
-
-		if ( v:find( str ) ) then
-
-			if ( IsUselessModel( v ) ) then continue end
-			
-			table.insert( list, v )
+			model_list = {}
+			GetAllFiles( model_list, "models/", ".mdl", "GAME" )
+			timer.Simple( 1, function() hook.Run( "SearchUpdate" ) end )
 
 		end
 
-		if ( #list >= 128 ) then break end
+		local list = {}
 
-	end
+		for k, v in pairs( model_list ) do
 
-	return list
+			if ( v:find( str ) ) then
 
-end );
+				if ( IsUselessModel( v ) ) then continue end
+				
+				table.insert( list, v )
+
+			end
+
+			if ( #list >= 128 ) then break end
+
+		end
+
+		return list
+
+	end )
+end
