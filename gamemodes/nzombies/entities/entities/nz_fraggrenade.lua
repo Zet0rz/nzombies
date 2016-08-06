@@ -13,7 +13,7 @@ end
 function ENT:Initialize()
 	if SERVER then
 		self:SetModel("models/weapons/w_grenade.mdl")
-		self:PhysicsInitSphere(2, "grenade")
+		self:PhysicsInit(6)
 		self:SetMoveType(MOVETYPE_VPHYSICS)
 		self:SetCollisionGroup(COLLISION_GROUP_NONE)
 		self:SetSolid(SOLID_VPHYSICS)
@@ -39,7 +39,7 @@ function ENT:PhysicsCollide(data, physobj)
 
 		LastSpeed = math.max( NewVelocity:Length(), LastSpeed )
 
-		local TargetVelocity = NewVelocity * LastSpeed * 0.6
+		local TargetVelocity = NewVelocity * LastSpeed * 0.8
 
 		physobj:SetVelocity( TargetVelocity )
 		self:SetLocalAngularVelocity( AngleRand() )
