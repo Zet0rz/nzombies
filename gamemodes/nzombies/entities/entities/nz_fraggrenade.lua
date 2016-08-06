@@ -12,7 +12,7 @@ end
 
 function ENT:Initialize()
 	if SERVER then
-		self:SetModel("models/weapons/v_grenade.mdl")
+		self:SetModel("models/weapons/w_grenade.mdl")
 		self:PhysicsInitSphere(2, "grenade")
 		self:SetMoveType(MOVETYPE_VPHYSICS)
 		self:SetCollisionGroup(COLLISION_GROUP_NONE)
