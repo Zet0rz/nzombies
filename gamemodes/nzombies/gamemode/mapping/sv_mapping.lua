@@ -6,10 +6,10 @@ function nzMapping:ZedSpawn(pos, link, ply)
 	pos.z = pos.z - ent:OBBMaxs().z
 	ent:SetPos( pos )
 	ent:Spawn()
-	ent.link = tonumber(link)
-	//For the link displayer
+	-- For the link displayer
 	if link != nil then
-		ent:SetLink(link)
+		ent:SetLink(tostring(link))
+		ent.link = tostring(link)
 	end
 
 	if ply then
@@ -27,10 +27,10 @@ function nzMapping:ZedSpecialSpawn(pos, link, ply)
 	pos.z = pos.z - ent:OBBMaxs().z
 	ent:SetPos( pos )
 	ent:Spawn()
-	ent.link = tonumber(link)
-	//For the link displayer
+	-- For the link displayer
 	if link != nil then
-		ent:SetLink(link)
+		ent:SetLink(tostring(link))
+		ent.link = tostring(link)
 	end
 
 	if ply then
@@ -328,6 +328,7 @@ function nzMapping:CleanUpMap()
 		"power_box",
 		"invis_wall",
 		"wunderfizz_machine",
+		"invis_damage_wall",
 	})
 
 	-- Gotta reset the doors and other entites' values!

@@ -102,7 +102,7 @@ function Spawner:UpdateValidSpawns()
 		-- reset the zombiesToSpawn value on every Spawnpoint
 		spawn:SetZombiesToSpawn(0)
 		if spawn:GetSpawnWeight() <= average then
-			if spawn.link == nil or nzDoors.OpenedLinks[tonumber(spawn.link)] then
+			if spawn.link == nil or nzDoors:IsLinkOpened( spawn.link ) then
 				table.insert(self.tValidSpawns, spawn)
 				total = total + spawn:GetSpawnWeight()
 			end

@@ -100,8 +100,8 @@ function MenuToolBar:Init()
 					RunConsoleCommand( "say", "/unready" )
 				else
 					RunConsoleCommand( "say", "/ready" )
+					RunConsoleCommand( "nz_settings" )
 				end
-				--RunConsoleCommand( "nz_settings" )
 			end
 		end
 	end
