@@ -156,7 +156,7 @@ function Revive:RespawnWithWhosWho(ply, pos)
 		if IsValid(available[1]) then
 			for k,v in pairs(available) do
 				local dist = plypos:DistToSqr(v:GetPos())
-				if v.link == nil or nzDoors.OpenedLinks[tonumber(v.link)] then -- Only for rooms that are opened (using links)
+				if v.link == nil or nzDoors:IsLinkOpened( v.link ) then -- Only for rooms that are opened (using links)
 					if dist < maxdist and dist > mindist then -- Within the range we set above
 						if v:IsSuitable() then -- And nothing is blocking it
 							table.insert(spawns, v)
@@ -167,7 +167,7 @@ function Revive:RespawnWithWhosWho(ply, pos)
 			if !IsValid(spawns[1]) then
 				for k,v in pairs(available) do -- Retry, but without the range check (just use all of them)
 					local dist = plypos:DistToSqr(v:GetPos())
-					if v.link == nil or nzDoors.OpenedLinks[tonumber(v.link)] then
+					if v.link == nil or nzDoors:IsLinkOpened( v.link ) then
 						if v:IsSuitable() then
 							table.insert(spawns, v)
 						end

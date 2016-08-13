@@ -46,7 +46,7 @@ function GM:EntityTakeDamage(zombie, dmginfo)
 	-- Who's Who clones can't take damage!
 	if zombie:GetClass() == "whoswho_downed_clone" then return true end
 	
-	if zombie.Alive and zombie:Alive() and zombie:Health() < 0 then zombie:SetHealth(1) end
+	if zombie.Alive and zombie:Alive() and zombie:Health() < 0 then zombie:Kill(dmginfo) end
 
 	if !dmginfo:GetAttacker():IsPlayer() then return end
 	if IsValid(zombie) then
@@ -55,8 +55,7 @@ function GM:EntityTakeDamage(zombie, dmginfo)
 			local hitgroup = util.QuickTrace( dmginfo:GetDamagePosition( ), dmginfo:GetDamagePosition( ) ).HitGroup
 
 			if nzPowerUps:IsPowerupActive("insta") then
-				zombie:SetHealth(1)
-				dmginfo:SetDamage(zombie:Health())
+				zombie:Kill(dmginfo)
 				nzEnemies:OnEnemyKilled(zombie, dmginfo:GetAttacker(), dmginfo, hitgroup)
 			return end
 

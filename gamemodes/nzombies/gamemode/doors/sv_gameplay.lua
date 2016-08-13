@@ -42,7 +42,7 @@ function nzDoors:OpenLinkedDoors( link, ply )
 		end
 	end
 	
-	self.OpenedLinks[tonumber(link)] = true
+	self.OpenedLinks[link] = true
 end
 
 function nzDoors:LockAllDoors()

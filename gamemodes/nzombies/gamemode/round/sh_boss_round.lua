@@ -46,7 +46,7 @@ if SERVER then
 					local spawnpoint = data.specialspawn and "nz_spawn_zombie_special" or "nz_spawn_zombie_normal" -- Check what spawnpoint type we're using
 					local spawnpoints = {}
 					for k,v in pairs(ents.FindByClass(spawnpoint)) do -- Find and add all valid spawnpoints that are opened and not blocked
-						if (v.link == nil or nzDoors.OpenedLinks[tonumber(v.link)]) and v:IsSuitable() then
+						if (v.link == nil or nzDoors:IsLinkOpened( v.link )) and v:IsSuitable() then
 							table.insert(spawnpoints, v)
 						end
 					end

@@ -799,7 +799,7 @@ function ENT:ChaseTargetPath( options )
 			-- Prevent movement through either locked navareas or areas with closed doors
 			if (nzNav.Locks[area:GetID()]) then
 				if nzNav.Locks[area:GetID()].link then
-					if !nzDoors.OpenedLinks[nzNav.Locks[area:GetID()].link] then
+					if !nzDoors:IsLinkOpened( nzNav.Locks[area:GetID()].link ) then
 						return -1
 					end
 				elseif nzNav.Locks[area:GetID()].locked then
@@ -1065,9 +1065,17 @@ function ENT:Explode(dmg, suicide)
 
 end
 
-function ENT:Kill()
-	self:Fire("Kill",0,0)
-	self:OnKilled(DamageInfo())
+function ENT:Kill(dmginfo, noprogress, noragdoll)
+	local dmg = dmginfo or DamageInfo()
+	if noragdoll then
+		self:Fire("Kill",0,0)
+	else
+		self:BecomeRagdoll(dmg)
+	end
+	if !noprogress then
+		nzEnemies:OnEnemyKilled(self, dmg:GetAttacker(), dmg, 0)
+	end
+	self:OnKilled(dmg)
 	--self:TakeDamage( 10000, self, self )
 end
 

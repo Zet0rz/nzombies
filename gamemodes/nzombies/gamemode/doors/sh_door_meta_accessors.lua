@@ -135,3 +135,7 @@ function nzDoors:SetLockedByID( id, prop, bool )
 		self.MapDoors[index].locked = bool
 	end
 end
+
+function nzDoors:IsLinkOpened( link )
+	return self.OpenedLinks[link]
+end

@@ -428,6 +428,9 @@ function nz.QMenu.Functions.CreatePropsMenu( )
 	end
 	
 	if !file.Exists( "nz/spawnlist.txt", "DATA" ) then
+		if !file.Exists( "nz/", "DATA" ) then
+			file.CreateDir( "nz" )
+		end
 		local content = file.Read("nzmapscripts/defaultspawnlist.lua", "LUA")
 		file.Write("nz/spawnlist.txt", content)
 	end
