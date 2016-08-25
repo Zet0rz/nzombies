@@ -11,10 +11,12 @@ function Revive:PlayerDowned( ply )
 		if !defaultdata[k] then attdata[k] = v end
 	end
 	self:SendPlayerDowned( ply, nil, attdata )
+	hook.Call( "nzPlayerDowned", nil, ply)
 end
 
 function Revive:PlayerRevived( ply )
 	self:SendPlayerRevived( ply )
+	hook.Call( "nzPlayerRevived", nil, ply)
 end
 
 function Revive:PlayerBeingRevived( ply, revivor )
