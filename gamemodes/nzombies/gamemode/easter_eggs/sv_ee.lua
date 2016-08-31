@@ -12,7 +12,7 @@ function nzEE:Reset()
 	hook.Call("nz.EE.EasterEggStop")
 end
 
-function nzEE:ActivateEgg( ent, ply )
+function nzEE:ActivateEgg( ent )
 
 	ent.Used = true
 	ent:EmitSound("WeaponDissolve.Dissolve", 100, 100)
@@ -26,7 +26,7 @@ function nzEE:ActivateEgg( ent, ply )
 	-- What we should do when we have all the eggs
 	if self.Data.EggCount == self.Data.MaxEggCount then
 		print("All easter eggs found yay!")
-		hook.Call( "nz.EE.EasterEgg", nil, ply )
+		hook.Call( "nz.EE.EasterEgg" )
 	end
 end
 

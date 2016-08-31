@@ -14,12 +14,11 @@ if SERVER then
 			table.insert(nzPerks.Players[self], id)
 			
 			nzPerks:SendSync(self)
-			hook.Call( "nzPlayerBoughtPerk", nil, self, id )
 		else
 			//We didn't want to give them the perk for some reason, so lets back out and refund them.
 			--self:GivePoints(perkData.price)
 		end
-
+		
 		return given
 	end
 	

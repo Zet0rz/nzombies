@@ -25,7 +25,7 @@ end
 
 function ENT:Use( activator, caller )
 	if !self.Used and nzRound:InProgress() then
-		nzEE:ActivateEgg( self, caller )
+		nzEE:ActivateEgg( self )
 	end
 end
 
