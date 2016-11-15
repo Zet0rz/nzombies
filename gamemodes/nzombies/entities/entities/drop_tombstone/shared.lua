@@ -51,7 +51,7 @@ end
 if SERVER then
 	function ENT:StartTouch(hitEnt)
 		--print("Collided")
-		if (hitEnt:IsValid() and hitEnt:IsPlayer() and hitEnt == self:GetPerkOwner()) then
+		if (IsValid(hitEnt) and hitEnt:IsPlayer() and hitEnt == self:GetPerkOwner()) then
 			--PrintTable(self.OwnerData)
 			
 			-- Weapons are completely replaced
@@ -67,7 +67,7 @@ if SERVER then
 					hitEnt:GivePerk(v)
 				end
 			end
-			nzWeps:GiveMaxAmmo(hitEnt)
+			hitEnt:GiveMaxAmmo()
 			
 			--timer.Destroy(self:EntIndex().."_deathtimer")
 			self:Remove()

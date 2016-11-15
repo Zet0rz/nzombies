@@ -120,6 +120,8 @@ function ENT:Initialize()
 		self.NextClawTime = 0
 		self.NextFlameTime = 0
 	end
+	
+	self.ZombieAlive = true
 
 end
 
@@ -228,71 +230,6 @@ function ENT:OnZombieDeath(dmgInfo)
 		end
 	end)
 
-end
-
-function ENT:Attack( data )
-
-	self:SetLastAttack(CurTime())
-
-	--if self:Health() <= 0 then coroutine.yield() return end
-
-	data = data or {}
-	data.attackseq = data.attackseq or self.AttackSequences[ math.random( #self.AttackSequences ) ].seq or "swing"
-	data.attacksound = data.attacksound or self.AttackSounds[ math.random( #self.AttackSounds) ] or Sound( "npc/vort/claw_swing1.wav" )
-	data.hitsound = data.hitsound or self.AttackHitSounds[ math.random( #self.AttackHitSounds ) ]Sound( "npc/zombie/zombie_hit.wav" )
-	data.viewpunch = data.viewpunch or VectorRand():Angle() * 0.05
-	data.dmglow = data.dmglow or self.DamageLow or 50
-	data.dmghigh = data.dmghigh or self.DamageHigh or 70
-	data.dmgtype = data.dmgtype or DMG_CLUB
-	data.dmgforce = data.dmgforce or (self:GetTarget():GetPos() - self:GetPos()) * 7 + Vector( 0, 0, 16 )
-	data.dmgforce.z = math.Clamp(data.dmgforce.z, 1, 16)
-	local seq, dur = self:LookupSequence( data.attackseq )
-	data.attackdur = (seq != - 1 and dur) or 0.6
-	data.dmgdelay = data.dmgdelay or ( ( data.attackdur != 0 ) and data.attackdur / 2 ) or 0.3
-
-	self:EmitSound("npc/zombie_poison/pz_throw2.wav", 50, math.random(75, 125)) -- whatever this is!? I will keep it for now
-
-	self:SetAttacking( true )
-
-	self:TimedEvent(0.4, function()
-		self:EmitSound( data.attacksound )
-	end)
-
-	self:TimedEvent( data.dmgdelay, function()
-		if self:IsValidTarget( self:GetTarget() ) and self:TargetInRange( self:GetAttackRange() + 10 ) then
-			local dmgAmount = math.random( data.dmglow, data.dmghigh )
-			local dmgInfo = DamageInfo()
-				dmgInfo:SetAttacker( self )
-				dmgInfo:SetDamage( dmgAmount )
-				dmgInfo:SetDamageType( data.dmgtype )
-				dmgInfo:SetDamageForce( data.dmgforce )
-			self:GetTarget():TakeDamageInfo(dmgInfo)
-			self:GetTarget():EmitSound( data.hitsound, 50, math.random( 80, 160 ) )
-			if self:GetTarget().ViewPunch then
-				self:GetTarget():ViewPunch( data.viewpunch )
-			end
-			self:GetTarget():SetVelocity( data.dmgforce )
-
-			local blood = ents.Create("env_blood")
-			blood:SetKeyValue("targetname", "carlbloodfx")
-			blood:SetKeyValue("parentname", "prop_ragdoll")
-			blood:SetKeyValue("spawnflags", 8)
-			blood:SetKeyValue("spraydir", math.random(500) .. " " .. math.random(500) .. " " .. math.random(500))
-			blood:SetKeyValue("amount", dmgAmount * 5)
-			blood:SetCollisionGroup( COLLISION_GROUP_WORLD )
-			blood:SetPos( self:GetTarget():GetPos() + self:GetTarget():OBBCenter() + Vector( 0, 0, 10 ) )
-			blood:Spawn()
-			blood:Fire("EmitBlood")
-			SafeRemoveEntityDelayed( blood, 2) --just to make sure everything gets cleaned
-		end
-	end)
-
-	self:TimedEvent(data.attackdur, function()
-		self:SetAttacking(false)
-		self:SetLastAttack(CurTime())
-	end)
-
-	self:PlayAttackAndWait(data.attackseq, 1)
 end
 
 function ENT:BodyUpdate()
@@ -685,11 +622,11 @@ function ENT:GrabPlayer(ply)
 		self:SetSequence(self:LookupSequence("nz_grapple_flamethrower"))
 		self:SetCycle(0)
 		self:StartFlames()
-	else
+	--[[elseif ply then
 		self.loco:SetDesiredSpeed(self:GetRunSpeed())
 		self:SetSpecialAnimation(false)
 		self:SetBlockAttack(false)
-		self:SetStop(false)
+		self:SetStop(false)]]
 	end
 end
 
@@ -704,4 +641,65 @@ function ENT:ReleasePlayer()
 		self:SetStop(false)
 	end
 	self:SetUsingClaw(false)
+end
+
+function ENT:OnBarricadeBlocking( barricade )
+	if (IsValid(barricade) and barricade:GetClass() == "breakable_entry" ) then
+		if barricade:GetNumPlanks() > 0 then
+			timer.Simple(0.3, function()
+
+				for i = 1, barricade:GetNumPlanks() do
+					barricade:EmitSound("physics/wood/wood_plank_break" .. math.random(1, 4) .. ".wav", 100, math.random(90, 130))
+					barricade:RemovePlank()
+				end
+
+			end)
+
+			self:SetAngles(Angle(0,(barricade:GetPos()-self:GetPos()):Angle()[2],0))
+			
+			local seq, dur
+
+			local attacktbl = self.ActStages[1] and self.ActStages[1].attackanims or self.AttackSequences
+			local target = type(attacktbl) == "table" and attacktbl[math.random(#attacktbl)] or attacktbl
+			
+			if type(target) == "table" then
+				seq, dur = self:LookupSequenceAct(target.seq)
+			elseif target then -- It is a string or ACT
+				seq, dur = self:LookupSequenceAct(target)
+			else
+				seq, dur = self:LookupSequence("swing")
+			end
+			
+			self:SetAttacking(true)
+			self:PlaySequenceAndWait(seq, 1)
+			self:SetLastAttack(CurTime())
+			self:SetAttacking(false)
+			self:UpdateSequence()
+			if coroutine.running() then
+				coroutine.wait(2 - dur)
+			end
+
+			-- this will cause zombies to attack the barricade until it's destroyed
+			local stillBlocked = self:CheckForBarricade()
+			if stillBlocked then
+				self:OnBarricadeBlocking(stillBlocked)
+				return
+			end
+
+			-- Attacking a new barricade resets the counter
+			self.BarricadeJumpTries = 0
+		elseif barricade:GetTriggerJumps() and self.TriggerBarricadeJump then
+			local dist = barricade:GetPos():DistToSqr(self:GetPos())
+			if dist <= 3500 + (1000 * self.BarricadeJumpTries) then
+				self:TriggerBarricadeJump()
+				self.BarricadeJumpTries = 0
+			else
+				-- If we continuously fail, we need to increase the check range (if it is a bigger prop)
+				self.BarricadeJumpTries = self.BarricadeJumpTries + 1
+				-- Otherwise they'd get continuously stuck on slightly bigger props :(
+			end
+		else
+			self:SetAttacking(false)
+		end
+	end
 end

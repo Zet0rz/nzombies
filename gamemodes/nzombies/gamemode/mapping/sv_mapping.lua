@@ -1,4 +1,4 @@
-//
+-- 
 
 function nzMapping:ZedSpawn(pos, link, ply)
 
@@ -119,7 +119,7 @@ function nzMapping:PropBuy(pos, ang, model, flags, ply)
 	prop:Spawn()
 	prop:PhysicsInit( SOLID_VPHYSICS )
 
-	//REMINDER APPY FLAGS
+	-- REMINDER APPY FLAGS
 	if flags != nil then
 		nzDoors:CreateLink( prop, flags )
 	end
@@ -193,6 +193,7 @@ function nzMapping:BoxSpawn(pos, ang, spawn, ply)
 	box:SetAngles( ang )
 	box:Spawn()
 	box:PhysicsInit( SOLID_VPHYSICS )
+	box:SetCollisionGroup( COLLISION_GROUP_DEBRIS_TRIGGER )
 	box.PossibleSpawn = spawn
 
 	if ply then
@@ -301,77 +302,6 @@ function nzMapping:SpawnEffect( pos, ang, model, ply )
 
 end
 
-function nzMapping:CleanUpMap()
-	game.CleanUpMap(false, {
-		"breakable_entry",
-		"breakable_entry_plank",
-		"button_elec",
-		"perk_machine",
-		"player_spawns",
-		"prop_buys",
-		"random_box_spawns",
-		"wall_block",
-		"wall_buys",
-		"nz_spawn_zombie",
-		"nz_spawn_zombie_normal",
-		"nz_spawn_zombie_special",
-		"easter_egg",
-		"edit_fog",
-		"edit_fog_special",
-		"edit_sky",
-		"edit_sun",
-		"edit_dynlight",
-		"nz_prop_effect",
-		"nz_prop_effect_attachment",
-		"nz_fire_effect",
-		"edit_color",
-		"power_box",
-		"invis_wall",
-		"wunderfizz_machine",
-		"invis_damage_wall",
-	})
-
-	-- Gotta reset the doors and other entites' values!
-	for k,v in pairs(nzDoors.MapDoors) do
-		local door = nzDoors:DoorIndexToEnt(k)
-		door:SetLocked(true)
-		if door:IsDoor() then
-			door:LockDoor()
-		elseif door:IsButton() then
-			door:LockButton()
-		end
-	end
-
-	-- Reset bought status on wall buys
-	for k,v in pairs(ents.FindByClass("wall_buys")) do
-		v:SetBought(false)
-	end
-
-	if self.MarkedProps then
-		if !nzRound:InState( ROUND_CREATE ) then
-			for k,v in pairs(self.MarkedProps) do
-				local ent = ents.GetMapCreatedEntity(k)
-				if IsValid(ent) then ent:Remove() end
-			end
-		else
-			for k,v in pairs(self.MarkedProps) do
-				local ent = ents.GetMapCreatedEntity(k)
-				if IsValid(ent) then ent:SetColor(Color(200,0,0)) end
-			end
-		end
-	end
-	
-	-- Remove gamemode-specific entities if their gamemode hasn't be enabled in the Map Settings menu
-	--[[for k,v in pairs(ents.GetAll()) do
-		if v.NZGamemodeExtension then
-			if !nzMapping.Settings.gamemodeentities[v.NZGamemodeExtension] then
-				v:Remove()
-			end
-		end
-	end]]
-	-- No longer done here, done in the entities' Initialize function
-end
-
 function nzMapping:SpawnEntity(pos, ang, ent, ply)
 	local entity = ents.Create( ent )
 	entity:SetPos( pos )
@@ -379,7 +309,11 @@ function nzMapping:SpawnEntity(pos, ang, ent, ply)
 	entity:Spawn()
 	entity:PhysicsInit( SOLID_VPHYSICS )
 
-	table.insert(nz.QMenu.Data.SpawnedEntities, entity)
+	table.insert(nzQMenu.Data.SpawnedEntities, entity)
+	
+	entity:CallOnRemove("nzSpawnedEntityClean", function(ent)
+		table.RemoveByValue(nzQMenu.Data.SpawnedEntities, ent)
+	end)
 
 	if ply then
 		undo.Create( "Entity" )
@@ -442,7 +376,7 @@ function nzMapping:CreateInvisibleDamageWall(vec1, vec2, ply, dmg, delay, radiat
 	return wall
 end
 
-//Physgun Hooks
+-- Physgun Hooks
 local ghostentities = {
 	["prop_buys"] = true,
 	["wall_block"] = true,
@@ -453,7 +387,7 @@ local ghostentities = {
 local function onPhysgunPickup( ply, ent )
 	local class = ent:GetClass()
 	if ghostentities[class] then
-		//Ghost the entity so we can put them in walls.
+		-- Ghost the entity so we can put them in walls.
 		local phys = ent:GetPhysicsObject()
 		phys:EnableCollisions(false)
 	end
@@ -463,7 +397,7 @@ end
 local function onPhysgunDrop( ply, ent )
 	local class = ent:GetClass()
 	if ghostentities[class] then
-		//Unghost the entity so we can put them in walls.
+		-- Unghost the entity so we can put them in walls.
 		local phys = ent:GetPhysicsObject()
 		phys:EnableCollisions(true)
 	end

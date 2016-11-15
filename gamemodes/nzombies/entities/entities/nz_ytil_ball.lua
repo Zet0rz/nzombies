@@ -166,7 +166,7 @@ function ENT:StartTouch( ent )
 	if IsValid(ent) and nzConfig.ValidEnemies[ent:GetClass()] then
 		if self:GetCurKills() < self:GetMaxKills() then
 			local insta = DamageInfo()
-			insta:SetDamage( ent:Health() )
+			insta:SetDamage( 500 )
 			insta:SetAttacker( self:GetBallOwner() )
 			insta:SetDamageType( DMG_BLAST_SURFACE )
 			ent:TakeDamageInfo( insta )

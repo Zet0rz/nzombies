@@ -1,4 +1,4 @@
-nz.Tools.Functions.CreateTool("pspawn", {
+nzTools:CreateTool("pspawn", {
 	displayname = "Player Spawn Creator",
 	desc = "LMB: Place Spawnpoint, RMB: Remove Spawnpoint",
 	condition = function(wep, ply)
@@ -13,7 +13,7 @@ nz.Tools.Functions.CreateTool("pspawn", {
 		end
 	end,
 	Reload = function(wep, ply, tr, data)
-		//Nothing
+		-- Nothing
 	end,
 	OnEquip = function(wep, ply, data)
 
@@ -30,5 +30,5 @@ nz.Tools.Functions.CreateTool("pspawn", {
 		return true
 	end,
 	interface = function(frame, data) end,
-	//defaultdata = {}
+	-- defaultdata = {}
 })

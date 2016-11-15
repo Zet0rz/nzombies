@@ -76,6 +76,7 @@ function meta:IsBuyableMapEntity()
 end
 
 function meta:DoorIndex()
+	if !IsValid(self) then return end
 	if SERVER then
 		return self:CreatedByMap() and self:MapCreationID() or nil
 	else
@@ -85,16 +86,18 @@ function meta:DoorIndex()
 end
 
 function meta:GetDoorData()
+	if !IsValid(self) then return end
 	if self:IsBuyableProp() or self:IsScriptBuyable() then
-		if !nzDoors.PropDoors[self:EntIndex()] then return nil end
+		if !nzDoors.PropDoors[self:EntIndex()] then return end
 		return nzDoors.PropDoors[self:EntIndex()].flags
 	else
-		if !nzDoors.MapDoors[self:DoorIndex()] then return nil end
+		if !nzDoors.MapDoors[self:DoorIndex()] then return end
 		return nzDoors.MapDoors[self:DoorIndex()].flags
 	end
 end
 
 function meta:SetDoorData( tbl )
+	if !IsValid(self) then return end
 	if self:IsBuyableProp() or self:IsScriptBuyable() then
 		if !nzDoors.PropDoors[self:EntIndex()] then nzDoors.PropDoors[self:EntIndex()] = {} end
 		nzDoors.PropDoors[self:EntIndex()].flags = tbl
@@ -115,7 +118,7 @@ function nzDoors:DoorIndexByID( id )
 end
 
 function nzDoors:SetDoorDataByID( id, prop, tbl )
-	if !tbl then return end
+	--if !tbl then return end
 	if prop then
 		if !self.PropDoors[id] then self.PropDoors[id] = {} end
 		self.PropDoors[id].flags = tbl

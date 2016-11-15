@@ -7,7 +7,7 @@ end
 function nzRound:Waiting()
 
 	self:SetState( ROUND_WAITING )
-	hook.Call( "OnRoundWating", nzRound )
+	hook.Call( "OnRoundWaiting", nzRound )
 
 end
 
@@ -21,7 +21,7 @@ function nzRound:Init()
 
 end
 
-function nzRound:Prepare()
+function nzRound:Prepare( time )
 
 	if self:IsSpecial() then -- From previous round
 		local data = self:GetSpecialRoundData()
@@ -45,8 +45,8 @@ function nzRound:Prepare()
 	self:SetZombiesKilled( 0 )
 
 	--Notify
-	PrintMessage( HUD_PRINTTALK, "ROUND: " .. self:GetNumber() .. " preparing" )
-	hook.Call( "OnRoundPreperation", nzRound, self:GetNumber() )
+	--PrintMessage( HUD_PRINTTALK, "ROUND: " .. self:GetNumber() .. " preparing" )
+	hook.Call( "OnRoundPreparation", nzRound, self:GetNumber() )
 	--Play the sound
 
 	--Spawn all players
@@ -86,9 +86,19 @@ function nzRound:Prepare()
 			else
 				normalCount = self:GetZombiesMax()
 			end
+			
+			local normalDelay
+			if roundData.normalDelayMod then
+				local mod = roundData.normalDelayMod
+				normalDelay = mod(self:GetZombiesMax())
+			elseif roundData.normalDelay then
+				normalDelay = roundData.normalDelay
+			else
+				normalDelay = 0.25
+			end
 
 			local normalData = roundData.normalTypes
-			local normalSpawner = Spawner("nz_spawn_zombie_normal", normalData, normalCount, roundData.normalDelay or 0.25)
+			local normalSpawner = Spawner("nz_spawn_zombie_normal", normalData, normalCount, normalDelay or 0.25)
 
 			-- save the spawner to access data
 			self:SetNormalSpawner(normalSpawner)
@@ -107,9 +117,19 @@ function nzRound:Prepare()
 			else
 				specialCount = self:GetZombiesMax()
 			end
+			
+			local specialDelay
+			if roundData.normalDelayMod then
+				local mod = roundData.specialDelayMod
+				specialDelay = mod(self:GetZombiesMax())
+			elseif roundData.specialDelay then
+				specialDelay = roundData.specialDelay
+			else
+				specialDelay = 0.25
+			end
 
 			local specialData = roundData.specialTypes
-			local specialSpawner = Spawner("nz_spawn_zombie_special", specialData, specialCount, roundData.specialDelay or 0.25)
+			local specialSpawner = Spawner("nz_spawn_zombie_special", specialData, specialCount, specialDelay or 0.25)
 
 			-- save the spawner to access data
 			self:SetSpecialSpawner(specialSpawner)
@@ -117,7 +137,38 @@ function nzRound:Prepare()
 
 		-- update the zombiesmax (for win detection)
 		self:SetZombiesMax(normalCount + specialCount)
-
+		
+	-- Woah ... spooky round O_o
+	elseif self:GetNumber() == -1 then
+		
+		local normalrounddata = {["nz_zombie_walker"] = {chance = 100}}
+		local specialrounddata = {}
+		
+		for k,v in pairs(nzRound.SpecialData) do
+			if v.data then
+				if v.data.normalTypes then
+					for k3,v3 in pairs(v.data.normalTypes) do
+						local chance = v3.chance
+						normalrounddata[k3] = {["chance"] = chance/10}
+					end
+				end
+				if v.data.specialTypes then
+					for k3,v3 in pairs(v.data.specialTypes) do
+						local chance = v3.chance
+						specialrounddata[k3] = {["chance"] = chance/10}
+					end
+				end
+			end
+		end
+		
+		local normalSpawner = Spawner("nz_spawn_zombie_normal", normalrounddata, 1)
+		self:SetNormalSpawner(normalSpawner)
+		
+		if table.Count(specialrounddata) > 0 then
+			local specialSpawner = Spawner("nz_spawn_zombie_special", specialrounddata, 1, 4)
+			self:SetSpecialSpawner(specialSpawner)
+		end
+			
 
 	-- else if no data was set continue with the gamemodes default spawning
 	-- if the round is special use the gamemodes default special round (Hellhounds)
@@ -155,7 +206,17 @@ function nzRound:Prepare()
 	CurRoundOverSpawned = false
 
 	--Start the next round
-	timer.Simple(GetConVar("nz_round_prep_time"):GetFloat(), function() self:Start() end )
+	local time = time or GetConVar("nz_round_prep_time"):GetFloat()
+	if self:GetNumber() == -1 then time = 20 end
+	--timer.Simple(time, function() if self:InProgress() then self:Start() end end )
+	
+	local starttime = CurTime() + time
+	hook.Add("Think", "nzRoundPreparing", function()
+		if CurTime() > starttime then
+			if self:InProgress() then self:Start() end
+			hook.Remove("Think", "nzRoundPreparing")
+		end
+	end)
 
 	if self:IsSpecial() then
 		self:SetNextSpecialRound( self:GetNumber() + GetConVar("nz_round_special_interval"):GetInt() )
@@ -187,16 +248,21 @@ function nzRound:Start()
 	end
 
 	--Notify
-	PrintMessage( HUD_PRINTTALK, "ROUND: " .. self:GetNumber() .. " started" )
+	--PrintMessage( HUD_PRINTTALK, "ROUND: " .. self:GetNumber() .. " started" )
 	hook.Call("OnRoundStart", nzRound, self:GetNumber() )
-	--nz.Notifications.Functions.PlaySound("nz/round/round_start.mp3", 1)
+	--nzNotifications:PlaySound("nz/round/round_start.mp3", 1)
 
 	timer.Create( "NZRoundThink", 0.1, 0, function() self:Think() end )
 
 	nzWeps:DoRoundResupply()
+	
+	if self:GetNumber() == -1 then
+		self.InfinityStart = CurTime()
+	end
 end
 
 function nzRound:Think()
+	if self.Frozen then return end
 	hook.Call( "OnRoundThink", self )
 	--If all players are dead, then end the game.
 	if #player.GetAllPlayingAndAlive() < 1 then
@@ -222,7 +288,7 @@ function nzRound:Think()
 		end
 	end
 
-	-- this will trigger if no more zombies will spawn, but more a re required to end a round
+	-- this will trigger if no more zombies will spawn, but more are required to end a round
 	if zombiesToSpawn == 0 and self:GetZombiesKilled() + numzombies < self:GetZombiesMax() then
 		if self:GetNormalSpawner() then
 			self:GetNormalSpawner():SetZombiesToSpawn(self:GetZombiesMax() - (self:GetZombiesKilled() + numzombies))
@@ -235,7 +301,7 @@ function nzRound:Think()
 	
 	self:SetZombiesToSpawn(zombiesToSpawn)
 
-	if ( self:GetZombiesKilled() >= self:GetZombiesMax() ) then
+	if ( self:GetZombiesKilled() >= self:GetZombiesMax() and self:GetNumber() != -1 ) then
 		if numzombies <= 0 then
 			self:Prepare()
 			timer.Remove( "NZRoundThink" )
@@ -246,7 +312,7 @@ end
 function nzRound:ResetGame()
 	--Main Behaviour
 	nzDoors:LockAllDoors()
-	self:SetState( ROUND_WAITING )
+	self:Waiting()
 	--Notify
 	PrintMessage( HUD_PRINTTALK, "GAME READY!" )
 	--Reset variables
@@ -264,6 +330,8 @@ function nzRound:ResetGame()
 	for k,v in pairs( player.GetAll() ) do
 		v:KillDownedPlayer( true )
 		v.SoloRevive = nil -- Reset Solo Revive counter
+		v:SetPreventPerkLoss(false)
+		v:RemovePerks()
 	end
 
 	--Remove all enemies
@@ -300,6 +368,11 @@ function nzRound:ResetGame()
 	--Reset easter eggs
 	nzEE:Reset()
 	nzEE.Major:Reset()
+	
+	-- Load queued config if any
+	if nzMapping.QueuedConfig then
+		nzMapping:LoadConfig(nzMapping.QueuedConfig.config, nzMapping.QueuedConfig.loader)
+	end
 
 end
 
@@ -309,7 +382,24 @@ function nzRound:End()
 	--Notify
 	PrintMessage( HUD_PRINTTALK, "GAME OVER!" )
 	PrintMessage( HUD_PRINTTALK, "Restarting in 10 seconds!" )
-	nz.Notifications.Functions.PlaySound("nz/round/game_over_4.mp3", 21)
+	if self:GetNumber() == -1 then
+		if self.InfinityStart then
+			local time = string.FormattedTime(CurTime() - self.InfinityStart)
+			local timestr = string.format("%02i:%02i:%02i", time.h, time.m, time.s)
+			net.Start("nzMajorEEEndScreen")
+				net.WriteBool(false)
+				net.WriteBool(false)
+				net.WriteString("You survived for "..timestr.." in Round Infinity")
+				net.WriteBool(false)
+			net.Broadcast()
+		end
+		nzNotifications:PlaySound("nz/round/game_over_-1.mp3", 21)
+	elseif nzMapping.OfficialConfig then
+		nzNotifications:PlaySound("nz/round/game_over_5.mp3", 21)
+	else
+		nzNotifications:PlaySound("nz/round/game_over_4.mp3", 21)
+	end
+	
 	timer.Simple(10, function()
 		self:ResetGame()
 	end)
@@ -317,39 +407,48 @@ function nzRound:End()
 	hook.Call( "OnRoundEnd", nzRound )
 end
 
-function nzRound:Win(message)
+function nzRound:Win(message, keepplaying, time)
 	if !message then message = "You survived after " .. self:GetNumber() .. " rounds!" end
-	
-	net.Start("nzMajorEEEndScreen")
-		net.WriteBool(true)
-		net.WriteString(message)
-	net.Broadcast()
+	local time = time or 10
 	
 	-- Set round state to Game Over
-	nzRound:SetState( ROUND_GO )
-	--Notify with chat message
-	PrintMessage( HUD_PRINTTALK, "GAME OVER!" )
-	PrintMessage( HUD_PRINTTALK, "Restarting in 10 seconds!" )
-	
-	if self.OverrideEndSlomo then
-		game.SetTimeScale(0.25)
-		timer.Simple(2, function() game.SetTimeScale(1) end)
+	if !keepplaying then
+		nzRound:SetState( ROUND_GO )
+		--Notify with chat message
+		PrintMessage( HUD_PRINTTALK, "GAME OVER!" )
+		PrintMessage( HUD_PRINTTALK, "Restarting in 10 seconds!" )
+		
+		if self.OverrideEndSlomo then
+			game.SetTimeScale(0.25)
+			timer.Simple(2, function() game.SetTimeScale(1) end)
+		end
+		
+		timer.Simple(time, function()
+			nzRound:ResetGame()
+		end)
+		
+		hook.Call( "OnRoundEnd", nzRound )
+	else
+		for k,v in pairs(player.GetAllPlaying()) do
+			v:SetTargetPriority(TARGET_PRIORITY_NONE)
+		end
+		if self.OverrideEndSlomo then
+			game.SetTimeScale(0.25)
+			timer.Simple(2, function() game.SetTimeScale(1) end)
+		end
+		timer.Simple(time, function()
+			for k,v in pairs(player.GetAllPlaying()) do
+				v:SetTargetPriority(TARGET_PRIORITY_PLAYER)
+				--v:GivePermaPerks()
+			end
+		end)
 	end
-	
-	timer.Simple(10, function()
-		nzRound:ResetGame()
-	end)
 
-	hook.Call( "OnRoundEnd", nzRound )
 end
 
-function nzRound:Lose(message)
+function nzRound:Lose(message, time, camstart, camend)
 	if !message then message = "You got overwhelmed after " .. self:GetNumber() .. " rounds!" end
-	
-	net.Start("nzMajorEEEndScreen")
-		net.WriteBool(false)
-		net.WriteString(message)
-	net.Broadcast()
+	local time = time or 10
 	
 	-- Set round state to Game Over
 	nzRound:SetState( ROUND_GO )
@@ -362,7 +461,7 @@ function nzRound:Lose(message)
 		timer.Simple(2, function() game.SetTimeScale(1) end)
 	end
 	
-	timer.Simple(10, function()
+	timer.Simple(time, function()
 		nzRound:ResetGame()
 	end)
 
@@ -374,6 +473,7 @@ function nzRound:Create(on)
 		if self:InState( ROUND_WAITING ) then
 			PrintMessage( HUD_PRINTTALK, "The mode has been set to creative mode!" )
 			self:SetState( ROUND_CREATE )
+			hook.Call("OnRoundCreative", nzRound)
 			--We are in create
 			for _, ply in pairs( player.GetAll() ) do
 				if ply:IsSuperAdmin() then
@@ -386,6 +486,13 @@ function nzRound:Create(on)
 
 			nzMapping:CleanUpMap()
 			nzDoors:LockAllDoors()
+			
+			for k,v in pairs(ents.GetAll()) do
+				if v.NZOnlyVisibleInCreative then
+					v:SetNoDraw(false)
+				end
+			end
+			
 		else
 			PrintMessage( HUD_PRINTTALK, "Can only go in Creative Mode from Waiting state." )
 		end
@@ -395,6 +502,12 @@ function nzRound:Create(on)
 		--We are in play mode
 		for k,v in pairs(player.GetAll()) do
 			v:SetSpectator()
+		end
+		
+		for k,v in pairs(ents.GetAll()) do
+			if v.NZOnlyVisibleInCreative then -- This is set in each entity's file
+				v:SetNoDraw(true) -- Yes this improves FPS by ~50% over a client-side convar and round state check
+			end
 		end
 	else
 		PrintMessage( HUD_PRINTTALK, "Not in Creative Mode." )
@@ -457,4 +570,18 @@ function nzRound:SetupGame()
 
 	hook.Call( "OnGameBegin", nzRound )
 
+end
+
+function nzRound:Freeze(bool)
+	self.Frozen = bool
+end
+
+function nzRound:RoundInfinity(nokill)
+	if !nokill then
+		nzPowerUps:Nuke(nil, true) -- Nuke kills them all, no points, no position delay
+	end
+
+	nzRound:SetNumber( -2 )
+	nzRound:SetState(ROUND_PROG)
+	nzRound:Prepare()
 end

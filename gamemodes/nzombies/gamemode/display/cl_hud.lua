@@ -1,5 +1,5 @@
-//
-nzDisplay = {}
+-- 
+nzDisplay = nzDisplay or AddNZModule("Display")
 
 local bloodline_points = Material("bloodline_score2.png", "unlitgeneric smooth")
 local bloodline_gun = Material("cod_hud.png", "unlitgeneric smooth")
@@ -46,7 +46,7 @@ local function ScoreHud()
 
 			for k,v in pairs(player.GetAll()) do
 				local hp = v:Health()
-				if hp == 0 then hp = "Dead" elseif Revive.Players[v:EntIndex()] then hp = "Downed" else hp = hp .. " HP"  end
+				if hp == 0 then hp = "Dead" elseif nzRevive.Players[v:EntIndex()] then hp = "Downed" else hp = hp .. " HP"  end
 				if v:GetPoints() >= 0 then
 
 					local text = ""
@@ -107,14 +107,14 @@ local function GunHud()
 			surface.DrawTexturedRect(ScrW() - 630*scale, ScrH() - 225*scale, 600*scale, 225*scale)
 			if IsValid(wep) then
 				if wep:GetClass() == "nz_multi_tool" then
-					draw.SimpleTextOutlined(nz.Tools.ToolData[wep.ToolMode].displayname or wep.ToolMode, "nz.display.hud.small", ScrW() - 240*scale, ScrH() - 125*scale, Color(255,255,255,255), TEXT_ALIGN_RIGHT, TEXT_ALIGN_BOTTOM, 2, Color(0,0,0))
-					draw.SimpleTextOutlined(nz.Tools.ToolData[wep.ToolMode].desc or "", "nz.display.hud.smaller", ScrW() - 240*scale, ScrH() - 90*scale, Color(255,255,255,255), TEXT_ALIGN_RIGHT, TEXT_ALIGN_TOP, 2, Color(0,0,0))
+					draw.SimpleTextOutlined(nzTools.ToolData[wep.ToolMode].displayname or wep.ToolMode, "nz.display.hud.small", ScrW() - 240*scale, ScrH() - 125*scale, Color(255,255,255,255), TEXT_ALIGN_RIGHT, TEXT_ALIGN_BOTTOM, 2, Color(0,0,0))
+					draw.SimpleTextOutlined(nzTools.ToolData[wep.ToolMode].desc or "", "nz.display.hud.smaller", ScrW() - 240*scale, ScrH() - 90*scale, Color(255,255,255,255), TEXT_ALIGN_RIGHT, TEXT_ALIGN_TOP, 2, Color(0,0,0))
 				else
 					local name = wep:GetPrintName()
 					local clip = wep:Clip1()
 					if !name or name == "" then name = wep:GetClass() end
-					if wep.pap then
-						name = nz.Display_PaPNames[wep:GetClass()] or nz.Display_PaPNames[name] or "Upgraded "..name
+					if wep:HasNZModifier("pap") then
+						name = wep.NZPaPName or nz.Display_PaPNames[wep:GetClass()] or nz.Display_PaPNames[name] or "Upgraded "..name
 					end
 					if clip >= 0 then
 						draw.SimpleTextOutlined(name, "nz.display.hud.small", ScrW() - 390*scale, ScrH() - 120*scale, Color(255,255,255,255), TEXT_ALIGN_RIGHT, TEXT_ALIGN_BOTTOM, 2, Color(0,0,0))
@@ -157,7 +157,7 @@ local Laser = Material( "cable/redlaser" )
 function nzDisplay.DrawLinks( ent, link )
 
 	local tbl = {}
-	//Check for zombie spawns
+	-- Check for zombie spawns
 	for k, v in pairs(ents.GetAll()) do
 		if v:IsBuyableProp()  then
 			if nzDoors.PropDoors[k] != nil then
@@ -179,7 +179,7 @@ function nzDisplay.DrawLinks( ent, link )
 	end
 
 
-	// Draw
+	--  Draw
 	if tbl[1] != nil then
 		for k,v in pairs(tbl) do
 			render.SetMaterial( Laser )
@@ -300,6 +300,7 @@ end
 local round_white = 0
 local round_alpha = 255
 local round_num = 0
+local infmat = Material("materials/round_-1.png", "smooth")
 local function RoundHud()
 
 	local text = ""
@@ -308,7 +309,13 @@ local function RoundHud()
 	local h = ScrH() - 30
 	local round = round_num
 	local col = Color(200 + round_white*55, round_white, round_white,round_alpha)
-	if round < 11 then
+	if round == -1 then
+		--text = "∞"
+		surface.SetMaterial(infmat)
+		surface.SetDrawColor(col.r,round_white,round_white,round_alpha)
+		surface.DrawTexturedRect(w - 25, h - 100, 200, 100)
+		return
+	elseif round < 11 then
 		for i = 1, round do
 			if i == 5 or i == 10 then
 				text = text.." "
@@ -334,13 +341,17 @@ local prevroundspecial = false
 local function StartChangeRound()
 
 	print(nzRound:GetNumber(), nzRound:IsSpecial())
+	
+	local lastround = nzRound:GetNumber()
 
-	if nzRound:GetNumber() >= 1 then
+	if lastround >= 1 then
 		if prevroundspecial then
 			surface.PlaySound("nz/round/special_round_end.wav")
 		else
 			surface.PlaySound("nz/round/round_end.mp3")
 		end
+	elseif lastround == -2 then
+		surface.PlaySound("nz/round/round_-1_prepare.mp3")
 	else
 		round_num = 0
 	end
@@ -372,7 +383,9 @@ local function StartChangeRound()
 				if roundchangeending then
 					round_num = nzRound:GetNumber()
 					round_charger = 0.5
-					if nzRound:IsSpecial() then
+					if round_num == -1 then
+						--surface.PlaySound("nz/easteregg/motd_round-03.wav")
+					elseif nzRound:IsSpecial() then
 						surface.PlaySound("nz/round/special_round_start.wav")
 						prevroundspecial = true
 					else
@@ -395,8 +408,8 @@ end
 
 local grenade_icon = Material("grenade-256.png", "unlitgeneric smooth")
 local function DrawGrenadeHud()
-	local num = LocalPlayer():GetAmmoCount("nz_grenade")
-	local numspecial = LocalPlayer():GetAmmoCount("nz_specialgrenade")
+	local num = LocalPlayer():GetAmmoCount(GetNZAmmoID("grenade") or -1)
+	local numspecial = LocalPlayer():GetAmmoCount(GetNZAmmoID("specialgrenade") or -1)
 	local scale = (ScrW()/1920 + 1)/2
 
 	--print(num)
@@ -419,7 +432,7 @@ local function DrawGrenadeHud()
 	--surface.DrawTexturedRect(ScrW()/2, ScrH()/2, 100, 100)
 end
 
-//Hooks
+-- Hooks
 hook.Add("HUDPaint", "pointsNotifcationHUD", DrawPointsNotification )
 hook.Add("HUDPaint", "roundHUD", StatesHud )
 hook.Add("HUDPaint", "scoreHUD", ScoreHud )
@@ -430,7 +443,7 @@ hook.Add("HUDPaint", "vultureVision", VultureVision )
 hook.Add("HUDPaint", "roundnumHUD", RoundHud )
 hook.Add("HUDPaint", "grenadeHUD", DrawGrenadeHud )
 
-hook.Add("OnRoundPreperation", "BeginRoundHUDChange", StartChangeRound)
+hook.Add("OnRoundPreparation", "BeginRoundHUDChange", StartChangeRound)
 hook.Add("OnRoundStart", "EndRoundHUDChange", EndChangeRound)
 
 local blockedweps = {
@@ -466,6 +479,8 @@ function GM:HUDWeaponPickedUp( wep )
 
 	table.insert( self.PickupHistory, pickup )
 	self.PickupHistoryLast = pickup.time
+	
+	if wep.NearWallEnabled then wep.NearWallEnabled = false end
 
 end
 

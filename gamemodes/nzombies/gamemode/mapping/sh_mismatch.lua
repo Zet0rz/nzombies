@@ -22,11 +22,7 @@ else
 		nzMapping.MismatchData[id] = data
 	end)
 
-	net.Receive("nzMappingMismatchEnd", function()
-		OpenMismatchInterface()
-	end)
-
-	function OpenMismatchInterface()
+	local function OpenMismatchInterface()
 		local frame = vgui.Create("DFrame")
 		frame:SetSize(400, 500)
 		frame:Center()
@@ -75,7 +71,7 @@ else
 			end
 			sheet:SetActiveTab(newtab)
 			
-			timer.Simple(0.1, function() 
+			timer.Simple(0.1, function()
 				if IsValid(tab) then
 					sheet.sheets[tab] = nil
 					sheet:CloseTab(tab) 
@@ -92,6 +88,7 @@ else
 			sheet.CloseTabAndOpenNew(true)
 		end
 	end
+	net.Receive("nzMappingMismatchEnd", OpenMismatchInterface)
 end
 
 function CreateMismatchCheck(id, sv_check, cl_interface, sv_correct)
@@ -255,8 +252,14 @@ CreateMismatchCheck("Map Settings", function()
 	local tbl = {}
 	local settings = nzMapping.Settings
 
-	if !weapons.Get(settings.startwep) then tbl["startwep"] = settings.startwep end
-	-- Later add stuff like model packs, special round entity types etc.
+	local startwep = settings.startwep or nzConfig.BaseStartingWeapons[1] or "Invalid"
+	if !weapons.Get(startwep) then tbl["startwep"] = startwep end
+	
+	local specialround = settings.specialroundtype or "Invalid"
+	if !nzRound.SpecialData[specialround] and specialround != "None" then tbl["specialroundtype"] = specialround end
+	
+	local boss = settings.bosstype or "Invalid"
+	if !nzRound.BossData[boss] and boss != "None" then tbl["bosstype"] = boss end
 
 	return tbl
 
@@ -273,13 +276,37 @@ CreateMismatchCheck("Map Settings", function()
 		local tbl = nzMapping.MismatchData["Map Settings"]
 
 		if tbl.startwep then
-			local choice = properties:CreateRow( "Invalid Map Settings", "Start Weapon" )
+			local choice = properties:CreateRow( "Start Weapon", tbl.startwep )
 			choice:Setup( "Combo", {} )
 			for k,v2 in pairs(weapons.GetList()) do
 				choice:AddChoice(v2.PrintName and v2.PrintName != "" and v2.PrintName or v2.ClassName, v2.ClassName, false)
 			end
 			choice.DataChanged = function(self, val)
 				nzMapping.MismatchData["Map Settings"]["startwep"] = val
+			end
+		end
+		if tbl.specialroundtype then
+			local choice = properties:CreateRow( "Special Round", tbl.specialroundtype )
+			choice:Setup( "Combo", {} )
+			for k,v in pairs(nzRound.SpecialData) do
+				choice:AddChoice(k, k, false)
+			end
+			choice:AddChoice(" None", "None", true)
+			nzMapping.MismatchData["Map Settings"]["specialroundtype"] = "None" -- Default
+			choice.DataChanged = function(self, val)
+				nzMapping.MismatchData["Map Settings"]["specialroundtype"] = val
+			end
+		end
+		if tbl.bosstype then
+			local choice = properties:CreateRow( "Boss", tbl.bosstype )
+			choice:Setup( "Combo", {} )
+			for k,v in pairs(nzRound.BossData) do
+				choice:AddChoice(k, k, false)
+			end
+			choice:AddChoice(" None", "None", true)
+			nzMapping.MismatchData["Map Settings"]["bosstype"] = "None" -- Default
+			choice.DataChanged = function(self, val)
+				nzMapping.MismatchData["Map Settings"]["bosstype"] = val
 			end
 		end
 
@@ -297,6 +324,12 @@ CreateMismatchCheck("Map Settings", function()
 
 		if data.startwep then
 			nzMapping.Settings.startwep = data.startwep
+		end
+		if data.specialroundtype then
+			nzMapping.Settings.specialroundtype = data.specialroundtype
+		end
+		if data.bosstype then
+			nzMapping.Settings.bosstype = data.bosstype
 		end
 
 		for k,v in pairs(player.GetAll()) do
@@ -465,9 +498,9 @@ CreateMismatchCheck("Random Box Weapons", function()
 	local tbl = {}
 	if nzMapping.Settings.rboxweps and table.Count(nzMapping.Settings.rboxweps) > 0 then
 		for k,v in pairs(nzMapping.Settings.rboxweps) do
-			if !weapons.Get(v) then
-				print("Random Box has non-existant weapon class: " .. v .. "!")
-				tbl[v] = true
+			if !weapons.Get(k) then
+				print("Random Box has non-existant weapon class: " .. k .. "!")
+				tbl[k] = true
 			end
 		end
 	end
@@ -490,10 +523,12 @@ end, function(frame)
 		choice:AddChoice( " Remove ...", "nz_removeweapon", true )
 		nzMapping.MismatchData["Random Box Weapons"][k] = "nz_removeweapon"
 		for _, v2 in pairs(weapons.GetList()) do
-			if v2.Category and v2.Category != "" then
-				choice:AddChoice(v2.PrintName and v2.PrintName != "" and v2.Category.. " - "..v2.PrintName or v2.ClassName, v2.ClassName, false)
-			else
-				choice:AddChoice(v2.PrintName and v2.PrintName != "" and v2.PrintName or v2.ClassName, v2.ClassName, false)
+			if !v2.NZPreventBox and !v2.NZTotalBlacklist then
+				if v2.Category and v2.Category != "" then
+					choice:AddChoice(v2.PrintName and v2.PrintName != "" and v2.Category.. " - "..v2.PrintName or v2.ClassName, v2.ClassName, false)
+				else
+					choice:AddChoice(v2.PrintName and v2.PrintName != "" and v2.PrintName or v2.ClassName, v2.ClassName, false)
+				end
 			end
 		end
 		choice.DataChanged = function(self, val)
@@ -514,13 +549,12 @@ end, function(frame)
 end, function( data )
 	if nzMapping.Settings.rboxweps and table.Count(nzMapping.Settings.rboxweps) > 0 then
 		for k,v in pairs(nzMapping.Settings.rboxweps) do
-			local new = data[v]
+			local new = data[k]
 			if new then
-				if new == "nz_removeweapon" then
-					table.RemoveByValue(nzMapping.Settings.rboxweps, v)
-				else
-					nzMapping.Settings.rboxweps[table.KeyFromValue(nzMapping.Settings.rboxweps, v)] = new
+				if new != "nz_removeweapon" then
+					nzMapping.Settings.rboxweps[new] = v -- Insert new weapon with same weight
 				end
+				nzMapping.Settings.rboxweps[k] = nil -- Remove old one regardless
 			end
 		end
 	end

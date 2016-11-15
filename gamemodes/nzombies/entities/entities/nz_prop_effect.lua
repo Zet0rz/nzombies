@@ -15,6 +15,8 @@ ENT.Instructions	= ""
 ENT.Spawnable		= false
 ENT.AdminOnly		= false
 
+ENT.NZOnlyVisibleInCreative = true
+
 --[[---------------------------------------------------------
 	Name: Initialize
 -----------------------------------------------------------]]

@@ -204,9 +204,9 @@ local ghosttraceentities = {
 function GM:EntityFireBullets(ent, data)
 
 	-- Fire the PaP shooting sound if the weapon is PaP'd
-	--print(wep, wep.pap)
-	if ent:IsPlayer() and IsValid(ent:GetActiveWeapon()) and ent:GetActiveWeapon().pap then
-		ent:GetActiveWeapon():EmitSound("nz/effects/pap_shoot_glock20.wav", 105, 100)
+	--print(wep, wep:HasNZModifier("pap"))
+	if ent:IsPlayer() and IsValid(ent:GetActiveWeapon()) and ent:GetActiveWeapon():HasNZModifier("pap") then
+		ent:EmitSound("nz/effects/pap_shoot_glock20.wav", 60, 100, 0.7)
 	end
 
 	-- Perform a trace that filters out entities from the table above
@@ -236,57 +236,16 @@ function GM:EntityFireBullets(ent, data)
 	end
 end
 
--- Create new ammo types for each weapon slot; that way all 3 weapons have seperate ammo even if they share type
-
-game.AddAmmoType( {
-	name = "nz_weapon_ammo_1",
-	dmgtype = DMG_BULLET,
-	tracer = TRACER_LINE,
-	plydmg = 0,
-	npcdmg = 0,
-	force = 2000,
-	minsplash = 10,
-	maxsplash = 5
-} )
-
-game.AddAmmoType( {
-	name = "nz_weapon_ammo_2",
-	dmgtype = DMG_BULLET,
-	tracer = TRACER_LINE,
-	plydmg = 0,
-	npcdmg = 0,
-	force = 2000,
-	minsplash = 10,
-	maxsplash = 5
-} )
-
--- Third one is pretty much only used with Mule Kick
-game.AddAmmoType( {
-	name = "nz_weapon_ammo_3",
-	dmgtype = DMG_BULLET,
-	tracer = TRACER_LINE,
-	plydmg = 0,
-	npcdmg = 0,
-	force = 2000,
-	minsplash = 10,
-	maxsplash = 5
-} )
-
-local ammoids = ammoids or {}
-hook.Add("InitPostEntity", "nzRegisterAmmoIDs", function()
-	for i = 1, 3 do
-		local id = game.GetAmmoID("nz_weapon_ammo_"..i)
-		if id != -1 then
-			ammoids[i] = id
-		end
-		--print(i, id)
+-- This is so awkward ._.
+-- game.AddAmmoType doesn't take duplicates into account and has a hardcoded limit of 128
+-- which means our ammo types won't exist if we pass that limit with the countless duplicates :(
+local oldaddammo = game.AddAmmoType
+local alreadyexist = alreadyexist or {}
+function game.AddAmmoType( tbl ) -- Let's prevent that!
+	if tbl.name and !alreadyexist[tbl.name] then -- Only if the ammo doesn't already exist!
+		oldaddammo(tbl) -- THEN we can proceed with normal procedure!
+		alreadyexist[tbl.name] = true
 	end
-end)
-
-local oldammotype = wepMeta.GetPrimaryAmmoType
-function wepMeta:GetPrimaryAmmoType()
-	local id = self:GetNWInt("SwitchSlot", -1)
-	--PrintTable(ammoids)
-	--if ammoids[id] then print("HKDAHKDH! It's here! "..id) else print("sadface "..id) end
-	return ammoids[id] or oldammotype(self)
 end
+-- This doesn't work for lua scripts run before the gamemode, but should help for weapons adding ammo types on-the-fly!
+-- This will also prevent some ammo types from being added - that's fine. Our gamemode doesn't need them.

@@ -8,7 +8,9 @@ function nzItemCarry.OnPlayerPickItemUp( ply, ent )
 	
 	-- Used in map scripting
 	if ent.OnUsed and type(ent.OnUsed) == "function" then
-		ent:OnUsed(ply)
+		if ply:KeyPressed(IN_USE) then
+			ent:OnUsed(ply)
+		end
 	end
 	
 	local category = ent:GetNWString("NZItemCategory")
@@ -29,3 +31,23 @@ function nzItemCarry.RemoveItemsOnRemoved( ent )
 	end
 end
 hook.Add( "EntityRemoved", "nzItemCarryRemoveItems", nzItemCarry.RemoveItemsOnRemoved )
+
+-- These correctly obey Use types (SIMPLE_USE etc.) by directly injecting into ENTITY:Use()
+
+local meta = FindMetaTable("Entity")
+function meta:AddUseFunction( func )
+	local olduse = self.Use
+	if olduse then
+		self.Use = function(self2,a,b,c,d)
+			olduse(self2,a,b,c,d)
+			func(self2,a,b,c,d)
+		end
+	else
+		self:ReplaceUseFunction(func)
+	end
+end
+function meta:ReplaceUseFunction( func )
+	self.Use = function(self2,a,b,c,d)
+		func(self2,a,b,c,d)
+	end
+end

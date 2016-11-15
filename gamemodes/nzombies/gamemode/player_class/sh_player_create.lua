@@ -24,6 +24,17 @@ function PLAYER:Loadout()
 	-- Creation Tools
 	self.Player:Give( "weapon_physgun" )
 	self.Player:Give( "nz_multi_tool" )
+	
+	timer.Simple(0.1, function()
+		if IsValid(self.Player) then
+			if !self.Player:HasWeapon( "weapon_physgun" ) then
+				self.Player:Give( "weapon_physgun" )
+			end
+			if !self.Player:HasWeapon( "nz_multi_tool" ) then
+				self.Player:Give( "nz_multi_tool" )
+			end
+		end
+	end)
 
 end
 

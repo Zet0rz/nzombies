@@ -6,12 +6,12 @@ function GM:OnReloaded( )
 		if v:IsDoor() or v:IsBuyableProp() then
 			local data = v.Data
 			if data != nil then
-				nz.nzDoors.Functions.CreateLink(v, data)
+				nzDoors:CreateLink(v, data)
 			end
 		end
 	end
 	
 	
-	nz.Players.Functions.FullSync( ply )
+	nzPlayers:FullSync( ply )
 	
 end

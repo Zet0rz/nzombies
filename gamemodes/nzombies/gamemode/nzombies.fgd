@@ -1,12 +1,98 @@
 @include "base.fgd" 
 
-@PointClass base(Targetname, Origin, Angles) = nz_electricity :
-	"Fires outputs when electricity is turned on or off, and can also turn it on or off itself."
+@PointClass base(Targetname, Origin, Angles) = nz_electricity : "Fires outputs when electricity is turned on or off, and can also turn it on or off itself. Will be removed if Map Extensions is not ticked in the loaded config."
 [
 	input TurnElectricityOn(void) : "Turns on electricity. Pass 1 to make it silent."
 	input TurnElectricityOff(void) : "Turns off electricity. Pass 1 to make it silent."
 
-	output OnInitialized(void) : "Fires when the entity is created in nZombies. You can use this to turn off the lights only in this gamemode."
+	output OnInitialized(void) : "Fires when the entity is created in nZombies."
 	output OnElectricityOn(void) : "Fires when the electricity is turned on."
 	output OnElectricityOff(void) : "Fires when the electricity is turned off."
+]
+
+@PointClass base(Origin) iconsprite("editor/game_text.vmt") = nz_autoload_config : 
+	"Lets you set a Map Official config. Remember to tick Map Extensions in Map Settings tool for Hammer entities to not get removed."
+[
+	config(string) : "Config Name" : "" : "The name of the config to autoload. Should only be the savename, not map name or Workshop ID."
+]
+
+@PointClass base(Targetname, PlayerClass, Angles) studio("models/editor/playerstart.mdl") = nz_zombie_spawn :
+	"Allows you to set where Zombies spawn to be controlled via map logic. These work regardless of links. Will be removed if Map Extensions is not ticked in the loaded config."
+[
+	input EnableSpawn(void) : "Enables spawnpoint."
+	input DisableSpawn(void) : "Disables spawnpoint."
+]
+
+@PointClass base(Targetname) iconsprite("editor/obsolete.vmt") = nz_door_listener : 
+	"Listens for a specific Door Link and outputs when this link is opened/closed. Links are set in Creative Mode in-game. Can also open/close door links. Will be removed if Map Extensions is not ticked in the loaded config."
+[
+	link(string) : "Door Link" : "" : "The name of the link the door(s) to listen for has set. Make sure it matches your config's links."
+	
+	input OpenLinkedDoors(void) : "Opens all doors with the selected link."
+	input CloseLinkedDoors(void) : "Closes all doors with the selected link."
+	
+	output OnDoorOpened(string) : "Fires when the door with the selected link is opened. If no link is selected, fires on all door openings. Passes string [door link]."
+	output OnDoorClosed(string) : "Fires when the door with the selected link is closed, including on map reset. If no link is selected, fires on all door closings. Passes string [door link]."
+]
+
+@SolidClass base(Trigger, Targetname) = nz_trigger_buyable :
+	"Triggers when the player buys this entity by looking at it and pressing E if he has enough points. Will be removed if Map Extensions is not ticked in the loaded config."
+[
+	points(integer) : "Cost" : 1000 : "The cost to use this entity. Set to 0 to make it free. Set negative to give points."
+	text(string) : "Display Text" : "Press E to buy for 1000" : "Text to display for players when looking at this entity."
+	delay(float) : "Cooldown" : 1 : "Use Lock/Unlock for more advanced control."
+	
+	requireditem(string) : "(Optional) Required Item ID" : : "If set, requires the Inventory item with this ID to be used."
+	nothastext(string) : "Display Text when missing item" : "You don't have the required items!" : "The text to display when the player doesn't have this item."
+	
+	input Lock(void) : "Prevent this from being bought."
+	input Unlock(void) : "Allow this to be bought again."
+	
+	output OnBought(integer) : "Fires when a player successfully bought this trigger."
+]
+
+@PointClass base(Targetname, Origin, Angles) = nz_game_listener : "Fires outputs Fires outputs with game events such as Player Downed or Round Progressed. Will be removed if Map Extensions is not ticked in the loaded config."
+[
+	output OnGameStart(void) : "Fires when all players have readied and the game has started. Fires after the initial map cleanup."
+	output OnRoundPrepare(integer) : "Fires when a round has been completed and the next round prepares. Passes the preparing round number."
+	output OnRoundStart(integer) : "Fires when the round starts. Passes the started round number."
+	output OnPlayerDowned(void) : "Fires when a player has been downed. The player will be the !activator."
+	output OnPlayerRevived(void) : "Fires when a player has been revived. The player will be the !activator."
+	output OnGameOver(integer) : "Fires when all players have been downed and the game has ended. Passes the current round number."
+	output OnGameReset(void) : "Fires when the config initially loads and after every Game Over when players can ready again."
+]
+
+@PointClass base(Targetname, Origin) = nz_carryitem_creator : "Lets you set up an item using nZombie's CarryItem/Inventory system. Will be removed if Map Extensions is not ticked in the loaded config."
+[
+	id(string) : "ID" : : "ID to associate with this item and to spawn it."
+	text(string) : "Pickup Text" : "Press E to pick up" : "Text to display when players are looking at the item."
+	icon(string) : "Icon path" : "spawnicons/models/props_junk/gascan001a.png" : "Filepath to the icon it should be represented by."
+	model(string) : "Model path" : "models/props_junk/gascan001a.mdl" : "Filepath to the model the item will be spawned with."
+	shared(integer) : "Shared" : 0 : "(0/1) Will be carried by all players when picked up by any player if set to 1."
+	notification(integer) : "Notify players" : 1 : "(0/1) Will notify all players when anyone has picked the item up."
+	dropondown(integer) : "Drop on downed" : 1 : "(0/1) Will drop the item when the carrying player gets downed."
+	
+	input Update(void) : "Create the item and/or edit its properties on-the-fly."
+	input RemoveAllInstances(void) : "Removes any dropped item of this ID and clears any player's inventory of it."
+	input SpawnRandomly(void) : "Randomly spawn the item on any set nz_carryitem_spawner with this ID."
+	
+	output OnPickedUp(void) : "Fires when a player has picked up this item. The player will be the !activator."
+	output OnDropped(void) : "Fires when the item is dropped. The player dropping the item will be the !activator."
+	output OnSpawned(void) : "Fires when this item has spawned."
+]
+
+@PointClass base(Targetname, Origin, Angles) studioprop() = nz_carryitem_spawner : "Lets you spawn an item created by a nz_carryitem_creator. Will be removed if Map Extensions is not ticked in the loaded config."
+[
+	id(string) : "ID" : : "ID of the item to spawn."
+	input SpawnItem(void) : "Spawn the item with this ID on this spawnpoint."
+]
+
+@PointClass base(Targetname, Origin) = nz_carryitem_checker : "Lets you check if players are carrying this item. Will be removed if Map Extensions is not ticked in the loaded config."
+[
+	id(string) : "ID" : : "ID of the item to check for."
+	
+	input Check(void) : "Checks whether !activator is carrying the item of the set ID. Calls OnCheckSuccess when true, OnCheckFail otherwise."
+	
+	output OnCheckSuccess(void) : "Fires when the check has successfully passed and !activator was carrying the item."
+	output OnCheckFail(void) : "Fires when the check failed to pass and !activator was not carrying the item."
 ]

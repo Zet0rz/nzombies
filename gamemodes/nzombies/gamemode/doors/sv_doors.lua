@@ -75,7 +75,6 @@ end
 function nzDoors:RemoveMapDoorLink( doorID )
 
 	local door = self:DoorIndexToEnt(doorID)
-	
 	if door:GetDoorData() then
 		if IsValid(door) and (door:IsDoor() or door:IsButton()) then	
 			self.MapDoors[doorID] = nil

@@ -5,22 +5,44 @@ if SERVER then
 	local plyMeta = FindMetaTable("Player")
 	
 	function plyMeta:GivePowerUp(id, duration)
-		if !nzPowerUps.ActivePlayerPowerUps[self] then nzPowerUps.ActivePlayerPowerUps[self] = {} end
-		nzPowerUps.ActivePlayerPowerUps[self][id] = CurTime() + duration
+		if duration > 0 then
+			if !nzPowerUps.ActivePlayerPowerUps[self] then nzPowerUps.ActivePlayerPowerUps[self] = {} end
+			nzPowerUps.ActivePlayerPowerUps[self][id] = CurTime() + duration
+			nzPowerUps:SendPlayerSync(self) -- Sync this player's powerups
+		end
 	end
 	
-	function nzPowerUps:Activate(id, ply)
-		local powerupData = self:Get(id)
+	function plyMeta:RemovePowerUp(id, nosync)
+		local PowerupData = nzPowerUps:Get(id)
+		if PowerupData and PowerupData.expirefunc then
+			PowerupData.expirefunc(id, self) -- Call expirefunc when manually removed
+		end
+	
+		if !nzPowerUps.ActivePlayerPowerUps[self] then nzPowerUps.ActivePlayerPowerUps[self] = {} end
+		nzPowerUps.ActivePlayerPowerUps[self][id] = nil
+		if !nosync then nzPowerUps:SendPlayerSync(self) end -- Sync this player's powerups
+	end
+	
+	function plyMeta:RemoveAllPowerUps()
+		if !nzPowerUps.ActivePlayerPowerUps[self] then nzPowerUps.ActivePlayerPowerUps[self] = {} return end
+		
+		for k,v in pairs(nzPowerUps.ActivePlayerPowerUps[self]) do
+			self:RemovePowerUp(k, true)
+		end
+		nzPowerUps:SendPlayerSync(self)
+	end
+	
+	function nzPowerUps:Activate(id, ply, ent)
+		if hook.Call("OnPlayerPickupPowerUp", nil, ply, id, ent) then return end
+		
+		local PowerupData = self:Get(id)
 
-		if !powerupData.global then
-			if powerupData.duration != 0 then
-				ply:GivePowerUp(id, powerupData.duration)
-			end
-			self:SendPlayerSync(ply) -- Sync this player's powerups
+		if !PowerupData.global then
+			if IsValid(ply) then ply:GivePowerUp(id, PowerupData.duration) end
 		else
-			if powerupData.duration != 0 then
+			if PowerupData.duration != 0 then
 				-- Activate for a certain time
-				self.ActivePowerUps[id] = CurTime() + powerupData.duration
+				self.ActivePowerUps[id] = CurTime() + PowerupData.duration
 			--else
 				-- Activate Once
 
@@ -30,8 +52,8 @@ if SERVER then
 		end
 
 		-- Notify
-		ply:EmitSound("nz/powerups/power_up_grab.wav")
-		powerupData.func(id, ply)
+		if IsValid(ply) then ply:EmitSound("nz/powerups/power_up_grab.wav") end
+		PowerupData.func(id, ply)
 	end
 
 	function nzPowerUps:SpawnPowerUp(pos, specific)
@@ -50,17 +72,21 @@ if SERVER then
 
 		local id = specific and specific or nzMisc.WeightedRandom(choices)
 		if !id or id == "null" then return end --  Back out
+		
+		local ent = ents.Create("drop_powerup")
+		id = hook.Call("OnPowerUpSpawned", nil, id, ent) or id
+		if !IsValid(ent) then return end -- If a hook removed the powerup
 
 		-- Spawn it
-		local powerupData = self:Get(id)
+		local PowerupData = self:Get(id)
 
 		local pos = pos+Vector(0,0,50)
-		local ent = ents.Create("drop_powerup")
+		
 		ent:SetPowerUp(id)
 		pos.z = pos.z - ent:OBBMaxs().z
-		ent:SetModel(powerupData.model)
+		ent:SetModel(PowerupData.model)
 		ent:SetPos(pos)
-		ent:SetAngles(powerupData.angle)
+		ent:SetAngles(PowerupData.angle)
 		ent:Spawn()
 		ent:EmitSound("nz/powerups/power_up_spawn.wav")
 	end
@@ -132,7 +158,7 @@ nzPowerUps:NewPowerUp("dp", {
 	chance = 5,
 	duration = 30,
 	func = (function(self, ply)
-		nz.Notifications.Functions.PlaySound("nz/powerups/double_points.mp3", 1)
+		nzNotifications:PlaySound("nz/powerups/double_points.mp3", 1)
 	end),
 })
 
@@ -146,10 +172,10 @@ nzPowerUps:NewPowerUp("maxammo", {
 	chance = 5,
 	duration = 0,
 	func = (function(self, ply)
-		nz.Notifications.Functions.PlaySound("nz/powerups/max_ammo.mp3", 2)
+		nzNotifications:PlaySound("nz/powerups/max_ammo.mp3", 2)
 		-- Give everyone ammo
 		for k,v in pairs(player.GetAll()) do
-			nzWeps:GiveMaxAmmo(v)
+			v:GiveMaxAmmo()
 		end
 	end),
 })
@@ -164,7 +190,7 @@ nzPowerUps:NewPowerUp("insta", {
 	chance = 5,
 	duration = 30,
 	func = (function(self, ply)
-		nz.Notifications.Functions.PlaySound("nz/powerups/insta_kill.mp3", 1)
+		nzNotifications:PlaySound("nz/powerups/insta_kill.mp3", 1)
 	end),
 })
 
@@ -178,7 +204,7 @@ nzPowerUps:NewPowerUp("nuke", {
 	chance = 5,
 	duration = 0,
 	func = (function(self, ply)
-		nz.Notifications.Functions.PlaySound("nz/powerups/nuke.wav", 1)
+		nzNotifications:PlaySound("nz/powerups/nuke.wav", 1)
 		nzPowerUps:Nuke(ply:GetPos())
 	end),
 })
@@ -193,20 +219,21 @@ nzPowerUps:NewPowerUp("firesale", {
 	chance = 1,
 	duration = 30,
 	func = (function(self, ply)
-		nz.Notifications.Functions.PlaySound("nz/powerups/fire_sale_announcer.wav", 1)
+		nzNotifications:PlaySound("nz/powerups/fire_sale_announcer.wav", 1)
 		nzPowerUps:FireSale()
 	end),
 	expirefunc = function()
 		local tbl = ents.FindByClass("random_box_spawns")
 		for k,v in pairs(tbl) do
-			if IsValid(v.FireSaleBox) then
-				v.FireSaleBox:StopSound("nz_firesale_jingle")
-				v.FireSaleBox.FireSaling = false
-				v.FireSaleBox:MarkForRemoval()
-			end
-			if IsValid(v.Box) then
-				v.Box:StopSound("nz_firesale_jingle")
-				v.Box.FireSaling = false
+			local box = v.FireSaleBox
+			if IsValid(box) then
+				box:StopSound("nz_firesale_jingle")
+				if box.MarkForRemoval then
+					box:MarkForRemoval()
+					box.FireSaling = false
+				else
+					box:Remove()
+				end
 			end
 		end
 	end,
@@ -222,8 +249,8 @@ nzPowerUps:NewPowerUp("carpenter", {
 	chance = 5,
 	duration = 0,
 	func = (function(self, ply)
-		nz.Notifications.Functions.PlaySound("nz/powerups/carpenter.wav", 0)
-		nz.Notifications.Functions.PlaySound("nz/powerups/carp_loop.wav", 1)
+		nzNotifications:PlaySound("nz/powerups/carpenter.wav", 0)
+		nzNotifications:PlaySound("nz/powerups/carp_loop.wav", 1)
 		nzPowerUps:Carpenter()
 	end),
 })
@@ -238,10 +265,32 @@ nzPowerUps:NewPowerUp("zombieblood", {
 	chance = 2,
 	duration = 30,
 	func = (function(self, ply)
-		nz.Notifications.Functions.PlaySound("nz/powerups/zombie_blood.wav", 1)
+		nzNotifications:PlaySound("nz/powerups/zombie_blood.wav", 1)
 		ply:SetTargetPriority(TARGET_PRIORITY_NONE)
 	end),
 	expirefunc = function(self, ply) -- ply is only passed if the powerup is non-global
 		ply:SetTargetPriority(TARGET_PRIORITY_PLAYER)
+	end,
+})
+
+-- Death Machine
+nzPowerUps:NewPowerUp("deathmachine", {
+	name = "Death Machine",
+	model = "models/nzpowerups/deathmachine.mdl",
+	global = false, -- Only applies to the player picking it up and time is handled individually per player
+	angle = Angle(0,0,0),
+	scale = 1,
+	chance = 2,
+	duration = 30,
+	func = (function(self, ply)
+		nzNotifications:PlaySound("nz/powerups/deathmachine.mp3", 1)
+		ply:SetUsingSpecialWeapon(true)
+		ply:Give("nz_death_machine")
+		ply:SelectWeapon("nz_death_machine")
+	end),
+	expirefunc = function(self, ply) -- ply is only passed if the powerup is non-global
+		ply:SetUsingSpecialWeapon(false)
+		ply:StripWeapon("nz_death_machine")
+		ply:EquipPreviousWeapon()
 	end,
 })

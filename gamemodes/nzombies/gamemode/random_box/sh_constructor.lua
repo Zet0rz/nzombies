@@ -1,1 +1,1 @@
-nzRandomBox = nzRandomBox or {}
+nzRandomBox = nzRandomBox or AddNZModule("RandomBox")

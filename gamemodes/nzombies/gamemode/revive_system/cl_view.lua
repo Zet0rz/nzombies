@@ -1,4 +1,4 @@
-//Useful ToScreen replacement for better directional
+-- Useful ToScreen replacement for better directional
 function XYCompassToScreen(pos, boundary)
 	local boundary = boundary or 0
 	local eyedir = EyeVector()
@@ -28,9 +28,9 @@ local tab = {
 } 
 local fade = 1
 
-local mat_revive = Material("materials/revive.png", "unlitgeneric smooth")
+local mat_revive = Material("materials/Revive.png", "unlitgeneric smooth")
 
-function Revive:ResetColorFade()
+function nzRevive:ResetColorFade()
 	tab = {
 		 [ "$pp_colour_addr" ] = 0,
 		 [ "$pp_colour_addg" ] = 0,
@@ -48,7 +48,7 @@ function Revive:ResetColorFade()
 end
 
 local function CalcDownView(ply, pos, ang, fov, znear, zfar)
-	if Revive.Players[LocalPlayer():EntIndex()] then
+	if nzRevive.Players[LocalPlayer():EntIndex()] then
 		local pos = pos + Vector(0,0,-30)
 		local ang = ang + Angle(0,0,20)
 		
@@ -57,7 +57,7 @@ local function CalcDownView(ply, pos, ang, fov, znear, zfar)
 end
 
 local function CalcDownViewmodelView(wep, vm, oldpos, oldang, pos, ang)
-	if Revive.Players[LocalPlayer():EntIndex()] then
+	if nzRevive.Players[LocalPlayer():EntIndex()] then
 		local oldpos = oldpos + Vector(0,0,-30)
 		local oldang = oldang + Angle(0,0,20)
 		if wep:IsCW2() or wep:IsFAS2() then oldpos = oldpos + oldang:Up() * -100 end
@@ -67,7 +67,7 @@ local function CalcDownViewmodelView(wep, vm, oldpos, oldang, pos, ang)
 end
 
 local function DrawColorModulation()
-	if Revive.Players[LocalPlayer():EntIndex()] then
+	if nzRevive.Players[LocalPlayer():EntIndex()] then
 		local fadeadd = ((1/GetConVar("nz_downtime"):GetFloat()) * FrameTime()) * -1 	//Change 45 to the revival time
 		tab[ "$pp_colour_colour" ] = math.Approach(tab[ "$pp_colour_colour" ], 0, fadeadd)
 		tab[ "$pp_colour_addr" ] = math.Approach(tab[ "$pp_colour_addr" ], 0.5, fadeadd *-0.5)
@@ -94,7 +94,7 @@ end
 
 local function DrawDownedPlayers()
 	
-	for k,v in pairs(Revive.Players) do
+	for k,v in pairs(nzRevive.Players) do
 		local ply = Entity(k)
 		if IsValid(ply) then -- If they're outside PVS, don't draw the icon at all
 			if ply == LocalPlayer() then return end
@@ -128,12 +128,12 @@ local function DrawRevivalProgress()
 	
 	local revtime = LocalPlayer():HasPerk("revive") and 2 or 4
 	
-	if IsValid(dply) and Revive.Players[id] and Revive.Players[id].RevivePlayer == LocalPlayer() then
+	if IsValid(dply) and nzRevive.Players[id] and nzRevive.Players[id].RevivePlayer == LocalPlayer() then
 		surface.SetDrawColor(0,0,0)
 		surface.DrawRect(ScrW()/2 - 150, ScrH() - 300, 300, 20)
 		
 		surface.SetDrawColor(255,255,255)
-		surface.DrawRect(ScrW()/2 - 145, ScrH() - 295, 290 * (CurTime()-Revive.Players[id].ReviveTime)/revtime, 10)
+		surface.DrawRect(ScrW()/2 - 145, ScrH() - 295, 290 * (CurTime()-nzRevive.Players[id].ReviveTime)/revtime, 10)
 	end
 end
 
@@ -142,7 +142,7 @@ local function DrawDownedNotify()
 	if !LocalPlayer():GetNotDowned() then
 		local text = "YOU NEED HELP!"
 		local font = "nz.display.hud.main"
-		local rply = Revive.Players[LocalPlayer():EntIndex()].RevivePlayer
+		local rply = nzRevive.Players[LocalPlayer():EntIndex()].RevivePlayer
 		
 		if IsValid(rply) and rply:IsPlayer() then
 			text = rply:Nick().." is reviving you!"
@@ -152,19 +152,19 @@ local function DrawDownedNotify()
 
 end
 
-function Revive:DownedHeadsUp(ply, text)
-	Revive.Notify[ply] = {time = CurTime(), text = text}
-	--PrintTable(Revive.Notify[ply])
+function nzRevive:DownedHeadsUp(ply, text)
+	nzRevive.Notify[ply] = {time = CurTime(), text = text}
+	--PrintTable(nzRevive.Notify[ply])
 end
 
-function Revive:CustomNotify(text, time)
+function nzRevive:CustomNotify(text, time)
 	if !text or !isstring(text) then return end
 	if time then
-		table.insert(Revive.Notify, {time = CurTime() + time, text = text})
+		table.insert(nzRevive.Notify, {time = CurTime() + time, text = text})
 	else
-		table.insert(Revive.Notify, {time = CurTime() + 5, text = text})
+		table.insert(nzRevive.Notify, {time = CurTime() + 5, text = text})
 	end
-	--PrintTable(Revive.Notify[ply])
+	--PrintTable(nzRevive.Notify[ply])
 end
 
 local function DrawDownedHeadsUp()
@@ -173,20 +173,20 @@ local function DrawDownedHeadsUp()
 	local offset = 20
 	local max = 2
 	local c = 0
-	--table.SortByMember(nz.Revive.Data.Notify, "time")
+	--table.SortByMember(nz.nzRevive.Data.Notify, "time")
 	
-	for k,v in pairs(Revive.Notify) do
+	for k,v in pairs(nzRevive.Notify) do
 		if type(k) == "Player" and IsValid(k) then
 			local fade = math.Clamp(CurTime() - v.time - 5, 0, 1)
 			local status = v.text or "needs to be revived!"
 			draw.SimpleText(k:Nick().." "..status, font, ScrW()/2, ScrH() - h - offset * c, Color(255, 255, 255,255-(255*fade)), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
-			if fade >= 1 then Revive.Notify[k] = nil end
+			if fade >= 1 then nzRevive.Notify[k] = nil end
 			c = c + 1
 		else
 			local fade = math.Clamp(CurTime() - v.time, 0, 1)
 			local status = v.text
 			draw.SimpleText(status, font, ScrW()/2, ScrH() - h - offset * c, Color(255, 255, 255,255-(255*fade)), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
-			if fade >= 1 then Revive.Notify[k] = nil end
+			if fade >= 1 then nzRevive.Notify[k] = nil end
 			c = c + 1
 		end
 	end
@@ -199,8 +199,8 @@ local bloodpulse = true --if true, going up
 local pulse = 0
 local function DrawDamagedOverlay()
 	if GetConVar("nz_bloodoverlay"):GetBool() and LocalPlayer():Alive() then
-		local fade = (math.Clamp(LocalPlayer():Health()/LocalPlayer():GetMaxHealth(), 0.2, 0.5)-0.2)/0.3
-		local fade2 = 1 - math.Clamp(LocalPlayer():Health()/LocalPlayer():GetMaxHealth(), 0, 0.5)/0.5
+		local fade = (math.Clamp(LocalPlayer():Health()/LocalPlayer():GetMaxHealth(), 0.3, 0.7)-0.3)/0.4
+		local fade2 = 1 - math.Clamp(LocalPlayer():Health()/LocalPlayer():GetMaxHealth(), 0, 0.7)/0.7
 		
 		surface.SetMaterial(blood_overlay)
 		surface.SetDrawColor(255,255,255,255-fade*255)
@@ -266,11 +266,15 @@ net.Receive("nz_WhosWhoActive", function()
 	whoswhoactive = net.ReadBool()
 end)
 local whoswhomat = "models/shadertest/shader4"
+local firemat = "models/onfire"
 
 local function DrawWhosWhoOverlay()
 	if whoswhoactive then
 		DrawMaterialOverlay(whoswhomat, 0.03)
 	end
+	--[[if LocalPlayer():IsOnFire() then
+		DrawMaterialOverlay("firemat", 1)
+	end]]
 end
 
 //Hooks

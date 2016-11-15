@@ -34,28 +34,47 @@ function ENT:Initialize()
 	if SERVER then
 		self:SetUseType( SIMPLE_USE )
 	end
+	
+	if CLIENT then
+		self.Light = ClientsideModel("models/effects/vol_light128x512.mdl")
+		local ang = self:GetAngles()
+		self.Light:SetAngles(Angle(ang[1], ang[2], 180))
+		self.Light:SetPos(self:GetPos() - Vector(0,0,50))
+		self.Light:SetParent(self)
+		self.Light:SetColor(Color(150,200,255))
+		self.Light:DrawShadow(false)
+		local min, max = self.Light:GetRenderBounds()
+		self.Light:SetRenderBounds(Vector(min.x, min.y, min.z*10), Vector(max.x, max.y, max.z*10))
+		
+		local scale = Vector( 1, 1, 5 )
+		local mat = Matrix()
+		mat:Scale( scale )
+		self.Light:EnableMatrix( "RenderMultiply", mat )
+		
+		self.Light:Spawn()
+	end
 end
 
 function ENT:Use( activator, caller )
 	if self:GetOpen() == true or self.Moving then return end
 	self:BuyWeapon(activator)
-	//timer.Simple(5,function() self:MoveAway() end)
+	-- timer.Simple(5,function() self:MoveAway() end)
 end
 
 function ENT:BuyWeapon(ply)
-	if ply:CanAfford(nzPowerUps:IsPowerupActive("firesale") and 10 or 950) then
+	ply:Buy(nzPowerUps:IsPowerupActive("firesale") and 10 or 950, self, function()
         local class = nzRandomBox.DecideWep(ply)
         if class != nil then
-      		ply:TakePoints(nzPowerUps:IsPowerupActive("firesale") and 10 or 950)
+      		--ply:TakePoints(nzPowerUps:IsPowerupActive("firesale") and 10 or 950)
       		self:Open()
       		local wep = self:SpawnWeapon( ply, class )
 			wep.Buyer = ply
+			return true
         else
             ply:PrintMessage( HUD_PRINTTALK, "No available weapons left!")
+			return false
         end
-	else
-		ply:PrintMessage( HUD_PRINTTALK, "You can't afford this!")
-	end
+	end)
 end
 
 
@@ -102,12 +121,12 @@ function ENT:Think()
 end
 
 function ENT:MoveAway()
-	nz.Notifications.Functions.PlaySound("nz/randombox/Announcer_Teddy_Zombies.wav", 0)
+	nzNotifications:PlaySound("nz/randombox/Announcer_Teddy_Zombies.wav", 0)
 	self.Moving = true
 	self:SetSolid(SOLID_NONE)
 	local s = 0
 	local ang = self:GetAngles()
-	//Shake Effect
+	-- Shake Effect
 	timer.Create( "shake", 0.1, 300, function()
 		if s < 23 then
 			if s % 2 == 0 then
@@ -126,7 +145,7 @@ function ENT:MoveAway()
 		s = s + 1
 	end)
 
-	//Move Up
+	-- Move Up
 	timer.Simple( 1, function()
 			local c = 0
 			timer.Create( "moveAway", 5, 1, function()
@@ -192,7 +211,7 @@ if CLIENT then
 		self:DrawModel()
 	end
 
-	hook.Add( "PostDrawOpaqueRenderables", "random_box_beam", function()
+	--[[hook.Add( "PostDrawOpaqueRenderables", "random_box_beam", function()
 		for k,v in pairs(ents.FindByClass("random_box")) do
 			if ( LocalPlayer():GetPos():Distance( v:GetPos() ) ) > 750 then
 				local Vector1 = v:GetPos() + Vector( 0, 0, -200 )
@@ -201,6 +220,12 @@ if CLIENT then
 				render.DrawBeam( Vector1, Vector2, 300, 1, 1, Color( 255, 255, 255, 255 ) )
 			end
 		end
-	end )
+	end )]]
+	
+	function ENT:OnRemove()
+		if IsValid(self.Light) then
+			self.Light:Remove()
+		end
+	end
 
 end

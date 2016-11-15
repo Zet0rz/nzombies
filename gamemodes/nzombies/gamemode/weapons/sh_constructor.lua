@@ -1,4 +1,4 @@
-//Main Tables
-nzWeps = nzWeps or {}
+-- Main Tables
+nzWeps = nzWeps or AddNZModule("Weps")
 
-//_ Variables
+-- Variables

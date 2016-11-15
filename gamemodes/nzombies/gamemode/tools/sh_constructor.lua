@@ -1,10 +1,9 @@
 //Main Tables
-nz.Tools = {}
-nz.Tools.Functions = {}
-nz.Tools.ToolData = {}
+nzTools = nzTools or AddNZModule("Tools")
+nzTools.ToolData = nzTools.ToolData or {}
 
 //Variables
 if CLIENT then
-	nz.Tools.Advanced = nz.Tools.Advanced or false
-	nz.Tools.SavedData = {}
+	nzTools.Advanced = nzTools.Advanced or false
+	nzTools.SavedData = nzTools.SavedData or {}
 end

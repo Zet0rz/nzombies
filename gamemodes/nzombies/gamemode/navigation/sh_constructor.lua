@@ -1,5 +1,5 @@
 -- Main Tables
-nzNav = nzNav or {}
+nzNav = nzNav or AddNZModule("Nav")
 nzNav.Locks = nzNav.Locks or {}
 
 function IsNavApplicable(ent)

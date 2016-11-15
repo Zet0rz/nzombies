@@ -22,7 +22,7 @@ if SERVER then
 	end)
 end
 
-nz.Tools.Functions.CreateTool("inviswall", {
+nzTools:CreateTool("inviswall", {
 	displayname = "Invisible Wall Creator",
 	desc = "LMB: Set Corners, RMB: Remove Invisible Wall at spot, R: Reset corners",
 	condition = function(wep, ply)

@@ -11,20 +11,38 @@ EFFECT.MatGlowCenter = Material( "sprites/glow04_noz" )
 -----------------------------------------------------------]]
 function EFFECT:Init( data )
 
-	self.Size = data:GetScale() or 1
+	self.Size = data:GetRadius() or 1
+	if self.Size <= 0 then self.Size = 1 end
 	self.MaxArcs = 2
 	self.Parent = data:GetEntity()
-	self.Frequency = data:GetMagnitude()/10 or 0.01
+	--self:SetParent(self.Parent)
+	self.Frequency = data:GetMagnitude() and data:GetMagnitude()/10 or 0.01
 	self.Pos = self.Parent:WorldSpaceCenter()
-	self.Parent.LightningAura = true -- Set this to false to kill the effect
+	local scale = data:GetScale()
+	
+	if IsValid(self.Parent.LightningAuraEffect) then
+		self.Parent.LightningAuraEffect.KILL = true
+	end
+	
+	if scale then
+		if scale >= 0 then
+			self.Parent.LightningAura = CurTime() + scale
+		else
+			self.Parent.LightningAura = true
+		end
+	else
+		self.Parent.LightningAura = CurTime() + 10 -- Default time for this effect
+	end
 
 	self.Alpha = 255
 	self.Life = 0
 	self.NextArc = 0
 	self.Arcs = {}
 	self.Queue = 1
+	
+	self.Parent.LightningAuraEffect = self
 
-	self:SetRenderBoundsWS( self.Pos, self.Pos, Vector(100,100,100) )
+	self:SetRenderBounds( Vector(0,0,0), Vector(0,0,0), Vector(50,50,50) )
 
 end
 
@@ -32,15 +50,18 @@ end
    THINK
 -----------------------------------------------------------]]
 function EFFECT:Think()
+	
+	if self.KILL then return false end
 
 	if IsValid(self.Parent) then
 		self.Pos = self.Parent:WorldSpaceCenter()
+		self:SetPos(self.Pos)
 	end
 
 	self.Life = self.Life + FrameTime()
 	--self.Alpha = 255 * ( 1 - self.Life )
 
-	if self.NextArc <= self.Life then
+	if self.NextArc <= self.Life and self.Pos then
 
 		local size = #self.Arcs
 		--add a arc to the array
@@ -59,7 +80,16 @@ function EFFECT:Think()
 		end
 	end
 
-	return IsValid(self.Parent) and (type(self.Parent.LightningAura) == "number" and CurTime() < self.Parent.LightningAura or self.Parent.LightningAura)
+	if IsValid(self.Parent) then
+		if !(type(self.Parent.LightningAura) == "number" and CurTime() < self.Parent.LightningAura or self.Parent.LightningAura == true) then
+			self.Parent.LightningAura = nil
+			return false
+		end
+	else
+		return false
+	end
+	
+	return true
 end
 
 function EFFECT:GenerateArc(startPos, endPos, branchChance, detail)
@@ -96,7 +126,7 @@ function EFFECT:GenerateArc(startPos, endPos, branchChance, detail)
 
 	points.size = math.random(1,3)*self.Size
 	points.color = Color(200, 240, math.random(230, 255), math.random(200, 255))
-	points.dietime = CurTime() + 0.07
+	points.dietime = CurTime() + 0.2
 
 	return points
 end
@@ -106,7 +136,7 @@ end
 -----------------------------------------------------------]]
 function EFFECT:Render()
 
-	if ( self.Alpha < 1 ) then return end
+	if ( self.KILL or self.Alpha < 1 or self.Parent:IsDormant() ) then return end
 
 	render.SetMaterial( self.MatCenter )
 
@@ -135,9 +165,9 @@ function EFFECT:Render()
 	render.SetMaterial( self.MatGlowCenter )
 	render.DrawSprite( self.Pos, math.random(15,40)*self.Size, math.random(15,40)*self.Size, Color(math.random(50,150),math.random(100,200),255,math.random(200,250)))
 	
-	if !self.Parent:GetNoDraw() then
-		self.Parent:DrawModel() -- Always draw the model in front
-	end
+	--if !self.Parent:GetNoDraw() then
+		--self.Parent:DrawModel() -- Always draw the model in front
+	--end
 end
 
 function EFFECT:RenderArc(arc, edge)
@@ -151,11 +181,13 @@ function EFFECT:RenderArc(arc, edge)
 
 			local startPos = arc[j]
 			local endPos = arc[j + 1]
+			
+			local size = arc.size * ((arc.dietime-CurTime())/0.2)
 
 			render.DrawBeam(
 				startPos,
 				endPos,
-				(edge and arc.size*3 or arc.size),
+				(edge and size*3 or size),
 				texcoord,
 				texcoord + ((startPos - endPos):Length() / 128),
 				arc.color

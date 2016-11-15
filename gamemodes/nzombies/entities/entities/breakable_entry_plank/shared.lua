@@ -14,13 +14,12 @@ function ENT:Initialize()
 	self:SetModel("models/props_debris/wood_board02a.mdl")
 	self:SetMoveType( MOVETYPE_VPHYSICS )
 	self:SetSolid( SOLID_VPHYSICS )
+	self:SetModelScale(1.25)
 	
 end
 
 if CLIENT then
 	function ENT:Draw()
-		//if nz.Rounds.Data.CurrentState == ROUND_CREATE then
-			self:DrawModel()
-	//	end
+		self:DrawModel()
 	end
 end

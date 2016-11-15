@@ -82,10 +82,21 @@ local PLAYER_LINE = {
 			local num = 0
 			for k,v in pairs(self.Player:GetCarryItems()) do
 				local item = nzItemCarry.Items[v]
-				if item and item.icon and item.icon != "" then
+				if item and (item.icon or item.model) then
 					local x, y = pnl:GetPos()
-					surface.SetMaterial(item.icon)
-					surface.DrawTexturedRect(x - num*26, y + 6, 24, 24)
+					
+					if item.model then
+						surface.SetMaterial(item.model)
+						surface.DrawTexturedRect(x - num*26, y + 6, 24, 24)
+						if item.icon then
+							surface.SetMaterial(item.icon)
+							surface.DrawTexturedRect(x - num*26 + 18, y, 12, 12)
+						end
+					else
+						surface.SetMaterial(item.icon)
+						surface.DrawTexturedRect(x - num*26, y + 6, 24, 24)
+					end
+					
 					num = num + 1
 				end
 			end

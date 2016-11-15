@@ -48,7 +48,7 @@ end
 if SERVER then
 	function ENT:StartTouch(hitEnt)
 		if (hitEnt:IsValid() and hitEnt:IsPlayer()) then
-			nzPowerUps:Activate(self:GetPowerUp(), hitEnt)
+			nzPowerUps:Activate(self:GetPowerUp(), hitEnt, self)
 			self:Remove()
 		end
 	end

@@ -1,6 +1,5 @@
-//Main Tables
-nz.Interfaces = {}
-nz.Interfaces.Functions = {}
-nz.Interfaces.Data = {}
+-- Main Tables
+nzInterfaces = nzInterfaces or AddNZModule("Interfaces")
+nzInterfaces.Data = nzInterfaces.Data or {}
 
-//_ Variables
+-- Variables

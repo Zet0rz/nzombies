@@ -1,8 +1,8 @@
-nz.Tools.Functions.CreateTool("navlock", {
+nzTools:CreateTool("navlock", {
 	displayname = "Nav Locker Tool",
 	desc = "LMB: Connect doors and navmeshes, RMB: Lock/Unlock navmeshes",
 	condition = function(wep, ply)
-		//Serverside doesn't need to block
+		-- Serverside doesn't need to block
 		return true
 	end,
 	PrimaryAttack = function(wep, ply, tr, data)
@@ -53,7 +53,7 @@ nz.Tools.Functions.CreateTool("navlock", {
 		wep.Owner:ChatPrint("Navmesh ["..navid.."] locked!")
 	end,
 	Reload = function(wep, ply, tr, data)
-		//Nothing
+		-- Nothing
 	end,
 	OnEquip = function(wep, ply, data)
 		if wep.Owner:IsListenServerHost() then
@@ -90,8 +90,8 @@ nz.Tools.Functions.CreateTool("navlock", {
 	icon = "icon16/arrow_switch.png",
 	weight = 40,
 	condition = function(wep, ply)
-		//Client needs advanced editing on to see the tool
-		return nz.Tools.Advanced
+		-- Client needs advanced editing on to see the tool
+		return nzTools.Advanced
 	end,
 	interface = function(frame, data)
 		local panel = vgui.Create("DPanel", frame)

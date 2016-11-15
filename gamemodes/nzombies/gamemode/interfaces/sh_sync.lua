@@ -5,7 +5,7 @@ if SERVER then
 	//Server to client (Server)
 	util.AddNetworkString( "nz.Interfaces.Send" )
 
-	function nz.Interfaces.Functions.SendInterface(ply, interface, data)
+	function nzInterfaces.SendInterface(ply, interface, data)
 		net.Start( "nz.Interfaces.Send" )
 			net.WriteString( interface )
 			net.WriteTable( data )
@@ -15,33 +15,33 @@ if SERVER then
 	//Client to Server (Server)
 	util.AddNetworkString( "nz.Interfaces.Requests" )
 
-	function nz.Interfaces.Functions.ReceiveRequests( len, ply )
+	function nzInterfaces.ReceiveRequests( len, ply )
 		local interface = net.ReadString()
 		local data = net.ReadTable()
 
-		nz.Interfaces.Functions[interface.."Handler"](ply, data)
+		nzInterfaces[interface.."Handler"](ply, data)
 	end
 
 	//Receivers
-	net.Receive( "nz.Interfaces.Requests", nz.Interfaces.Functions.ReceiveRequests )
+	net.Receive( "nz.Interfaces.Requests", nzInterfaces.ReceiveRequests )
 
 end
 
 if CLIENT then
 
 	//Server to client (Client)
-	function nz.Interfaces.Functions.ReceiveSync( length )
+	function nzInterfaces.ReceiveSync( length )
 		local interface = net.ReadString()
 		local data = net.ReadTable()
 
-		nz.Interfaces.Functions[interface](data)
+		nzInterfaces[interface](data)
 	end
 
 	//Receivers
-	net.Receive( "nz.Interfaces.Send", nz.Interfaces.Functions.ReceiveSync )
+	net.Receive( "nz.Interfaces.Send", nzInterfaces.ReceiveSync )
 
 	//Client to Server (Client)
-	function nz.Interfaces.Functions.SendRequests( interface, data )
+	function nzInterfaces.SendRequests( interface, data )
 		net.Start( "nz.Interfaces.Requests" )
 			net.WriteString( interface )
 			net.WriteTable( data )

@@ -14,8 +14,20 @@ function nzEnemies:OnEnemyKilled(enemy, attacker, dmginfo, hitgroup)
 		end
 	end
 
-	-- Run special on-killed function if it has any
-	nzConfig.ValidEnemies[enemy:GetClass()].OnKilled(enemy, dmginfo, hitgroup)
+	-- Run on-killed function to give points if the hook isn't blocking it
+	if !hook.Call("OnZombieKilled", nil, enemy, attacker, dmginfo, hitgroup) then
+		if enemy:IsValidZombie() then
+			if attacker:IsPlayer() and attacker:GetNotDowned() then
+				if dmginfo:GetDamageType() == DMG_CLUB then
+					attacker:GivePoints(130)
+				elseif hitgroup == HITGROUP_HEAD then
+					attacker:GivePoints(100)
+				else
+					attacker:GivePoints(50)
+				end
+			end
+		end
+	end
 
 	if nzRound:InProgress() then
 		nzRound:SetZombiesKilled( nzRound:GetZombiesKilled() + 1 )
@@ -47,44 +59,53 @@ function GM:EntityTakeDamage(zombie, dmginfo)
 	if zombie:GetClass() == "whoswho_downed_clone" then return true end
 	
 	if zombie.Alive and zombie:Alive() and zombie:Health() < 0 then zombie:Kill(dmginfo) end
+	
+	local attacker = dmginfo:GetAttacker()
 
-	if !dmginfo:GetAttacker():IsPlayer() then return end
+	if !attacker:IsPlayer() then return end
 	if IsValid(zombie) then
-		if nzConfig.ValidEnemies[zombie:GetClass()] and nzConfig.ValidEnemies[zombie:GetClass()].Valid then
+		if zombie.NZBossType then
+			if zombie.IsInvulnerable and zombie:IsInvulnerable() then return true end -- Bosses can still be invulnerable
+			
+			local data = nzRound:GetBossData(zombie.NZBossType) -- Just in case it was switched mid-game, use the id stored on zombie
+			if data then -- If we got the boss data
+				local hitgroup = util.QuickTrace( dmginfo:GetDamagePosition(), dmginfo:GetDamagePosition() ).HitGroup
+				if zombie:Health() > dmginfo:GetDamage() then
+					if data.onhit then data.onhit(zombie, attacker, dmginfo, hitgroup) end
+				elseif !zombie.MarkedForDeath then
+					if data.deathfunc then data.deathfunc(zombie, attacker, dmginfo, hitgroup) end
+					hook.Call("OnBossKilled", nil, zombie)
+					zombie.MarkedForDeath = true
+				end
+			end
+		elseif zombie:IsValidZombie() then
 			if zombie.IsInvulnerable and zombie:IsInvulnerable() then return true end
 			local hitgroup = util.QuickTrace( dmginfo:GetDamagePosition( ), dmginfo:GetDamagePosition( ) ).HitGroup
 
 			if nzPowerUps:IsPowerupActive("insta") then
 				zombie:Kill(dmginfo)
-				nzEnemies:OnEnemyKilled(zombie, dmginfo:GetAttacker(), dmginfo, hitgroup)
+				nzEnemies:OnEnemyKilled(zombie, attacker, dmginfo, hitgroup)
 			return end
 
 
-			nzConfig.ValidEnemies[zombie:GetClass()].ScaleDMG(zombie, hitgroup, dmginfo)
+			if hitgroup == HITGROUP_HEAD then dmginfo:ScaleDamage(2) end
 
 			--  Pack-a-Punch doubles damage
-			if dmginfo:GetAttacker():GetActiveWeapon().pap then dmginfo:ScaleDamage(2) end
+			if dmginfo:GetAttacker():GetActiveWeapon():HasNZModifier("pap") then dmginfo:ScaleDamage(2) end
 
 			if zombie:Health() > dmginfo:GetDamage() then
 				if zombie.HasTakenDamageThisTick then return end
-				nzConfig.ValidEnemies[zombie:GetClass()].OnHit(zombie, dmginfo, hitgroup)
+				if attacker:IsPlayer() and attacker:GetNotDowned() and !hook.Call("OnZombieShot", nil, zombie, attacker, dmginfo, hitgroup) then
+					if dmginfo:GetDamageType() == DMG_CLUB and attacker:HasPerk("widowswine") then
+						zombie:ApplyWebFreeze(5)
+					end
+					attacker:GivePoints(10)
+				end
 				zombie.HasTakenDamageThisTick = true
 				--  Prevent multiple damages in one tick (FA:S 2 Bullet penetration makes them hit 1 zombie 2-3 times per bullet)
 				timer.Simple(0, function() if IsValid(zombie) then zombie.HasTakenDamageThisTick = false end end)
 			else
-				nzEnemies:OnEnemyKilled(zombie, dmginfo:GetAttacker(), dmginfo, hitgroup)
-			end
-		elseif zombie.NZBossType then
-			if zombie.IsInvulnerable and zombie:IsInvulnerable() then return true end -- Bosses can still be invulnerable
-			
-			local data = nzRound.BossData[zombie.NZBossType] -- Just in case it was switched mid-game, use the id stored on zombie
-			if data then -- If we got the boss data
-				local hitgroup = util.QuickTrace( dmginfo:GetDamagePosition(), dmginfo:GetDamagePosition() ).HitGroup
-				if zombie:Health() > dmginfo:GetDamage() then
-					if data.onhit then data.onhit(zombie, dmginfo:GetAttacker(), dmginfo, hitgroup) end
-				else
-					if data.deathfunc then data.deathfunc(zombie, dmginfo:GetAttacker(), dmginfo, hitgroup) end
-				end
+				nzEnemies:OnEnemyKilled(zombie, attacker, dmginfo, hitgroup)
 			end
 		end
 	end
@@ -95,4 +116,4 @@ local function OnRagdollCreated( ent )
 		ent:SetCollisionGroup(COLLISION_GROUP_DEBRIS)
 	end
 end
-hook.Add("OnEntityCreated", "nz.Enemies.OnEntityCreated", OnRagdollCreated)
+hook.Add("OnEntityCreated", "nzEnemies_OnEntityCreated", OnRagdollCreated)

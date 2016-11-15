@@ -11,6 +11,8 @@ AccessorFunc(ENT, "iZombiesToSpawn", "ZombiesToSpawn", FORCE_NUMBER)
 AccessorFunc(ENT, "hSpawner", "Spawner")
 AccessorFunc(ENT, "dNextSpawn", "NextSpawn", FORCE_NUMBER)
 
+ENT.NZOnlyVisibleInCreative = true
+
 function ENT:DecrementZombiesToSpawn()
 	self:SetZombiesToSpawn( self:GetZombiesToSpawn() - 1 )
 end
@@ -71,9 +73,11 @@ function ENT:Think()
 							data.spawnfunc(zombie)
 						end
 					end
+					-- Global spawner timer only set if a successful spawn happens!
+					self:GetSpawner():SetNextSpawn(CurTime() + self:GetSpawner():GetDelay())
 				end
-				self:GetSpawner():SetNextSpawn(CurTime() + self:GetSpawner():GetDelay())
-				-- this will prevent one spawner from becoming dominant
+				-- This will prevent one spawner from becoming dominant. Called any time a spawn is attempted, even if not suitable
+				-- to prevent constant spamming and attempting.
 				self:SetNextSpawn(CurTime() + self:GetSpawner():GetDelay() * 2 + math.Rand(0,0.1))
 			end
 		end

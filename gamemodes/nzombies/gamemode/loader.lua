@@ -1,7 +1,12 @@
-//Load all our files in to the respective realms
+-- Load all our files in to the respective realms
 
-//Main Tables
+-- Main Tables
 nz = nz or {}
+function AddNZModule(id)
+	local tbl = {}
+	--nz[id] = tbl -- Enabling this line will make all tables parented to nz again
+	return tbl
+end
 
 local gmfolder = "nzombies"
 
@@ -20,7 +25,7 @@ function AutoInclude(name, dir)
 		print("Including: "..name)
 	end
 
-	// Determine where to load the files
+	-- Determine where to load the files
 	if sep[1] == "sv" then
 		if SERVER then
 			include(name)
@@ -42,19 +47,19 @@ function AutoInclude(name, dir)
 
 end
 
-//Run this on both client and server
+-- Run this on both client and server
 if SERVER then print(" ** Server List **") else print(" ** Client List **") end
 for k,v in pairs(dirs) do
 	local f2,d2 = file.Find( gmfolder.."/gamemode/"..v.."/*", "LUA" )
 
-	//Load construction file before everything else
+	-- Load construction file before everything else
 	if table.HasValue(f2, "sh_constructor.lua") then
 		print("Constructing: " .. v)
 		AutoInclude("sh_constructor.lua", v.."/")
 	end
 
 	for k2,v2 in pairs(f2) do
-		//we already loaded the construction file once, so dont load again
+		-- we already loaded the construction file once, so dont load again
 		if v2 != "sh_constructor.lua" then
 			AutoInclude(v2, v.."/")
 		end

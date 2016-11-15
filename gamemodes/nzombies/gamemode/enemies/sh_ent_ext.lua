@@ -12,6 +12,18 @@ TARGET_PRIORITY_ALWAYS = 10 --make this entity a global target (not recommended)
 
 local meta = FindMetaTable("Entity")
 
+function meta:SetIsZombie(value)
+	self.bIsZombie = value
+end
+
+function meta:SetIsActivatable(value)
+	self.bIsActivatable = value
+end
+
+function meta:IsActivatable()
+	return self.bIsActivatable or false
+end
+
 function meta:GetTargetPriority()
 	return self.iTargetPriority or TARGET_PRIORITY_NONE
 end
@@ -42,4 +54,43 @@ if SERVER then
 			end
 		end
 	end
+
+	function meta:ApplyWebFreeze(time)
+		if self.Freeze then
+			self:Freeze(time)
+		else
+			self.loco:SetDesiredSpeed(0)
+			timer.Simple(time, function()
+				if IsValid(self) then
+					self.WebAura = nil
+					local speeds = nzRound:GetZombieSpeeds()
+					if speeds then
+						self.loco:SetDesiredSpeed( nzMisc.WeightedRandom(speeds) )
+					else
+						self.loco:SetDesiredSpeed( 100 )
+					end
+				end
+			end)
+		end
+
+		local e = EffectData()
+		e:SetMagnitude(1.5)
+		e:SetScale(time) -- The time the effect lasts
+		e:SetEntity(self)
+		util.Effect("web_aura", e)
+		--self.WebAura = CurTime() + time
+	end
 end
+
+local validenemies = {}
+function nzEnemies:AddValidZombieType(class)
+	validenemies[class] = true
+end
+
+function meta:IsValidZombie()
+	return self.bIsZombie or validenemies[self:GetClass()] != nil
+end
+
+nzEnemies:AddValidZombieType("nz_zombie_walker")
+nzEnemies:AddValidZombieType("nz_zombie_special_burning")
+nzEnemies:AddValidZombieType("nz_zombie_special_dog")

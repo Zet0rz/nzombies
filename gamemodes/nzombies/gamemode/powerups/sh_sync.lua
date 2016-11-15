@@ -5,6 +5,7 @@ if SERVER then
 	//Server to client (Server)
 	util.AddNetworkString( "nzPowerUps.Sync" )
 	util.AddNetworkString( "nzPowerUps.SyncPlayer" )
+	util.AddNetworkString( "nzPowerUps.SyncPlayerFull" )
 	util.AddNetworkString( "nzPowerUps.Nuke" ) -- See the nuke function in sv_powerups
 	
 	function nzPowerUps:SendSync(receiver)
@@ -25,11 +26,17 @@ if SERVER then
 		return IsValid(receiver) and net.Send(receiver) or net.Broadcast()
 	end
 	
+	function nzPowerUps:SendPlayerSyncFull(receiver)
+		local data = table.Copy(self.ActivePlayerPowerUps)
+		
+		net.Start( "nzPowerUps.SyncPlayerFull" )
+			net.WriteTable( data )
+		return IsValid(receiver) and net.Send(receiver) or net.Broadcast()
+	end
+	
 	FullSyncModules["PowerUps"] = function(ply)
 		nzPowerUps:SendSync(ply)
-		for k,v in pairs(player.GetAll()) do
-			nzPowerUps:SendPlayerSync(v, ply)
-		end
+		nzPowerUps:SendPlayerSyncFull(ply)
 	end
 
 end
@@ -38,16 +45,22 @@ if CLIENT then
 	
 	//Server to client (Client)
 	local function ReceivePowerupSync( length )
-		print("Received PowerUps Sync")
+		--print("Received PowerUps Sync")
 		nzPowerUps.ActivePowerUps = net.ReadTable()
-		PrintTable(nzPowerUps.ActivePowerUps)
+		--PrintTable(nzPowerUps.ActivePowerUps)
 	end
 	
 	local function ReceivePowerupPlayerSync( length )
-		print("Received PowerUps Player Sync")
+		--print("Received PowerUps Player Sync")
 		local ply = net.ReadEntity()
 		nzPowerUps.ActivePlayerPowerUps[ply] = net.ReadTable()
-		PrintTable(nzPowerUps.ActivePlayerPowerUps)
+		--PrintTable(nzPowerUps.ActivePlayerPowerUps)
+	end
+	
+	local function ReceivePowerupPlayerSyncFull( length )
+		--print("Received PowerUps Full Player Sync")
+		nzPowerUps.ActivePlayerPowerUps = net.ReadTable()
+		--PrintTable(nzPowerUps.ActivePlayerPowerUps)
 	end
 	
 	local function ReceiveNukeEffect()
@@ -74,5 +87,6 @@ if CLIENT then
 	//Receivers 
 	net.Receive( "nzPowerUps.Sync", ReceivePowerupSync )
 	net.Receive( "nzPowerUps.SyncPlayer", ReceivePowerupPlayerSync )
+	net.Receive( "nzPowerUps.SyncPlayerFull", ReceivePowerupPlayerSyncFull )
 	net.Receive( "nzPowerUps.Nuke", ReceiveNukeEffect )
 end

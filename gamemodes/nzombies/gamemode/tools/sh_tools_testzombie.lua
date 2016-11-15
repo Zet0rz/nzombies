@@ -1,4 +1,4 @@
-nz.Tools.Functions.CreateTool("testzombie", {
+nzTools:CreateTool("testzombie", {
 	displayname = "Spawn Test Zombie",
 	desc = "LMB: Create a test zombie, RMB: Remove test zombie",
 	condition = function(wep, ply)
@@ -47,7 +47,7 @@ nz.Tools.Functions.CreateTool("testzombie", {
 	icon = "icon16/user_green.png",
 	weight = 400,
 	condition = function(wep, ply)
-		return nz.Tools.Advanced
+		return nzTools.Advanced
 	end,
 	interface = function(frame, data)
 	
@@ -88,8 +88,8 @@ nz.Tools.Functions.CreateTool("testzombie", {
 			drop:AddChoice(v, v, data.type == v and true or false)
 		end
 		
-		local function UpdateData()
-			nz.Tools.Functions.SendData( data, "testzombie" )
+		local function UpdateData() -- No need for context menu to intercept, can remain local
+			nzTools:SendData( data, "testzombie" )
 		end
 		
 		slider.OnValueChanged = function(self, val)

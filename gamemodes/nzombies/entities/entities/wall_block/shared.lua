@@ -8,6 +8,8 @@ ENT.Contact			= "Don't"
 ENT.Purpose			= ""
 ENT.Instructions	= ""
 
+ENT.NZOnlyVisibleInCreative = true
+
 --[[function ENT:SetupDataTables()
 	self:NetworkVar("Bool", 0, "BlockPlayers")
 	self:NetworkVar("Bool", 1, "BlockZombies")

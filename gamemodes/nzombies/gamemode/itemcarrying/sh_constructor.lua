@@ -1,5 +1,5 @@
-//Main Tables
-nzItemCarry = nzItemCarry or {}
+-- Main Tables
+nzItemCarry = nzItemCarry or AddNZModule("ItemCarry")
 nzItemCarry.Items = nzItemCarry.Items or {}
 nzItemCarry.Players = nzItemCarry.Players or {}
 
@@ -9,7 +9,8 @@ if SERVER then
 		items = {},
 		text = nil, -- Nil makes default texts
 		hastext = nil,
-		icon = "",
+		icon = "", -- Icon, if model is set this is drawn on top in the corner, otherwise just this
+		model = nil, -- Model of the spawnicon, if not set the icon takes its place
 		shared = false,
 		dropondowned = true,
 		dropfunction = function(self, ply)
@@ -23,6 +24,7 @@ if SERVER then
 			ply:GiveCarryItem(self.id)
 			ent:Remove()
 		end,
+		notif = true,
 	}
 
 	-- Functions to call during runtime
@@ -52,9 +54,13 @@ if SERVER then
 		SetHasText = function(self, text)
 			self.hastext = text
 		end,
-		-- Sets the icon displayed on the HUD and scoreboard
+		-- Sets the icon displayed in the corner of the spawnicon, or fully if no model was provided
 		SetIcon = function(self, iconpath)
 			self.icon = iconpath
+		end,
+		-- Sets the model displayed the spawnicon for on HUD and scoreboard
+		SetModel = function(self, model)
+			self.model = model and string.StripExtension(model) or nil
 		end,
 		-- Sets whether all players "has" the item when it is picked up
 		SetShared = function(self, bool)
@@ -80,6 +86,10 @@ if SERVER then
 		-- Sets the function to be run when picked up; has 2 arguments: The player picking it up, the entity being used
 		SetPickupFunction = function(self, func)
 			self.pickupfunction = func
+		end,
+		-- Sets whether this item will display a notification to all players when picked up
+		SetShowNotification = function(self, bool)
+			self.notif = bool
 		end,
 		-- Sets the function to reset the item(s). Typically used to respawn them back at the original spot
 		Reset = function(self)

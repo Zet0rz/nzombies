@@ -10,11 +10,11 @@ if SERVER then
 				local id = k:MapCreationID()
 				if IsValid(k) and k != Entity(0) and id != -1 then
 					if v and !nzMapping.MarkedProps[id] then
-						ply:ChatPrint("Marked "..k:GetClass().." ["..k:EntIndex().."] for removal.")
+						ply:ChatPrint("Marked "..k:GetClass().." ["..k:EntIndex().."] for removal (ID: "..id..").")
 						k:SetColor(Color(200,0,0))
 						nzMapping.MarkedProps[id] = true
 					elseif !v and nzMapping.MarkedProps[id] then
-						ply:ChatPrint("Unarked "..k:GetClass().." ["..k:EntIndex().."] for removal.")
+						ply:ChatPrint("Unmarked "..k:GetClass().." ["..k:EntIndex().."] for removal (ID: "..id..").")
 						k:SetColor(Color(255,255,255))
 						nzMapping.MarkedProps[id] = nil
 					end
@@ -83,7 +83,7 @@ else
 end
 
 
-nz.Tools.Functions.CreateTool("propremover", {
+nzTools:CreateTool("propremover", {
 	displayname = "Prop Remover Tool",
 	desc = "LMB: Mark Prop for Removal, RMB: Unmark Prop, R: Search Entities in 100 unit radius",
 	condition = function(wep, ply)
@@ -93,7 +93,7 @@ nz.Tools.Functions.CreateTool("propremover", {
 		local ent = tr.Entity
 		local id = ent:MapCreationID()
 		if IsValid(ent) and ent != Entity(0) and id != -1 then
-			ply:ChatPrint("Marked "..ent:GetClass().." ["..ent:EntIndex().."] for removal.")
+			ply:ChatPrint("Marked "..ent:GetClass().." ["..ent:EntIndex().."] for removal (ID: "..id..").")
 			ent:SetColor(Color(200,0,0))
 			nzMapping.MarkedProps[id] = true
 		end
@@ -102,7 +102,7 @@ nz.Tools.Functions.CreateTool("propremover", {
 		local ent = tr.Entity
 		local id = ent:MapCreationID()
 		if IsValid(ent) and ent != Entity(0) and id != -1 then
-			ply:ChatPrint("Unarked "..ent:GetClass().." ["..ent:EntIndex().."] for removal.")
+			ply:ChatPrint("Unmarked "..ent:GetClass().." ["..ent:EntIndex().."] for removal (ID: "..id..").")
 			ent:SetColor(Color(255,255,255))
 			nzMapping.MarkedProps[id] = nil
 		end
@@ -162,5 +162,5 @@ nz.Tools.Functions.CreateTool("propremover", {
 
 		return panel
 	end,
-	//defaultdata = {}
+	-- defaultdata = {}
 })

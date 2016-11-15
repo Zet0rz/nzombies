@@ -8,6 +8,7 @@ ENT.Contact			= "Don't"
 ENT.Purpose			= ""
 ENT.Instructions	= ""
 
+ENT.NZOnlyVisibleInCreative = true
 
 function ENT:Initialize()
 	self:SetModel( "models/player/odessa.mdl" )

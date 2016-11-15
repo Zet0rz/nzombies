@@ -26,7 +26,7 @@ function EFFECT:Init( data )
 	self.Arcs = {}
 	self.Queue = 1
 
-	self:SetRenderBoundsWS( self.Pos, self.Pos, Vector(100,100,100) )
+	self:SetRenderBounds( Vector(0,0,0), Vector(0,0,0), Vector(100,100,100) )
 
 	sound.Play("nz/hellhound/spawn/prespawn.wav", self.Pos, 100, 100, 1)
 
@@ -39,6 +39,7 @@ function EFFECT:Think()
 
 	if IsValid(self.Parent) then
 		self.Pos = self.Parent:GetPos()
+		self:SetPos(self.Pos)
 	end
 
 	self.Life = self.Life + FrameTime()

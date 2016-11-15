@@ -44,6 +44,7 @@ SWEP.Secondary.Automatic	= false
 SWEP.Secondary.Ammo			= "none"
 
 SWEP.NZPreventBox = true
+SWEP.NZTotalBlacklist = true
 
 function SWEP:Initialize()
 
@@ -92,13 +93,4 @@ function SWEP:GetViewModelPosition( pos, ang )
 	
 	return newpos, newang
  
-end
-
-if engine.ActiveGamemode() == "nzombies" then 
-	nzSpecialWeapons:AddWeapon( "nz_revive_morphine", "display", nil, function(ply, wep)
-		if SERVER then
-			ply:SetUsingSpecialWeapon(true)
-			ply:SelectWeapon("nz_revive_morphine")
-		end
-	end)
 end

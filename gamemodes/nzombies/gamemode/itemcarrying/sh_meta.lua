@@ -10,10 +10,16 @@ if SERVER then
 				end
 			end
 			nzItemCarry:SendPlayerItem()
+			if nzItemCarry.Items[id].notif then
+				nzItemCarry:SendPlayerItemNotification(nil, id)
+			end
 		else
 			if !table.HasValue(nzItemCarry.Players[self], id) then
 				table.insert(nzItemCarry.Players[self], id)
 				nzItemCarry:SendPlayerItem(self)
+				if nzItemCarry.Items[id].notif then
+					nzItemCarry:SendPlayerItemNotification(self, id)
+				end
 			end
 		end
 	end

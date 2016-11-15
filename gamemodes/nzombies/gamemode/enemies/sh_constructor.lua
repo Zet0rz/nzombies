@@ -1,5 +1,2 @@
-if SERVER then
 
-	nzEnemies = nzEnemies or {}
-
-end
+nzEnemies = nzEnemies or AddNZModule("Enemies")

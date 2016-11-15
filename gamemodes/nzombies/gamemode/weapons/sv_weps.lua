@@ -50,8 +50,9 @@ local function OnWeaponAdded( weapon )
 				if IsValid(exists) then ply:StripWeapon( exists:GetClass() ) end
 				
 				weapon:SetNWInt( "SwitchSlot", slot )
-				ply:SetAmmo(ply:GetAmmoCount(weapon.Primary.Ammo), "nz_weapon_ammo_"..slot)
-				weapon.Primary.Ammo = "nz_weapon_ammo_"..slot
+				local newammo = weapon:GetPrimaryAmmoType() -- Get the ammo ID used for this weapon slot
+				ply:SetAmmo(weapon:CalculateMaxAmmo(), newammo) -- Set ammo to max ammo for this weapon
+				weapon.Primary.Ammo = game.GetAmmoName(newammo) -- Set ammo type to the ammo type designated by this slot!
 				
 				weapon.Weight = 10000
 				ply:SelectWeapon(weapon:GetClass())
@@ -68,6 +69,7 @@ local function OnWeaponAdded( weapon )
 					weapon.Weight = 0
 				end)
 			end
+			if weapon.NearWallEnabled then weapon.NearWallEnabled = false end
 		end)
 	end
 	

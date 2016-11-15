@@ -1,5 +1,11 @@
 nzMapping.Version = 400 --Note to Ali; Any time you make an update to the way this is saved, increment this.
 
+local savemodules = savemodules or {}
+
+function nzMapping:AddSaveModule(id, tbl)
+	savemodules[id] = tbl
+end
+
 function nzMapping:SaveConfig(name)
 
 	local main = {}
@@ -10,207 +16,25 @@ function nzMapping:SaveConfig(name)
 	end
 
 	main.version = self.Version
-
-	local easter_eggs = {}
-	for _, v in pairs(ents.FindByClass("easter_egg")) do
-		table.insert(easter_eggs, {
-		pos = v:GetPos(),
-		angle = v:GetAngles(),
-		model = v:GetModel(),
-		})
-	end
-
-	local zed_spawns = {}
-	for _, v in pairs(ents.FindByClass("nz_spawn_zombie_normal")) do
-		table.insert(zed_spawns, {
-		pos = v:GetPos(),
-		link = v.link
-		})
-	end
-
-	local zed_special_spawns = {}
-	for _, v in pairs(ents.FindByClass("nz_spawn_zombie_special")) do
-		table.insert(zed_special_spawns, {
-		pos = v:GetPos(),
-		link = v.link
-		})
-	end
-
-	local player_spawns = {}
-	for _, v in pairs(ents.FindByClass("player_spawns")) do
-		table.insert(player_spawns, {
-		pos = v:GetPos(),
-		})
-	end
-
-	local wall_buys = {}
-	for _, v in pairs(ents.FindByClass("wall_buys")) do
-		table.insert(wall_buys, {
-		pos = v:GetPos(),
-		wep = v.WeaponGive,
-		price = v.Price,
-		angle = v:GetAngles(),
-		flipped = v:GetFlipped(),
-		})
-	end
-
-	local buyableprop_spawns = {}
-	for _, v in pairs(ents.FindByClass("prop_buys")) do
-
-		-- Convert the table to a flag string - if it even has any
-		local data = v:GetDoorData()
-		local flagstr
-		if data then
-			flagstr = ""
-			for k2, v2 in pairs(data) do
-				flagstr = flagstr .. k2 .."=" .. v2 .. ","
-			end
-			flagstr = string.Trim(flagstr, ",")
-		end
-
-		table.insert(buyableprop_spawns, {
-		pos = v:GetPos(),
-		angle = v:GetAngles(),
-		model = v:GetModel(),
-		flags = flagstr,
-		collision = v:GetCollisionGroup(),
-		})
-	end
-
-	local prop_effects = {}
-	for _, v in pairs(ents.FindByClass("nz_prop_effect")) do
-		table.insert(prop_effects, {
-		pos = v:GetPos(),
-		angle = v:GetAngles(),
-		model = v.AttachedEntity:GetModel(),
-		})
-	end
-
-	local elec_spawn = {}
-	for _, v in pairs(ents.FindByClass("power_box")) do
-		table.insert(elec_spawn, {
-		pos = v:GetPos(),
-		angle = v:GetAngles( ),
-		})
-	end
-
-	local block_spawns = {}
-	for _, v in pairs(ents.FindByClass("wall_block")) do
-		table.insert(block_spawns, {
-		pos = v:GetPos(),
-		angle = v:GetAngles(),
-		model = v:GetModel(),
-		})
-	end
-
-	local randombox_spawn = {}
-	for _, v in pairs(ents.FindByClass("random_box_spawns")) do
-		table.insert(randombox_spawn, {
-		pos = v:GetPos(),
-		angle = v:GetAngles(),
-		spawn = v.PossibleSpawn,
-		})
-	end
-
-	local perk_machinespawns = {}
-	for _, v in pairs(ents.FindByClass("perk_machine")) do
-		table.insert(perk_machinespawns, {
-			pos = v:GetPos(),
-			angle = v:GetAngles(),
-			id = v:GetPerkID(),
-		})
-	end
 	
-	local wunderfizz_machines = {}
-	for _, v in pairs(ents.FindByClass("wunderfizz_machine")) do
-		table.insert(wunderfizz_machines, {
-			pos = v:GetPos(),
-			angle = v:GetAngles(),
-		})
-	end
-
-	//Normal Map doors
-	local door_setup = {}
-	for k,v in pairs(nzDoors.MapDoors) do
-		local flags = ""
-		for k2, v2 in pairs(v.flags) do
-			flags = flags .. k2 .. "=" .. v2 .. ","
-		end
-		flags = string.Trim(flags, ",")
-		door = nzDoors:DoorIndexToEnt(k)
-		if door:IsDoor() then
-			door_setup[k] = {
-			flags = flags,
-			}
-			--print(door.Data)
-		end
-	end
-	--PrintTable(door_setup)
-
-	--barricades
-	local break_entry = {}
-	for _, v in pairs(ents.FindByClass("breakable_entry")) do
-		table.insert(break_entry, {
-			pos = v:GetPos(),
-			angle = v:GetAngles(),
-			planks = v:GetHasPlanks(),
-			jump = v:GetTriggerJumps(),
-		})
-	end
-
-	local special_entities = {}
-	for k, v in pairs(nz.QMenu.Data.SpawnedEntities) do
-		if IsValid(v) then
-			table.insert(special_entities, duplicator.CopyEntTable(v))
+	-- Loop through our savemodules
+	for id, funcs in pairs(savemodules) do
+		print("[nZ] Saving module ["..id.."]...")
+		local succ, err = pcall(funcs.savefunc) -- Run their save function and get the returned table
+		if succ then -- If it didn't error
+			local tbl = err -- Second argument becomes the table
+			main[id] = tbl -- Saves the table under the ID
 		else
-			nz.QMenu.Data.SpawnedEntities[k] = nil
+			print("[ERROR] in nZ Save Module ["..id.."]:")
+			ErrorNoHalt(err) -- We make sure these errors don't halt the save process!
+			print("\n")
+			print(debug.traceback())
+			print("Skipped save module ["..id.."]...")
 		end
 	end
-	--PrintTable(special_entities)
 
-	-- Store all invisible walls with their boundaries and angles
-	local invis_walls = {}
-	for _, v in pairs(ents.FindByClass("invis_wall")) do
-		table.insert(invis_walls, {
-			pos = v:GetPos(),
-			maxbound = v:GetMaxBound(),
-		})
-	end
-	
-	local invis_damage_walls = {}
-	for _, v in pairs(ents.FindByClass("invis_damage_wall")) do
-		table.insert(invis_damage_walls, {
-			pos = v:GetPos(),
-			maxbound = v:GetMaxBound(),
-			damage = v:GetDamage(),
-			delay = v:GetDelay(),
-			radiation = v:GetRadiation(),
-			poison = v:GetPoison(),
-			tesla = v:GetTesla(),
-		})
-	end
-
-	main["ZedSpawns"] = zed_spawns
-	main["ZedSpecialSpawns"] = zed_special_spawns
-	main["PlayerSpawns"] = player_spawns
-	main["WallBuys"] = wall_buys
-	main["BuyablePropSpawns"] = buyableprop_spawns
-	main["ElecSpawns"] = elec_spawn
-	main["BlockSpawns"] = block_spawns
-	main["RandomBoxSpawns"] = randombox_spawn
-	main["PerkMachineSpawns"] = perk_machinespawns
-	main["DoorSetup"] = door_setup
-	main["BreakEntry"] = break_entry
-	main["EasterEggs"] = easter_eggs
-	main["PropEffects"] = prop_effects
-	main["SpecialEntities"] = special_entities
-	main["InvisWalls"] = invis_walls
-	main["WunderfizzMachines"] = wunderfizz_machines
-	main["DamageWalls"] = invis_damage_walls
-
+	-- These are hardcoded and run after any modules, meaning they can't be overwritten
 	main["NavTable"] = nzNav.Locks
-
-	--Save this map's configuration
 	main["MapSettings"] = self.Settings
 	main["RemoveProps"] = self.MarkedProps
 
@@ -221,31 +45,19 @@ function nzMapping:SaveConfig(name)
 		configname = "nz/nz_" .. game.GetMap() .. ";" .. os.date("%H_%M_%j") .. ".txt"
 	end
 
-	file.Write( configname, util.TableToJSON( main ) )
-	PrintMessage( HUD_PRINTTALK, "[NZ] Saved to garrysmod/data/" .. configname)
+	file.Write( configname, util.TableToJSON( main ) ) -- Save it all in a JSON format
+	PrintMessage( HUD_PRINTTALK, "[nZ] Saved to garrysmod/data/" .. configname) -- And write it to our file! >:D
 
 end
 
 function nzMapping:ClearConfig(noclean)
-	print("[NZ] Clearing current map")
+	print("[nZ] Clearing current map")
 
 	-- ALWAYS do this first!
 	nzMapping:UnloadScript()
 
-	--Entities to clear:
+	-- Some default entities to clear:
 	local entClasses = {
-		["nz_spawn_zombie_normal"] = true,
-		["nz_spawn_zombie_special"] = true,
-		["player_spawns"] = true,
-		["wall_buys"] = true,
-		["prop_buys"] = true,
-		["button_elec"] = true,
-		["wall_block"] = true,
-		["random_box_spawns"] = true,
-		["perk_machine"] = true,
-		["easter_egg"] = true,
-		["nz_prop_effect"] = true,
-		["breakable_entry"] = true,
 		["edit_fog"] = true,
 		["edit_fog_special"] = true,
 		["edit_sky"] = true,
@@ -253,42 +65,39 @@ function nzMapping:ClearConfig(noclean)
 		["edit_sun"] = true,
 		["edit_dynlight"] = true,
 		["nz_triggerzone"] = true,
-		["power_box"] = true,
-		["invis_wall"] = true,
 		["nz_script_triggerzone"] = true,
 		["nz_script_prop"] = true,
-		["wunderfizz_machine"] = true,
-		["wunderfizz_windup"] = true,
-		["invis_damage_wall"] = true,
 	}
+	
+	-- Now loop through our savemodules
+	for id, funcs in pairs(savemodules) do
+		print("[nZ] Clearing config for module ["..id.."]...")
+		if funcs.cleanents then -- If the module has a table of entities
+			for k,v in pairs(funcs.cleanents) do
+				entClasses[v] = true -- Then mark these to also be cleared
+			end
+		end
+		if funcs.cleanfunc then -- If we have a clean func
+			local succ, err = pcall(funcs.cleanfunc) -- Then run it!
+			if !succ then
+				print("[ERROR] in nZ Save Module ["..id.."]:")
+				ErrorNoHalt(err) -- Print the error, but don't stop the rest of the modules!
+				print("\n")
+				print(debug.traceback())
+				print("\nSkipped clean for module ["..id.."]...") -- It doesn't actually quite skip it, rather it stops mid-func
+			end
+		end
+	end
 
-	--jsut loop once over all entities isntead of seperate findbyclass calls
+	-- Now loop over all marked entities and remove them all in one single loop
 	for k,v in pairs(ents.GetAll()) do
 		if entClasses[v:GetClass()] then
 			v:Remove()
 		end
 	end
 
-	--Normal Map doors
-	for k,v in pairs(nzDoors.MapDoors) do
-		nzDoors:RemoveMapDoorLink( k )
-	end
-
-	--Reset Navigation table
-	for k,v in pairs(nzNav.Locks) do
-		--if navmesh.GetNavAreaByID(k) then navmesh.GetNavAreaByID(k):SetAttributes(v.prev)
-	end
+	--Reset Navigation table, Settings and MarkedProps (Hardcoded modules)
 	nzNav.Locks = {}
-
-	--Specially spawned entities
-	for k,v in pairs(nz.QMenu.Data.SpawnedEntities) do
-		if IsValid(v) then
-			v:Remove()
-		end
-	end
-
-	nz.QMenu.Data.SpawnedEntities = {}
-
 	nzMapping.Settings = {}
 	nzMapping.MarkedProps = {}
 	
@@ -296,15 +105,8 @@ function nzMapping:ClearConfig(noclean)
 		nzMapping:SendMapData(v)
 	end
 
-	nzDoors.MapDoors = {}
-	nzDoors.PropDoors = {}
-
 	-- Sync
 	FullSyncModules["Round"]()
-
-	-- Clear all door data
-	net.Start("nzClearDoorData")
-	net.Broadcast()
 
 	-- Clear out the item objects creating with this config (if any)
 	nzItemCarry:CleanUp()
@@ -312,25 +114,37 @@ function nzMapping:ClearConfig(noclean)
 	nzMapping.CurrentConfig = nil
 
 	if !noclean then
-		nzMapping:CleanUpMap()
+		game.CleanUpMap() -- No need for restorative measures (nzMapping:CleanUpMap())
 	end
 end
 
 function nzMapping:LoadConfig( name, loader )
 
+	hook.Call("PreConfigLoad")
+
 	local filepath = "nz/" .. name
 	local location = "DATA"
+	local official = false
 
 	if string.GetExtensionFromFilename(name) == "lua" then
 		if file.Exists("gamemodes/nzombies/officialconfigs/"..name, "GAME") then
 			location, filepath = "GAME", "gamemodes/nzombies/officialconfigs/"..name
+			official = true
 		else
 			location = "LUA"
 		end
 	end
 
 	if file.Exists( filepath, location )then
-		print("[NZ] MAP CONFIG FOUND!")
+		print("[nZ] MAP CONFIG FOUND!")
+		
+		-- BUT WAIT! Is it another map? :O
+		local map = string.sub(string.Explode(";", string.StripExtension(name))[1], 4)
+		if map and map != game.GetMap() then
+			file.Write("nz/autoload.txt", loader and name.."@"..loader:SteamID() or name.."@INVALIDPLAYER")
+			RunConsoleCommand("changelevel", map)
+			return
+		end
 
 		-- Load a lua file for a specific map
 		-- Make sure all hooks are removed before adding the new ones
@@ -362,117 +176,34 @@ function nzMapping:LoadConfig( name, loader )
 		
 		-- Then we can load if entity extensions are to be used
 		if data.MapSettings then
-			nzMapping.Settings = data.MapSettings
+			nzMapping:LoadMapSettings(data.MapSettings)
 			-- That way, the gamemode entities will spawn without getting removed during the map clean up
 		end
 		-- That we then manually call here
 		nzMapping:CleanUpMap()
 		
 
-		print("[NZ] Loading " .. filepath .. "...")
+		print("[nZ] Loading " .. filepath .. "...")
 
 
-		//Start sorting the data
-
-		if data.ZedSpawns then
-			for k,v in pairs(data.ZedSpawns) do
-				nzMapping:ZedSpawn(v.pos, v.link)
+		-- Start sorting the data
+		for id, funcs in pairs(savemodules) do
+			if data[id] then -- If data was saved by this module's ID
+				print("[nZ] Loading module ["..id.."]...") -- Load for it
+				local succ, err = pcall(funcs.loadfunc, data[id]) -- Call the load function with the data as argument
+				if !succ then
+					print("[ERROR] in nZ Load Module ["..id.."]:")
+					ErrorNoHalt(err) -- Let's not let it stop us!
+					print("\n")
+					print(debug.traceback())
+					print("Skipped load module ["..id.."]...")
+				end
 			end
 		end
 
-		if data.ZedSpecialSpawns then
-			for k,v in pairs(data.ZedSpecialSpawns) do
-				nzMapping:ZedSpecialSpawn(v.pos, v.link)
-			end
-		end
-
-		if data.PlayerSpawns then
-			for k,v in pairs(data.PlayerSpawns) do
-				nzMapping:PlayerSpawn(v.pos)
-			end
-		end
-
-		if data.WallBuys then
-			for k,v in pairs(data.WallBuys) do
-				nzMapping:WallBuy(v.pos,v.wep, v.price, v.angle, nil, nil, v.flipped)
-			end
-		end
-
-		if data.BuyablePropSpawns then
-			for k,v in pairs(data.BuyablePropSpawns) do
-				local prop = nzMapping:PropBuy(v.pos, v.angle, v.model, v.flags)
-				prop:SetCollisionGroup(v.collision or COLLISION_GROUP_NONE)
-			end
-		end
-
-		if data.ElecSpawns then
-			for k,v in pairs(data.ElecSpawns) do
-				nzMapping:Electric(v.pos, v.angle)
-			end
-		end
-
-		if data.BlockSpawns then
-			for k,v in pairs(data.BlockSpawns) do
-				nzMapping:BlockSpawn(v.pos, v.angle, v.model)
-			end
-		end
-
-		if data.RandomBoxSpawns then
-			for k,v in pairs(data.RandomBoxSpawns) do
-				nzMapping:BoxSpawn(v.pos, v.angle, v.spawn)
-			end
-		end
-
-		if data.PerkMachineSpawns then
-			for k,v in pairs(data.PerkMachineSpawns) do
-				nzMapping:PerkMachine(v.pos, v.angle, v.id)
-			end
-		end
-
-		if data.EasterEggs then
-			for k,v in pairs(data.EasterEggs) do
-				nzMapping:EasterEgg(v.pos, v.angle, v.model)
-			end
-		end
-		
-		if data.WunderfizzMachines then
-			for k,v in pairs(data.WunderfizzMachines) do
-				nzMapping:PerkMachine(v.pos, v.angle, "wunderfizz")
-			end
-		end
-
-		//Normal Map doors
-		if data.DoorSetup then
-			for k,v in pairs(data.DoorSetup) do
-				--print(v.flags)
-				nzDoors:CreateMapDoorLink(k, v.flags)
-			end
-		end
-
-		//Barricades
-		if data.BreakEntry then
-			for k,v in pairs(data.BreakEntry) do
-				nzMapping:BreakEntry(v.pos, v.angle, v.planks, v.jump)
-			end
-		end
-
-		//NavTable saved
+		-- NavTable, Map Settings, Removed Props (Hardcoded modules)
 		if data.NavTable then
 			nzNav.Locks = data.NavTable
-		end
-
-		if data.PropEffects then
-			for k,v in pairs(data.PropEffects) do
-				nzMapping:SpawnEffect(v.pos, v.angle, v.model)
-			end
-		end
-
-		if data.SpecialEntities then
-			for k,v in pairs(data.SpecialEntities) do
-				PrintTable(v)
-				local ent = duplicator.CreateEntityFromTable(Entity(1), v)
-				table.insert(nz.QMenu.Data.SpawnedEntities, ent)
-			end
 		end
 		
 		for k,v in pairs(player.GetAll()) do
@@ -494,33 +225,174 @@ function nzMapping:LoadConfig( name, loader )
 			end
 		end
 
-		if data.InvisWalls then
-			for k,v in pairs(data.InvisWalls) do
-				nzMapping:CreateInvisibleWall(v.pos, v.maxbound)
-			end
-		end
-		
-		if data.DamageWalls then
-			for k,v in pairs(data.DamageWalls) do
-				nzMapping:CreateInvisibleDamageWall(v.pos, v.maxbound, nil, v.damage, v.delay, v.radiation, v.poison, v.tesla)
-			end
-		end
-
 		nzMapping:CheckMismatch( loader )
 
 		-- Set the current config name, we will use this to load scripts via mismatch window
 		nzMapping.CurrentConfig = name
+		nzMapping.OfficialConfig = official
+		
+		if !nzRound:InState(ROUND_CREATE) then
+			for k,v in pairs(ents.GetAll()) do
+				if v.NZOnlyVisibleInCreative then -- This is set in each entity's file
+					v:SetNoDraw(true) -- Yes this improves FPS by ~50% over a client-side convar and round state check
+				end
+			end
+		end
 
-		print("[NZ] Finished loading map config.")
+		print("[nZ] Finished loading map config.")
+		hook.Call("PostConfigLoad", nil, true)
 	else
 		print(filepath)
-		print("[NZ] Warning: NO MAP CONFIG FOUND! Make a config in game using the /create command, then use /save to save it all!")
+		print("[nZ] Warning: NO MAP CONFIG FOUND! Make a config in game using the /create command, then use /save to save it all!")
+		hook.Call("PostConfigLoad", nil, false)
+	end	
+
+end
+
+-- The function to clean up the map but not the config!
+function nzMapping:CleanUpMap()
+
+	hook.Call("PreConfigMapCleanup")
+	
+	-- Some default entities to spare:
+	local entClasses = {
+		--["edit_fog"] = true,
+		["edit_fog_special"] = true,
+		["edit_sky"] = true,
+		["edit_color"] = true,
+		["edit_sun"] = true,
+		["edit_dynlight"] = true,
+		["nz_triggerzone"] = true,
+		["nz_script_triggerzone"] = true,
+		["nz_script_prop"] = true,
+	}
+	
+	-- Prepare to save module data
+	local module_savetable = {}
+	
+	-- Loop through modules
+	for id, funcs in pairs(savemodules) do
+		if funcs.cleanents then
+			for k,v in pairs(funcs.cleanents) do
+				entClasses[v] = true -- All entities marked will this time be SPARED from the map cleanup
+			end
+		end
+		if funcs.prerestorefunc then -- If we have a pre-restore function (before map cleanup)
+			print("[nZ] Preparing map cleanup restore data for module ["..id.."]...")
+			local succ, err = pcall(funcs.prerestorefunc) -- Then call it and get the data (if any)
+			if succ then
+				local tbl = err
+				if tbl then
+					module_savetable[id] = tbl -- Save it in our temporary table
+				end
+			else
+				print("[ERROR] in nZ Save Module ["..id.."]:")
+				ErrorNoHalt(err)
+				print("\n")
+				print(debug.traceback())
+				print("Skipped pre-restore for module ["..id.."]...")
+			end
+		end
+	end
+	
+	-- Now we clean up the map, sparing the marked entities!
+	game.CleanUpMap(false, table.GetKeys(entClasses))
+
+	-- And we come back to our save modules
+	for id, funcs in pairs(savemodules) do
+		if funcs.postrestorefunc then -- Because if they have a restoration function
+			print("[nZ] Executing post-map cleanup restoration for module ["..id.."]...")
+			local succ, err = pcall(funcs.postrestorefunc, module_savetable[id]) -- Then we need to run it with the data
+			if !succ then
+				print("[ERROR] in nZ Save Module ["..id.."]:")
+				ErrorNoHalt(err)
+				print("Skipped pre-restore for module ["..id.."]...")
+			end
+		end
 	end
 
+	-- These are from the the hardcoded modules
+	if self.MarkedProps then
+		if !nzRound:InState( ROUND_CREATE ) then
+			for k,v in pairs(self.MarkedProps) do
+				local ent = ents.GetMapCreatedEntity(k)
+				if IsValid(ent) then ent:Remove() end
+			end
+		else
+			for k,v in pairs(self.MarkedProps) do
+				local ent = ents.GetMapCreatedEntity(k)
+				if IsValid(ent) then ent:SetColor(Color(200,0,0)) end
+			end
+		end
+	end
+	
+	hook.Call("PostConfigMapCleanup")
 end
 
 hook.Add("Initialize", "nz_Loadmaps", function()
 	timer.Simple(5, function()
-		nzMapping:LoadConfig("nz_"..game.GetMap()..".txt")
+		local autoload
+		local isautomated = false
+		if file.Exists("nz/autoload.txt", "DATA") then
+			local data = string.Explode("@", file.Read("nz/autoload.txt", "DATA"))
+			if data and data != "" then
+				autoload, loader = data[1], data[2]
+				if loader then
+					loader = game.SinglePlayer() and Entity(1) or player.GetBySteamID(loader)
+				end
+			end
+		end
+		if !autoload or #autoload <= 0 then
+			if file.Exists("nz/server_autoload.txt", "DATA") then
+				local data = util.JSONToTable(file.Read("nz/server_autoload.txt", "DATA"))
+				if data then
+					if data[game.GetMap()] then
+						autoload = data[game.GetMap()]
+						isautomated = true
+					end
+				end
+			else
+				if !file.Exists( "nz/", "DATA" ) then
+					file.CreateDir( "nz" )
+				end
+				file.Write("nz/server_autoload.txt", util.TableToJSON({
+					["some_map1"] = "config_to_autoload1",
+					["some_map2"] = "config_to_autoload2",
+					["some_map3"] = "config_to_autoload3"
+				}))
+			end
+		end
+		if !autoload then 
+			autoload = "nz_"..game.GetMap()..".txt"
+			isautomated = true
+		end
+		
+		local map = string.sub(string.Explode(";", string.StripExtension(autoload))[1], 4)
+		if map and map != game.GetMap() then
+			file.Write("nz/autoload.txt", "")
+			if !isautomated then
+				-- Automatic map loads (such as from server_autoload.txt or just game map) does not stop here
+				return
+			end
+		end
+		
+		nzMapping:LoadConfig( autoload, IsValid(loader) and loader or nil )
 	end)
 end)
+
+function nzMapping:QueueConfig( name, loader )
+	if name then
+		self.QueuedConfig = {config = name, loader = loader}
+	else
+		self.QueueConfig = nil
+	end
+end
+
+function nzMapping:GetConfigs()
+	local tbl = {}
+	tbl.configs = file.Find( "nz/nz_*", "DATA" )
+	tbl.workshopconfigs = file.Find( "nz/nz_*", "LUA" )
+	tbl.officialconfigs = file.Find("gamemodes/nzombies/officialconfigs/*", "GAME")
+	
+	return tbl
+end

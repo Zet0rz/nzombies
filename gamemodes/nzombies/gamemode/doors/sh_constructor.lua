@@ -1,2 +1,2 @@
 -- Setup Doors module
-nzDoors = nzDoors or {}
+nzDoors = nzDoors or AddNZModule("Doors")

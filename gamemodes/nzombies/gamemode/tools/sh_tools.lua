@@ -1,28 +1,88 @@
-//
+--
 
-function nz.Tools.Functions.CreateTool(id, serverdata, clientdata)
+function nzTools:CreateTool(id, serverdata, clientdata)
 	if SERVER then
-		nz.Tools.ToolData[id] = serverdata
+		self.ToolData[id] = serverdata
 	else
-		nz.Tools.ToolData[id] = clientdata
+		self.ToolData[id] = clientdata
 	end
 end
 
-function nz.Tools.Functions.Get(id)
-	return nz.Tools.ToolData[id]
+function nzTools:EnableProperties(id, label, icon, order, spacer, filterfunc, datafunc)
+	properties.Add( "nztool_"..id, {
+		MenuLabel = label,
+		Order = order,
+		PrependSpacer = spacer,
+		MenuIcon = icon,
+
+		Filter = filterfunc,
+
+		Action = function( self, ent )
+			local frame = vgui.Create("DFrame")
+			frame:SetPos( 100, 100 )
+			frame:SetSize( 300, 280 )
+			frame:SetTitle( label )
+			frame:SetVisible( true )
+			frame:SetDraggable( true )
+			frame:ShowCloseButton( true )
+			frame:MakePopup()
+			frame:Center()
+			
+			local entdata = datafunc(ent)
+			if !entdata then entdata = {} end
+			
+			local panel = nzTools.ToolData[id].interface(frame, entdata, true)
+			panel:SetPos(10, 40)
+			
+			local data2 = panel.CompileData()
+			panel.UpdateData = function(data)
+				data2 = data
+			end
+			
+			local submit = vgui.Create("DButton", frame)
+			submit:SetText("Submit")
+			submit:SetPos(50, 245)
+			submit:SetSize(200, 25)
+			submit.DoClick = function(self2)
+				self:MsgStart()
+					net.WriteEntity( ent )
+					net.WriteTable( data2 )
+				self:MsgEnd()
+			end
+		end,
+
+		Receive = function( self, length, ply )
+			local ent = net.ReadEntity()
+			local data = net.ReadTable()
+
+			if ( !IsValid( ent ) or !IsValid(ply) ) then return false end
+			if !nzRound:InState( ROUND_CREATE ) then return false end
+			if ( !ply:IsInCreative() ) then return false end
+			if ( ent:IsPlayer() ) then return false end
+			if ( !self:Filter( ent, ply ) ) then return false end
+			
+			local trace = ply:GetEyeTrace()
+			trace.Entity = ent
+			nzTools.ToolData[id].PrimaryAttack(nil, ply, trace, data)
+		end
+	} )
 end
 
-function nz.Tools.Functions.GetList()
+function nzTools:Get(id)
+	return self.ToolData[id]
+end
+
+function nzTools:GetList()
 	local tbl = {}
 
-	for k,v in pairs(nz.Tools.ToolData) do
+	for k,v in pairs(self.ToolData) do
 		tbl[k] = v.displayname
 	end
 
 	return tbl
 end
 
-nz.Tools.Functions.CreateTool("default", {
+nzTools:CreateTool("default", {
 	displayname = "Multitool",
 	desc = "Hold Q to pick a tool to use",
 	condition = function(wep, ply)
@@ -35,7 +95,7 @@ nz.Tools.Functions.CreateTool("default", {
 	SecondaryAttack = function(wep, ply, tr, data)
 	end,
 	Reload = function(wep, ply, tr, data)
-		//Nothing
+		-- Nothing
 	end,
 	OnEquip = function(wep, ply, data)
 
@@ -59,5 +119,5 @@ nz.Tools.Functions.CreateTool("default", {
 
 		return text
 	end,
-	//defaultdata = {}
+	-- defaultdata = {}
 })

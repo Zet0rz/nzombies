@@ -79,15 +79,15 @@ function MenuToolBar:Init()
 
 	self.Entries = {}
 
-	local ready = self:AddEntry( "READY", "large", "say", "/ready" )
+	local ready = self:AddEntry( "READY", "large", "nz_chatcommand", "/ready" )
 	function ready:Think()
 		if nzRound:InProgress() then
 			if LocalPlayer():Alive()  then
 				self:SetText( "DROPOUT" )
-				self:SetConsoleCommand( "say", "/dropout" )
+				self:SetConsoleCommand( "nz_chatcommand", "/dropout" )
 			else
 				self:SetText( "DROPIN" )
-				self:SetConsoleCommand( "say", "/dropin" )
+				self:SetConsoleCommand( "nz_chatcommand", "/dropin" )
 			end
 		else
 			if LocalPlayer():IsReady() then
@@ -97,18 +97,18 @@ function MenuToolBar:Init()
 			end
 			self.DoClick = function()
 				if LocalPlayer():IsReady() then
-					RunConsoleCommand( "say", "/unready" )
+					RunConsoleCommand( "nz_chatcommand", "/unready" )
 				else
-					RunConsoleCommand( "say", "/ready" )
+					RunConsoleCommand( "nz_chatcommand", "/ready" )
 					RunConsoleCommand( "nz_settings" )
 				end
 			end
 		end
 	end
 
-	local spectate = self:AddEntry( "SPECTATE", "medium", "say", "/spectate" )
+	local spectate = self:AddEntry( "SPECTATE", "medium", "nz_chatcommand", "/spectate" )
 	
-	local creative = self:AddEntry( "CREATIVE MODE", "medium", "say", "/create" )
+	local creative = self:AddEntry( "CREATIVE MODE", "medium", "nz_chatcommand", "/create" )
 	function creative:Think()
 		if LocalPlayer():IsInCreative() then
 			self:SetText("SURVIVAL MODE")
@@ -236,7 +236,7 @@ local green = Color(230,255,230,255)
 
 local function MenuSettingsListInit(self)
 	self:SetWide( 256 )
-	local btnMode = self:AddButton( "< Toggle Creative Mode ...", "say", "/create" )
+	local btnMode = self:AddButton( "< Toggle Creative Mode ...", "nz_chatcommand", "/create" )
 	function btnMode:Think()
 		if self:IsHovered() or IsValid(self.ExtendedList) and (self.ExtendedList:IsHovered() or self.ExtendedList:IsChildHovered()) then
 			if !IsValid(self.ExtendedList) then
@@ -251,7 +251,7 @@ local function MenuSettingsListInit(self)
 				self.ExtendedList.PlayerList:SetWide( 256 )
 				
 				for k,v in pairs(player.GetAll()) do
-					local plybtn = self.ExtendedList.PlayerList:AddButton( v:Nick(), "say", "/create "..v:Nick())
+					local plybtn = self.ExtendedList.PlayerList:AddButton( v:Nick(), "nz_chatcommand", "/create "..v:Nick())
 					function plybtn:Paint( w, h )
 						draw.RoundedBox( 0, 0, 1, w, h-1, v:IsInCreative() and green or white )
 					end
@@ -264,10 +264,11 @@ local function MenuSettingsListInit(self)
 		end
 	end
 	
-	self:AddButton( "Load Map config", "say", "/load" )
-	self:AddButton( "Save Map config", "say", "/save" )
-	self:AddButton( "Generate Navmesh", "say", "/generate" )
-	self:AddButton( "Cheats (Beta)", "say", "/cheats" )
+	self:AddButton( "Load Map config", "nz_chatcommand", "/load" )
+	self:AddButton( "Save Map config", "nz_chatcommand", "/save" )
+	self:AddButton( "Player Model Editor", function() nzPlayers:PlayerModelEditor() end)
+	self:AddButton( "Generate Navmesh", "nz_chatcommand", "/generate" )
+	self:AddButton( "Cheats (Beta)", "nz_chatcommand", "/cheats" )
 end
 
 function MenuSettingsPanel:Init()
@@ -438,6 +439,8 @@ local function showSettings(ply, cmd, args)
 			g_Settings:Show()
 			gui.EnableScreenClicker( true )
 			g_Settings:SetVisible(true)
+			
+			if IsValid(nzInterfaces.ConfigVoter) then nzInterfaces.ConfigVoter:Show() end -- Reopen config voter as well if a vote is going on
 		end
 	end
 end

@@ -1,11 +1,8 @@
-//Main Tables
-nz.QMenu = {}
-nz.QMenu.Functions = {}
-nz.QMenu.Data = {}
+-- Main Tables
+nzQMenu = nzQMenu or AddNZModule("QMenu")
+nzQMenu.Data = nzQMenu.Data or {}
 
-nz.QMenu.Data.SpawnedEntities = {}
+nzQMenu.Data.SpawnedEntities = {}
 
-//sh_populate
-nz.QMenu.Data.Models = {}
-nz.QMenu.Data.Categories = {}
-nz.QMenu.Data.Entities = {}
+-- sh_populate
+nzQMenu.Data.Entities = {}

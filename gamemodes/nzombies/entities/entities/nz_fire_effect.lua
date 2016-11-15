@@ -14,6 +14,8 @@ ENT.Editable		= false
 ENT.PrintName			= "Fire Effect"
 ENT.Category			= "Editors"
 
+ENT.NZOnlyVisibleInCreative = true
+
 function ENT:Initialize()
 
 	--BaseClass.Initialize( self )

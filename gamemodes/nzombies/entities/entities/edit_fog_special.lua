@@ -8,6 +8,8 @@ ENT.AdminOnly			= false
 ENT.PrintName			= "Fog Editor for Special Rounds"
 ENT.Category			= "Editors"
 
+ENT.NZOnlyVisibleInCreative = true
+
 function ENT:Initialize()
 
 	BaseClass.Initialize( self )

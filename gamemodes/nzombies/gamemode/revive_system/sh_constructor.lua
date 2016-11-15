@@ -1,9 +1,9 @@
 -- Main Tables
-Revive = Revive or {}
+nzRevive = nzRevive or AddNZModule("Revive")
 
 -- Variables
-Revive.Players = {}
+nzRevive.Players = {}
 
 if CLIENT then
-	Revive.Notify = {}
+	nzRevive.Notify = {}
 end

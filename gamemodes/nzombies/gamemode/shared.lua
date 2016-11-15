@@ -1,4 +1,4 @@
-GM.Name = "nZombies 3"
+GM.Name = "nZombies"
 GM.Author = "Alig96, Zet0r, Lolle"
 GM.Email = "N/A"
 GM.Website = "N/A"

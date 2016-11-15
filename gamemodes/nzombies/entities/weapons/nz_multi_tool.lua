@@ -107,12 +107,12 @@ end
 -----------------------------------------------------------]]
 function SWEP:SwitchTool(id)
 
-	//Only allow if the condition has been met
-	if nz.Tools.ToolData[id].condition(self, self.Owner) then
+	-- Only allow if the condition has been met
+	if nzTools.ToolData[id].condition(self, self.Owner) then
 		self.ToolMode = id
 
-		//Update the server with the newly equipped tool
-		nz.Tools.Functions.SendData( nz.Tools.SavedData[id], id )
+		-- Update the server with the newly equipped tool, switches data server-side
+		nzTools:SendData( nzTools.SavedData[id], id )
 	end
 
 end
@@ -131,8 +131,8 @@ function SWEP:PrimaryAttack()
 	self:DoShootEffect( trace.HitPos, trace.HitNormal, trace.Entity, trace.PhysicsBone, IsFirstTimePredicted() )
 
 	if CLIENT and !game.SinglePlayer() and !IsFirstTimePredicted() then return end
-	if nz.Tools.ToolData[self.ToolMode] and nz.Tools.ToolData[self.ToolMode].PrimaryAttack then
-		nz.Tools.ToolData[self.ToolMode].PrimaryAttack(self, self.Owner, trace, self.Owner.NZToolData)
+	if nzTools.ToolData[self.ToolMode] and nzTools.ToolData[self.ToolMode].PrimaryAttack then
+		nzTools.ToolData[self.ToolMode].PrimaryAttack(self, self.Owner, trace, self.Owner.NZToolData)
 	end
 	if ( game.SinglePlayer() ) then self:CallOnClient( "PrimaryAttack" ) end
 end
@@ -151,8 +151,8 @@ function SWEP:SecondaryAttack()
 	self:DoShootEffect( trace.HitPos, trace.HitNormal, trace.Entity, trace.PhysicsBone, IsFirstTimePredicted() )
 
 	if CLIENT and !game.SinglePlayer() and !IsFirstTimePredicted() then return end
-	if nz.Tools.ToolData[self.ToolMode] and nz.Tools.ToolData[self.ToolMode].SecondaryAttack then
-		nz.Tools.ToolData[self.ToolMode].SecondaryAttack(self, self.Owner, trace, self.Owner.NZToolData)
+	if nzTools.ToolData[self.ToolMode] and nzTools.ToolData[self.ToolMode].SecondaryAttack then
+		nzTools.ToolData[self.ToolMode].SecondaryAttack(self, self.Owner, trace, self.Owner.NZToolData)
 	end
 	if ( game.SinglePlayer() ) then self:CallOnClient( "SecondaryAttack" ) end
 end
@@ -171,8 +171,8 @@ function SWEP:Reload()
 		reload_cd = CurTime() + 0.3
 		
 		if CLIENT and !game.SinglePlayer() and !IsFirstTimePredicted() then return end
-		if nz.Tools.ToolData[self.ToolMode] and nz.Tools.ToolData[self.ToolMode].Reload then
-			nz.Tools.ToolData[self.ToolMode].Reload(self, self.Owner, trace, self.Owner.NZToolData)
+		if nzTools.ToolData[self.ToolMode] and nzTools.ToolData[self.ToolMode].Reload then
+			nzTools.ToolData[self.ToolMode].Reload(self, self.Owner, trace, self.Owner.NZToolData)
 		end
 
 	end
@@ -181,23 +181,23 @@ end
 
 function SWEP:Deploy()
 	if CLIENT and !game.SinglePlayer() and !IsFirstTimePredicted() then return end
-	if nz.Tools.ToolData[self.ToolMode] and nz.Tools.ToolData[self.ToolMode].OnEquip then
-		nz.Tools.ToolData[self.ToolMode].OnEquip(self, self.Owner, self.Owner.NZToolData)
+	if nzTools.ToolData[self.ToolMode] and nzTools.ToolData[self.ToolMode].OnEquip then
+		nzTools.ToolData[self.ToolMode].OnEquip(self, self.Owner, self.Owner.NZToolData)
 	end
 	if ( game.SinglePlayer() ) then self:CallOnClient( "Deploy" ) end
 end
 
-function SWEP:Holster()
-	if nz.Tools.ToolData[self.ToolMode] and nz.Tools.ToolData[self.ToolMode].OnHolster then
-		nz.Tools.ToolData[self.ToolMode].OnHolster(self, self.Owner, self.Owner.NZToolData)
+function SWEP:Holster(wep)
+	if nzTools.ToolData[self.ToolMode] and nzTools.ToolData[self.ToolMode].OnHolster then
+		nzTools.ToolData[self.ToolMode].OnHolster(self, self.Owner, self.Owner.NZToolData)
 	end
 	if ( game.SinglePlayer() ) then self:CallOnClient( "Holster" ) end
 	return true
 end
 
 function SWEP:Think()
-	if nz.Tools.ToolData[self.ToolMode] and nz.Tools.ToolData[self.ToolMode].Think then
-		nz.Tools.ToolData[self.ToolMode].Think()
+	if nzTools.ToolData[self.ToolMode] and nzTools.ToolData[self.ToolMode].Think then
+		nzTools.ToolData[self.ToolMode].Think()
 	end
 end
 
@@ -260,10 +260,10 @@ if CLIENT then
 
 		local OldRT = render.GetRenderTarget()
 		local text = "Toolgun"
-		if nz.Tools.ToolData[self.ToolMode] then
-			text = nz.Tools.ToolData[self.ToolMode].displayname
-			if nz.Tools.SavedData[self.ToolMode] then
-				for k,v in pairs(nz.Tools.SavedData[self.ToolMode]) do
+		if nzTools.ToolData[self.ToolMode] then
+			text = nzTools.ToolData[self.ToolMode].displayname
+			if nzTools.SavedData[self.ToolMode] then
+				for k,v in pairs(nzTools.SavedData[self.ToolMode]) do
 					text = text .."    -    "..k..": "..v
 				end
 				text = text .. "    - "
@@ -289,8 +289,8 @@ if CLIENT then
 	end
 	
 	function SWEP:DrawHUD()
-		if nz.Tools.ToolData[self.ToolMode] and nz.Tools.ToolData[self.ToolMode].drawhud then
-			nz.Tools.ToolData[self.ToolMode].drawhud()
+		if nzTools.ToolData[self.ToolMode] and nzTools.ToolData[self.ToolMode].drawhud then
+			nzTools.ToolData[self.ToolMode].drawhud()
 		end
 	end
 end

@@ -1,4 +1,4 @@
-nz.Tools.Functions.CreateTool("ee", {
+nzTools:CreateTool("ee", {
 	displayname = "Easter Egg Placer",
 	desc = "LMB: Easter Egg, RMB: Remove Easter Egg, Use Player Handler to select song",
 	condition = function(wep, ply)
@@ -13,7 +13,7 @@ nz.Tools.Functions.CreateTool("ee", {
 		end
 	end,
 	Reload = function(wep, ply, tr, data)
-		//Nothing
+		-- Nothing
 	end,
 	OnEquip = function(wep, ply, data)
 
@@ -32,5 +32,5 @@ nz.Tools.Functions.CreateTool("ee", {
 	interface = function(frame, data)
 
 	end,
-	//defaultdata = {}
+	--defaultdata = {}
 })

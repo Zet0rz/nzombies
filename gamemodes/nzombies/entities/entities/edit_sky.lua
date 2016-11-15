@@ -10,6 +10,8 @@ ENT.Category			= "Editors"
 
 local oldsky
 
+ENT.NZOnlyVisibleInCreative = true
+
 function ENT:Initialize()
 
 	BaseClass.Initialize( self )

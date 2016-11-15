@@ -9,15 +9,16 @@ function nzEE:Reset()
 	for k,v in pairs(ents.FindByClass("easter_egg")) do
 		v.Used = false
 	end
-	hook.Call("nz.EE.EasterEggStop")
+	hook.Call("OnEasterEggsReset")
 end
 
-function nzEE:ActivateEgg( ent )
+function nzEE:ActivateEgg( ent, ply )
 
 	ent.Used = true
 	ent:EmitSound("WeaponDissolve.Dissolve", 100, 100)
 
 	self.Data.EggCount = self.Data.EggCount + 1
+	hook.Call( "OnEasterEggFound", ply, ent )
 
 	if self.Data.MaxEggCount == 0 then
 		self.Data.MaxEggCount = #ents.FindByClass("easter_egg")
@@ -26,7 +27,7 @@ function nzEE:ActivateEgg( ent )
 	-- What we should do when we have all the eggs
 	if self.Data.EggCount == self.Data.MaxEggCount then
 		print("All easter eggs found yay!")
-		hook.Call( "nz.EE.EasterEgg" )
+		hook.Call( "OnAllEasterEggsFound", ply, ent )
 	end
 end
 
@@ -34,12 +35,12 @@ util.AddNetworkString("EasterEggSong")
 util.AddNetworkString("EasterEggSongPreload")
 util.AddNetworkString("EasterEggSongStop")
 
-hook.Add("nz.EE.EasterEgg", "PlayEESong", function()
+hook.Add("OnAllEasterEggsFound", "PlayEESong", function()
 	net.Start("EasterEggSong")
 	net.Broadcast()
 end)
 
-hook.Add("nz.EE.EasterEggStop", "StopEESong", function()
+hook.Add("OnEasterEggsReset", "StopEESong", function()
 	net.Start("EasterEggSongStop")
 	net.Broadcast()
 end)

@@ -1,11 +1,11 @@
-//Client Server Syncing
+-- Client Server Syncing
 
 if CLIENT then
 
-	//Client to Server (Client)
-	function nz.QMenu.Functions.Request( model, entity )
+	-- Client to Server (Client)
+	function nzQMenu:Request( model, entity )
 		local entity = entity or false
-		net.Start( "nz.QMenu.Request" )
+		net.Start( "nzQMenu.Request" )
 			net.WriteString( model )
 			net.WriteBool( entity )
 		net.SendToServer()
@@ -15,15 +15,15 @@ end
 
 if SERVER then
 
-	//Client to Server (Server)
-	util.AddNetworkString( "nz.QMenu.Request" )
+	-- Client to Server (Server)
+	util.AddNetworkString( "nzQMenu.Request" )
 
-	function nz.QMenu.Functions.HandleRequest( len, ply )
+	local function HandleRequest( len, ply )
 		local model = net.ReadString()
 		local entity = net.ReadBool()
 		if nzRound:InState( ROUND_CREATE ) then
 			print(ply:Nick() .. " requested prop " .. model)
-			if ply:IsSuperAdmin() then
+			if ply:IsInCreative() then
 				local tr = util.GetPlayerTrace( ply )
 				tr.mask = bit.bor( CONTENTS_SOLID, CONTENTS_MOVEABLE, CONTENTS_MONSTER, CONTENTS_WINDOW, CONTENTS_DEBRIS, CONTENTS_GRATE, CONTENTS_AUX )
 				local trace = util.TraceLine( tr )
@@ -36,7 +36,7 @@ if SERVER then
 						nzMapping:SpawnEffect(trace.HitPos, Angle(0,0,0), model, ply)
 					end
 				end
-				//Since we're adding a prop, lets switch to the phys gun for convenience
+				-- Since we're adding a prop, lets switch to the phys gun for convenience
 				ply:SelectWeapon( "weapon_physgun" )
 			else
 				print("Denied request from " .. ply:Nick())
@@ -44,7 +44,7 @@ if SERVER then
 		end
 	end
 
-	//Receivers
-	net.Receive( "nz.QMenu.Request", nz.QMenu.Functions.HandleRequest )
+	-- Receivers
+	net.Receive( "nzQMenu.Request", HandleRequest )
 
 end

@@ -76,21 +76,28 @@ function ENT:Think()
 			local e = EffectData()
 			e:SetMagnitude(1.1)
 			e:SetScale(1.5)
-			for k,v in pairs(ents.FindInBox(self:GetPos(), self:GetPos() + self:GetMaxBound())) do
-				if IsValid(v) and v:IsPlayer() and v:GetNotDowned() then
-					local islocal = v == LocalPlayer()
-					if self:GetTesla() then
-						if !v.LightningAura or v.LightningAura < ct then
-							e:SetEntity(v)
-							util.Effect("lightning_aura", e)
+			
+			local pos1 = self:GetPos()
+			local pos2 = self:GetPos() + self:GetMaxBound()
+			OrderVectors(pos1, pos2)
+			
+			for k,v in pairs(player.GetAll()) do
+				if IsValid(v) and v:GetNotDowned() and (v:IsPlaying() or v:IsInCreative()) then
+					if v:GetPos():WithinAABox(pos1, pos2) then
+						local islocal = v == LocalPlayer()
+						if self:GetTesla() then
+							if !v.LightningAura or v.LightningAura < ct then
+								e:SetEntity(v)
+								util.Effect("lightning_aura", e)
+							end
+							if islocal then
+								surface.PlaySound("weapons/physcannon/superphys_small_zap" .. math.random(1,4) .. ".wav")
+							end
+							v.LightningAura = ct + 1
 						end
-						if islocal then
-							surface.PlaySound("weapons/physcannon/superphys_small_zap" .. math.random(1,4) .. ".wav")
+						if islocal and self:GetRadiation() then
+							surface.PlaySound("player/geiger" .. math.random(1,3) .. ".wav")
 						end
-						v.LightningAura = ct + 1
-					end
-					if islocal and self:GetRadiation() then
-						surface.PlaySound("player/geiger" .. math.random(1,3) .. ".wav")
 					end
 				end
 			end
@@ -154,6 +161,6 @@ if CLIENT then
 	end
 end
 
-hook.Add("PhysgunPickup", "nzInvisWallNotPickup", function(ply, wall)
-	if wall:GetClass() == "invis_wall" then return false end
+hook.Add("PhysgunPickup", "nzInvisWallDamageNotPickup", function(ply, wall)
+	if wall:GetClass() == "invis_damage_wall" then return false end
 end)

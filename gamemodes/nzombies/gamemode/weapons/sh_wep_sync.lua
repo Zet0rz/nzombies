@@ -1,9 +1,9 @@
-//Client Server Syncing
+-- Client Server Syncing
 
 
 if SERVER then
 
-	//Server to client (Server)
+	-- Server to client (Server)
 	util.AddNetworkString( "nzWeps.Sync" )
 
 	function nzWeps:SendSync( ply, weapon, modifier, revert )
@@ -18,7 +18,7 @@ end
 
 if CLIENT then
 
-	//Server to client (Client)
+	-- Server to client (Client)
 	local function ReceiveSync( length )
 		local wep = net.ReadEntity()
 		local modifier = net.ReadString()
@@ -33,6 +33,6 @@ if CLIENT then
 		end
 	end
 
-	//Receivers
+	-- Receivers
 	net.Receive( "nzWeps.Sync", ReceiveSync )
 end

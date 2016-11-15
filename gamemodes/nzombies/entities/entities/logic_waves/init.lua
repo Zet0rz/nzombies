@@ -60,7 +60,7 @@ hook.Add("OnRoundStart", "nz_zsLogicWavesRoundStart", function(num)
 	end
 end)
 
-hook.Add("OnRoundPreperation", "nz_zsLogicWavesRoundEnd", function(num)
+hook.Add("OnRoundPreparation", "nz_zsLogicWavesRoundEnd", function(num)
 	local curwave = (num - 1) / conversionrate
 	for _, ent in pairs(ents.FindByClass("logic_waves")) do
 		if ent.Wave == curwave or ent.Wave == -1 then

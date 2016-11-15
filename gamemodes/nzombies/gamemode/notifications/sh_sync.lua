@@ -1,11 +1,11 @@
-//Client Server Syncing
+-- Client Server Syncing
 
 if SERVER then
 
-	//Server to client (Server)
+	-- Server to client (Server)
 	util.AddNetworkString( "nz.Notifications.Request" )
 	
-	function nz.Notifications.Functions.SendRequest(header, data)
+	function nzNotifications:SendRequest(header, data)
 		net.Start( "nz.Notifications.Request" )
 			net.WriteString( header )
 			net.WriteTable( data )
@@ -16,17 +16,17 @@ end
 
 if CLIENT then
 	
-	//Server to client (Client)
-	function nz.Notifications.Functions.ReceiveRequest( length )
-		print("Received Notifications Request")
+	-- Server to client (Client)
+	local function ReceiveRequest( length )
+		--print("Received Notifications Request")
 		local header = net.ReadString()
 		local data = net.ReadTable()
 		
 		if header == "sound" then
-			nz.Notifications.Functions.AddSoundToQueue(data)
+			nzNotifications:AddSoundToQueue(data)
 		end
 	end
 	
-	//Receivers 
-	net.Receive( "nz.Notifications.Request", nz.Notifications.Functions.ReceiveRequest )
+	-- Receivers 
+	net.Receive( "nz.Notifications.Request", ReceiveRequest )
 end

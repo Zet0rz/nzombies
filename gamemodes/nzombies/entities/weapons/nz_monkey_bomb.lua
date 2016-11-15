@@ -81,7 +81,7 @@ function SWEP:Deploy()
 					surface.PlaySound("nz/monkey/cymbals/monk_cymb_0"..math.Round(i/2)..".wav")
 					i = i < 8 and i + 1 or 8
 				end)
-			end 
+			end
 		end)
 		
 	else
@@ -90,7 +90,9 @@ function SWEP:Deploy()
 end
 
 function SWEP:PrimaryAttack()
-	
+	if SERVER then
+		self:ThrowBomb(500)
+	end
 end
 
 function SWEP:ThrowBomb(force)
@@ -135,52 +137,4 @@ function SWEP:GetViewModelPosition( pos, ang )
 	
 	return newpos, newang
  
-end
-
-if engine.ActiveGamemode() == "nzombies" then 
-	nzSpecialWeapons:AddWeapon( "nz_monkey_bomb", "specialgrenade", function(ply) -- Use function
-		if SERVER then
-			if ply:GetAmmoCount("nz_specialgrenade") <= 0 then return end
-			ply:SetUsingSpecialWeapon(true)
-			ply:SelectWeapon("nz_monkey_bomb")
-			timer.Simple(3, function()
-				if IsValid(ply) then
-					local wep = ply:GetActiveWeapon()
-					if wep:GetClass() == "nz_monkey_bomb" then
-						if !ply:KeyDown(IN_GRENADE2) then
-							wep:ThrowBomb(700)
-							ply:SetAmmo(ply:GetAmmoCount("nz_specialgrenade") - 1, "nz_specialgrenade")
-							timer.Simple(1, function()
-								if IsValid(ply) then
-									ply:SetUsingSpecialWeapon(false)
-									ply:EquipPreviousWeapon()
-								end
-							end)
-						else
-							hook.Add("KeyRelease", "CheckMonkeyRelease"..ply:EntIndex(), function(kply, key)
-								if kply == ply and key == IN_GRENADE2 then
-									wep:ThrowBomb(700)
-									ply:SetAmmo(ply:GetAmmoCount("nz_specialgrenade") - 1, "nz_specialgrenade")
-									timer.Simple(1, function()
-										if IsValid(ply) then
-											ply:SetUsingSpecialWeapon(false)
-											ply:EquipPreviousWeapon()
-										end
-									end)
-									hook.Remove("KeyRelease", "CheckMonkeyRelease"..ply:EntIndex())
-								end
-							end)
-						end
-					else
-						ply:SetUsingSpecialWeapon(false)
-						ply:EquipPreviousWeapon()
-					end
-				end
-			end)
-		end
-	end, function(ply) -- Equip Function
-		ply:SetAmmo(3, "nz_specialgrenade")
-	end, function(ply) -- Max Ammo function
-		ply:SetAmmo(3, "nz_specialgrenade")
-	end)
 end

@@ -1,8 +1,8 @@
-//
+--
 
 function nzElec:Activate(nochat)
 
-	if self.Active then return end -- We don't wanna turn it on twice
+	--if self.Active then return end -- We don't wanna turn it on twice
 
 	self.Active = true
 	self:SendSync()
@@ -22,6 +22,10 @@ function nzElec:Activate(nochat)
 	-- Turn on all perk machines
 	for k,v in pairs(ents.FindByClass("perk_machine")) do
 		v:TurnOn()
+	end
+	
+	for k,v in pairs(ents.FindByClass("wunderfizz_machine")) do
+		v:TurnOff() -- Reset all Wunderfizz's
 	end
 	
 	local wund = ents.FindByClass("wunderfizz_machine")

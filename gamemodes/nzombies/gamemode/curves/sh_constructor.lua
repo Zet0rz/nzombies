@@ -1,6 +1,6 @@
 if SERVER then
 	-- Main Tables
-	nzCurves = nzCurves or {}
+	nzCurves = nzCurves or AddNZModule("Curves")
 
 	function nzCurves.GenerateHealthCurve(round)
 		local base = GetConVar("nz_difficulty_zombie_health_base"):GetFloat()

@@ -7,11 +7,16 @@ ENT.Author = "Lolle"
 
 function ENT:StatsInitialize()
     if SERVER then
-        local speeds = nzRound:GetZombieSpeeds()
-		if speeds then
-			self:SetRunSpeed( nzMisc.WeightedRandom(speeds) - 20 ) -- A bit slower here
+		if nzRound:GetNumber() == -1 then
+			self:SetRunSpeed( math.random(20, 260) )
+			self:SetHealth( math.random(75, 1000) )
+		else
+			local speeds = nzRound:GetZombieSpeeds()
+			if speeds then
+				self:SetRunSpeed( nzMisc.WeightedRandom(speeds) - 20 ) -- A bit slower here
+			end
+			self:SetHealth( nzRound:GetZombieHealth() or 75 )
 		end
-        self:SetHealth( nzRound:GetZombieHealth() or 75 )
         self:Flames( true )
 
 		self:SetEmergeSequenceIndex(math.random(#self.EmergeSequences))

@@ -34,7 +34,7 @@ function ENT:Initialize()
 end
 
 function ENT:Launch(dir)
-	self:SetLocalVelocity(dir * 500)
+	self:SetLocalVelocity(dir * 1000)
 	self:SetAngles((dir*-1):Angle())
 	self:SetSequence(self:LookupSequence("anim_close"))
 	
@@ -116,6 +116,7 @@ function ENT:Release()
 			net.Broadcast()
 		end
 	end
+	self.GrabbedPlayer = nil
 end
 
 if CLIENT then
@@ -149,7 +150,7 @@ function ENT:Return() -- Emptyhanded return - Grab is with player
 	
 	local att = panzer:LookupAttachment("clawlight")
 	local pos = att and panzer:GetAttachment(att).Pos or panzer:GetPos()
-	self:SetLocalVelocity((pos - self:GetPos()):GetNormalized() * 1000)
+	self:SetLocalVelocity((pos - self:GetPos()):GetNormalized() * 1500)
 end
 
 function ENT:Reattach(removed)

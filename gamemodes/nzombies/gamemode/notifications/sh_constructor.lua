@@ -1,10 +1,9 @@
-//Main Tables
-nz.Notifications = {}
-nz.Notifications.Functions = {}
-nz.Notifications.Data = {}
+-- Main Tables
+nzNotifications = nzNotifications or AddNZModule("Notifications")
+nzNotifications.Data = {}
 
-//_ Variables
+-- Variables
 if CLIENT then
-	nz.Notifications.Data.SoundQueue = {}
-	nz.Notifications.Data.NextSound = CurTime()
+	nzNotifications.Data.SoundQueue = {}
+	nzNotifications.Data.NextSound = CurTime()
 end

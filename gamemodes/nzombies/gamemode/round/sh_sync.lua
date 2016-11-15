@@ -8,7 +8,7 @@ if SERVER then
 	function nzRound:SendNumber( number, ply )
 
 		net.Start( "nzRoundNumber" )
-			net.WriteUInt( number or 0, 16 )
+			net.WriteInt( number or 0, 16 )
 		return ply and net.Send( ply ) or net.Broadcast()
 
 	end
@@ -81,7 +81,7 @@ if CLIENT then
 
 
 	local function receiveRoundNumber()
-		nzRound:SetNumber( net.ReadUInt( 16 ) )
+		nzRound:SetNumber( net.ReadInt( 16 ) )
 	end
 	net.Receive( "nzRoundNumber", receiveRoundNumber)
 

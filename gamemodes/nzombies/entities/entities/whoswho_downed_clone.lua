@@ -103,13 +103,13 @@ function ENT:RevivePlayer()
 				ply:GivePerk(v)
 			end
 		end
-		nzWeps:GiveMaxAmmo(ply)
+		ply:GiveMaxAmmo()
 	end
 	
 	-- Everything bought as the clone will be refunded, even doors
 	ply:GivePoints(ply.WhosWhoMoney)
 	
-	local revivor = Revive.Players[id] and Revive.Players[id].RevivePlayer or nil
+	local revivor = nzRevive.Players[id] and nzRevive.Players[id].RevivePlayer or nil
 	if IsValid(revivor) and revivor:IsPlayer() then
 		if self.DownPoints then
 			revivor:GivePoints(self.DownPoints)
@@ -122,31 +122,31 @@ end
 
 function ENT:StartRevive(revivor, nosync)
 	local id = self:EntIndex()
-	if !Revive.Players[id] then return end -- Not even downed
-	if Revive.Players[id].ReviveTime then return end -- Already being revived
+	if !nzRevive.Players[id] then return end -- Not even downed
+	if nzRevive.Players[id].ReviveTime then return end -- Already being revived
 		
-	Revive.Players[id].ReviveTime = CurTime()
-	Revive.Players[id].RevivePlayer = revivor
+	nzRevive.Players[id].ReviveTime = CurTime()
+	nzRevive.Players[id].RevivePlayer = revivor
 	revivor.Reviving = self
 	
 	revivor:Give("nz_revive_morphine") -- Give them the viewmodel
 
-	if !nosync then hook.Call("PlayerBeingRevived", Revive, self, revivor) end
+	if !nosync then hook.Call("PlayerBeingRevived", nzRevive, self, revivor) end
 end
 	
 function ENT:StopRevive(nosync)
 	local id = self:EntIndex()
-	if !Revive.Players[id] then return end -- Not even downed
+	if !nzRevive.Players[id] then return end -- Not even downed
 	
-	local revivor = Revive.Players[id].RevivePlayer
+	local revivor = nzRevive.Players[id].RevivePlayer
 	if IsValid(revivor) then
 		revivor:StripWeapon("nz_revive_morphine") -- Remove the revivors viewmodel
 	end
 		
-	Revive.Players[id].ReviveTime = nil
-	Revive.Players[id].RevivePlayer = nil
+	nzRevive.Players[id].ReviveTime = nil
+	nzRevive.Players[id].RevivePlayer = nil
 	
-	if !nosync then hook.Call("PlayerNoLongerBeingRevived", Revive, self) end
+	if !nosync then hook.Call("PlayerNoLongerBeingRevived", nzRevive, self) end
 end
 
 function ENT:KillDownedPlayer()
@@ -160,18 +160,18 @@ function ENT:OnRemove()
 		ply.WhosWhoMoney = nil
 	end
 	
-	local revivor = Revive.Players[id] and Revive.Players[id].RevivePlayer or nil
+	local revivor = nzRevive.Players[id] and nzRevive.Players[id].RevivePlayer or nil
 	if IsValid(revivor) then -- This shouldn't happen as players can't die if they are currently being revived
 		revivor:StripWeapon("nz_revive_morphine") -- Remove the revivors if someone was reviving viewmodel
 	end
 	
-	Revive.Players[self:EntIndex()] = nil
+	nzRevive.Players[self:EntIndex()] = nil
 	
 	if SERVER then
 		net.Start("nz_WhosWhoActive")
 			net.WriteBool(false)
 		net.Send(ply)
-		hook.Call("PlayerRevived", Revive, self)
+		hook.Call("PlayerRevived", nzRevive, self)
 	end
 end
 

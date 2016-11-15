@@ -1,4 +1,4 @@
-//
+--
 
 local traceents = {
 	["wall_buys"] = function(ent)
@@ -13,7 +13,7 @@ local traceents = {
 		if !LocalPlayer():HasWeapon( wepclass ) then
 			text = "Press E to buy " .. name .." for " .. price .. " points."
 		elseif string.lower(wep.Primary.Ammo) != "none" then
-			if LocalPlayer():GetWeapon( wepclass ).pap then
+			if LocalPlayer():GetWeapon( wepclass ):HasNZModifier("pap") then
 				text = "Press E to buy " .. wep.Primary.Ammo .."  Ammo refill for " .. 4500 .. " points."
 			else
 				text = "Press E to buy " .. wep.Primary.Ammo .."  Ammo refill for " .. ammo_price .. " points."
@@ -59,7 +59,7 @@ local traceents = {
 		else
 			if ent:GetPerkID() == "pap" then
 				local wep = LocalPlayer():GetActiveWeapon()
-				if wep.pap then
+				if wep:HasNZModifier("pap") then
 					if wep.NZRePaPText then
 						text = "Press E to "..wep.NZRePaPText.." for 2000 points."
 					elseif wep.Attachments and ((wep:IsCW2() and CustomizableWeaponry) or wep:IsFAS2()) then
@@ -169,6 +169,8 @@ end
 local function GetText( ent )
 
 	if !IsValid(ent) then return "" end
+	
+	if ent.GetNZTargetText then return ent:GetNZTargetText() end
 
 	local class = ent:GetClass()
 	local text = ""

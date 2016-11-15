@@ -1,5 +1,5 @@
 -- Setup round module
-nzMapping = nzMapping or {}
+nzMapping = nzMapping or AddNZModule("Mapping")
 
 -- Variables
 nzMapping.Settings = nzMapping.Settings or {}

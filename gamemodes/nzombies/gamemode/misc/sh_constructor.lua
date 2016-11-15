@@ -1,2 +1,2 @@
 -- Main Tables
-nzMisc = nzMisc or {}
+nzMisc = nzMisc or AddNZModule("Misc")

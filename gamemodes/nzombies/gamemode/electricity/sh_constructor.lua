@@ -1,5 +1,5 @@
 -- Main Tables
-nzElec = nzElec or {}
+nzElec = nzElec or AddNZModule("Elec")
 
 -- Variables
 nzElec.Active = false

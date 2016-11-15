@@ -1,4 +1,4 @@
-nz.Tools.Functions.CreateTool("rbox", {
+nzTools:CreateTool("rbox", {
 	displayname = "Random Box Spawnpoint",
 	desc = "LMB: Place Random Box Spawnpoint, RMB: Remove Random Box Spawnpoint",
 	condition = function(wep, ply)
@@ -15,7 +15,7 @@ nz.Tools.Functions.CreateTool("rbox", {
 		end
 	end,
 	Reload = function(wep, ply, tr, data)
-		//Nothing
+		-- Nothing
 	end,
 	OnEquip = function(wep, ply, data)
 
@@ -35,19 +35,23 @@ nz.Tools.Functions.CreateTool("rbox", {
 		local valz = {}
 		valz["Row1"] = data.PossibleSpawn
 
-		local function UpdateData()
-			data.PossibleSpawn = valz["Row1"]
-			nz.Tools.Functions.SendData(data, "rbox")
-		end
-
 		local DProperties = vgui.Create( "DProperties", frame )
 		DProperties:SetSize( 280, 180 )
 		DProperties:SetPos( 10, 10 )
+		
+		function DProperties.CompileData()
+			data.PossibleSpawn = valz["Row1"]
+			return data
+		end
+		
+		function DProperties.UpdateData(data)
+			nzTools:SendData(data, "rbox")
+		end
 
 		local Row1 = DProperties:CreateRow( "Random Box", "Possible Spawn?" )
 		Row1:Setup( "Boolean" )
 		Row1:SetValue( valz["Row1"] )
-		Row1.DataChanged = function( _, val ) valz["Row1"] = val UpdateData() end
+		Row1.DataChanged = function( _, val ) valz["Row1"] = val DProperties.UpdateData(DProperties.CompileData()) end
 
 		return DProperties
 	end,

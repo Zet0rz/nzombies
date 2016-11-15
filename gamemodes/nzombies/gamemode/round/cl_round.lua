@@ -2,19 +2,22 @@ function nzRound:GetEndTime()
 	return GetGlobalFloat( "gwEndTime", 0 )
 end
 
+local states = {
+	[ROUND_INIT] = "OnRoundInit",
+	[ROUND_PREP] = "OnRoundPreparation",
+	[ROUND_PROG] = "OnRoundStart",
+	[ROUND_GO] = "OnRoundEnd",
+	[ROUND_CREATE] = "OnRoundCreative",
+}
+
 function nzRound:StateChange( old, new )
 	if new == ROUND_WAITING then
 		nzRound:EnableSpecialFog( false )
 		hook.Call( "OnRoundWating", nzRound )
-	elseif new == ROUND_INIT then
-		hook.Call( "OnRoundInit", nzRound )
-	elseif new == ROUND_PREP then
-		hook.Call( "OnRoundPreperation", nzRound )
-	elseif new == ROUND_PROG then
-		hook.Call( "OnRoundStart", nzRound )
-	elseif new == ROUND_GO then
-		hook.Call( "OnRoundEnd", nzRound )
+	else
+		hook.Call( states[new], nzRound )
 	end
+	hook.Call( "OnRoundChangeState", nzRound, new, old )
 end
 
 function nzRound:OnRoundPreperation()

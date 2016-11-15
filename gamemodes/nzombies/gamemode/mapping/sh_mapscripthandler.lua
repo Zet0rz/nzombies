@@ -19,6 +19,14 @@ if SERVER then
 			end
 		end
 
+		-- To keep track of stuff created in this script
+		local create = ents.Create
+		ents.Create = function(class)
+			local ent = create(class)
+			ent.NZMapScriptCreated = true
+			return ent
+		end
+		
 		self.ScriptHooks = include( filePath )
 		self.ScriptPath = filePath
 		
@@ -46,6 +54,9 @@ if SERVER then
 		if self.ScriptHooks.ScriptLoad then
 			self.ScriptHooks.ScriptLoad()
 		end
+		
+		-- Restore
+		ents.Create = create
 
 		PrintMessage(HUD_PRINTTALK, "Successfully loaded map script: "..filePath)
 		return true
@@ -76,6 +87,11 @@ if SERVER then
 		end
 
 		self.ScriptHooks = nil
+		
+		-- Remove all created entities that weren't already
+		for k,v in pairs(ents.GetAll()) do
+			if v.NZMapScriptCreated then v:Remove() end
+		end
 		
 		-- Clean up all items
 		nzItemCarry:CleanUp()
@@ -133,4 +149,8 @@ if CLIENT then
 		nzMapping.ScriptPath = nil
 	end)
 
+end
+
+function nzMapping:GetMapScript()
+	return self.ScriptHooks
 end

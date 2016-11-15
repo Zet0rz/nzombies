@@ -9,8 +9,8 @@ ENT.Author = "Lolle"
 ENT.Models = { "models/nz_zombie/zombie_hellhound.mdl" }
 
 ENT.AttackRange = 80
-ENT.DamageLow = 30
-ENT.DamageHigh = 40
+ENT.DamageLow = 20
+ENT.DamageHigh = 35
 
 ENT.AttackSequences = {
 	{seq = "nz_attack1"},
@@ -81,6 +81,8 @@ ENT.SprintSounds = {
 	"nz/hellhound/close/close_03.wav",
 }
 
+ENT.JumpSequences = {seq = ACT_JUMP, speed = 30}
+
 ENT.ActStages = {
 	[1] = {
 		act = ACT_WALK,
@@ -103,7 +105,7 @@ ENT.ActStages = {
 function ENT:StatsInitialize()
 	if SERVER then
 		self:SetRunSpeed(250)
-		self:SetHealth( 100 )
+		self:SetHealth(100)
 		self:SetNoDraw(true)
 	end
 	self:SetCollisionBounds(Vector(-14,-14, 0), Vector(14, 14, 48))
@@ -289,30 +291,4 @@ function ENT:IsValidTarget( ent )
 	if !ent then return false end
 	return IsValid( ent ) and ent:GetTargetPriority() != TARGET_PRIORITY_NONE and ent:GetTargetPriority() != TARGET_PRIORITY_SPECIAL
 	-- Won't go for special targets (Monkeys), but still MAX, ALWAYS and so on
-end
-
-function ENT:TriggerBarricadeJump()
-	if !self:GetSpecialAnimation() and (!self.NextBarricade or CurTime() > self.NextBarricade) then
-		self:SetSpecialAnimation(true)
-		self:SetBlockAttack(true)
-		local id = self:SelectWeightedSequence(ACT_JUMP)
-		self:SetSequence(id)
-		self:SetCycle(0)
-		self:SetPlaybackRate(1)
-		self:SetSolidMask(MASK_SOLID_BRUSHONLY)
-		--self:SetCollisionGroup(COLLISION_GROUP_DEBRIS_TRIGGER)
-		self.loco:SetAcceleration( 5000 )
-		self.loco:SetDesiredSpeed(20)
-		self:SetVelocity(self:GetForward()*30)
-		--self:BodyMoveXY()
-		--PrintTable(self:GetSequenceInfo(id))
-		self:TimedEvent(1, function()
-			self.NextBarricade = CurTime() + 2
-			self:SetSpecialAnimation(false)
-			self:SetBlockAttack(false)
-			self.loco:SetAcceleration( self.Acceleration )
-			self.loco:SetDesiredSpeed(self:GetRunSpeed())
-			self:UpdateSequence()
-		end)
-	end
 end

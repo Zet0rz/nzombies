@@ -1,4 +1,4 @@
-nz.Tools.Functions.CreateTool("elec", {
+nzTools:CreateTool("elec", {
 	displayname = "Electricity Switch Placer",
 	desc = "LMB: Place Electricity Switch, RMB: Remove Switch",
 	condition = function(wep, ply)
@@ -15,7 +15,7 @@ nz.Tools.Functions.CreateTool("elec", {
 		end
 	end,
 	Reload = function(wep, ply, tr, data)
-		//Nothing
+		-- Nothing
 	end,
 	OnEquip = function(wep, ply, data)
 
@@ -34,5 +34,5 @@ nz.Tools.Functions.CreateTool("elec", {
 	interface = function(frame, data)
 
 	end,
-	//defaultdata = {}
+	--defaultdata = {}
 })

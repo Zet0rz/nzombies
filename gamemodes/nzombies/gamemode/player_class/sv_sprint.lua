@@ -73,7 +73,7 @@ hook.Add( "KeyPress", "OnSprintKeyPressed", function( ply, key )
 end )
 
 hook.Add( "KeyRelease", "OnSprintKeyReleased", function( ply, key )
-	-- Always reset sprint sate even if player is dead.
+	-- Always reset sprint state even if player is dead.
 	-- Reason: player can die while holding shift.
 	if !nzRound:InState( ROUND_CREATE ) and ( key == IN_SPEED ) and ply:IsSpawned() then
 		ply:SetSprinting( false )

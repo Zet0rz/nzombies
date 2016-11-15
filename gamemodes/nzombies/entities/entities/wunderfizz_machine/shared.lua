@@ -18,11 +18,11 @@ function ENT:SetupDataTables()
 	self:NetworkVar( "Bool", 2, "IsTeddy" )
 end
 
-function ENT:DecideOutcomePerk(specific)
+function ENT:DecideOutcomePerk(ply, specific)
 	if specific then self:SetPerkID(specific) return end
 	
 	if self.TimesUsed > 2 and math.random(100) <= 55 and #ents.FindByClass("wundefizz_machine") > 1 then
-		self.OutcomePerk = "teddy"
+		return hook.Call("OnPlayerBuyWunderfizz", nil, ply, "teddy") or "teddy"
 	else
 		local blockedperks = {
 			["wunderfizz"] = true, -- lol, this would happen
@@ -35,8 +35,9 @@ function ENT:DecideOutcomePerk(specific)
 				table.insert(tbl, k)
 			end
 		end
-		if #tbl <= 0 then return "teddy" end -- Teddy bear for no more perks D:
-		return tbl[math.random(#tbl)]
+		if #tbl <= 0 then return hook.Call("OnPlayerBuyWunderfizz", nil, ply, "teddy") or "teddy" end -- Teddy bear for no more perks D:
+		local outcome = tbl[math.random(#tbl)]
+		return hook.Call("OnPlayerBuyWunderfizz", nil, ply, outcome) or outcome
 	end
 end
 
@@ -109,12 +110,12 @@ function ENT:Use(activator, caller)
 			-- Can only be bought if you have free perk slots
 			if #activator:GetPerks() < GetConVar("nz_difficulty_perks_max"):GetInt() then
 				-- If they have enough money
-				if activator:CanAfford(price) then
+				activator:Buy(price, self, function()
 					activator:TakePoints(price)
 					self:SetBeingUsed(true)
 					self:SetUser(activator)
 					
-					self.OutcomePerk = self:DecideOutcomePerk()
+					self.OutcomePerk = self:DecideOutcomePerk(activator)
 					self.Bottle = ents.Create("wunderfizz_windup")
 					self.Bottle:SetPos(self:GetPos() + Vector(0,0,45))
 					self.Bottle:SetAngles(self:GetAngles() + Angle(0,-90,0))
@@ -127,12 +128,14 @@ function ENT:Use(activator, caller)
 							local e = EffectData()
 							e:SetEntity(self.Bottle)
 							e:SetMagnitude(1.1)
+							e:SetScale(5)
 							util.Effect("lightning_aura", e)
 						end
 					end)
 					
 					self.TimesUsed = self.TimesUsed + 1
-				end
+					return true
+				end)
 			else
 				print(activator:Nick().." already has max perks")
 			end

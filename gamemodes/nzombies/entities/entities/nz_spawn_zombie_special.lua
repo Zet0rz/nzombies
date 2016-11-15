@@ -3,6 +3,8 @@ AddCSLuaFile( )
 ENT.Base = "nz_spawn_zombie"
 ENT.PrintName = "nz_spawn_zombie_special"
 
+ENT.NZOnlyVisibleInCreative = true
+
 function ENT:Initialize()
 	self:SetModel( "models/player/odessa.mdl" )
 	self:SetMoveType( MOVETYPE_NONE )

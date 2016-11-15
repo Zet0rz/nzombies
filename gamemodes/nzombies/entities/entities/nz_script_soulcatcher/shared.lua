@@ -77,18 +77,16 @@ function ENT:CollectSoul()
 	end
 end
 
-if engine.ActiveGamemode() == "nzombies3" then
-	hook.Add("EntityTakeDamage", "SoulCatchZombies", function(ent, dmg)
-		if ent:Health() <= dmg:GetDamage() then
-			for k,v in pairs(ents.FindByClass("nz_script_soulcatcher")) do
-				if v.Enabled and ent:GetPos():DistToSqr(v:GetPos()) <= v.Range and v:Condition(ent, dmg) then
-					v:ReleaseSoul(ent)
-					break
-				end
+hook.Add("EntityTakeDamage", "SoulCatchZombies", function(ent, dmg)
+	if ent:IsValidZombie() and ent:Health() <= dmg:GetDamage() then
+		for k,v in pairs(ents.FindByClass("nz_script_soulcatcher")) do
+			if v.Enabled and ent:GetPos():DistToSqr(v:GetPos()) <= v.Range and v:Condition(ent, dmg) then
+				v:ReleaseSoul(ent)
+				break
 			end
 		end
-	end)
-end
+	end
+end)
 
 if CLIENT then
 	function ENT:Draw()

@@ -4,7 +4,7 @@ function GM:CreateClientsideRagdoll( ent, ragdoll )
 	local convar = GetConVar("nz_ragdolltime"):GetInt()
 	local dTime = math.random( convar*0.75, convar*1.25 )
 
-	if ent:GetDecapitated() then
+	if ent.GetDecapitated and ent:GetDecapitated() then
 		local bone = ragdoll:LookupBone("ValveBiped.Bip01_Head1")
 		if !bone then bone = ragdoll:LookupBone("j_head") end
 

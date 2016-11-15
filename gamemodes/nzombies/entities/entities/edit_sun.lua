@@ -8,6 +8,8 @@ ENT.AdminOnly			= true
 ENT.PrintName			= "Sun Editor"
 ENT.Category			= "Editors"
 
+ENT.NZOnlyVisibleInCreative = true
+
 function ENT:Initialize()
 
 	BaseClass.Initialize( self )

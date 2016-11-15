@@ -5,7 +5,7 @@ util.AddNetworkString( ", nzRoundSpecial" )
 util.AddNetworkString( "nzPlayerReadyState" )
 util.AddNetworkString( "nzPlayerPlayingState" )
 
-nzRound.Number = 0 -- Default for reloaded scenarios
+nzRound.Number = nzRound.Number or 0 -- Default for reloaded scenarios
 
 function nzRound:GetZombiesKilled()
 	return self.ZombiesKilled
@@ -85,10 +85,13 @@ function nzRound:InProgress()
 end
 
 function nzRound:SetState( state )
-
+	
+	local oldstate = self.RoundState
 	self.RoundState = state
 
 	self:SendState( state )
+	
+	hook.Call("OnRoundChangeState", nzRound, state, oldstate)
 
 end
 

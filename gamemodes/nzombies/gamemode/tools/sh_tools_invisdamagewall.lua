@@ -4,7 +4,7 @@ local point1, point2, height
 
 -- Networking is in the invis wall tool, the bool makes it a normal invis wall
 
-nz.Tools.Functions.CreateTool("damagewall", {
+nzTools:CreateTool("damagewall", {
 	displayname = "Damage Wall Creator",
 	desc = "LMB: Set Corners, RMB: Remove Damage Wall at spot, R: Reset corners",
 	condition = function(wep, ply)
@@ -34,7 +34,7 @@ nz.Tools.Functions.CreateTool("damagewall", {
 	icon = "icon16/shape_square_error.png",
 	weight = 17,
 	condition = function(wep, ply)
-		return nz.Tools.Advanced
+		return nzTools.Advanced
 	end,
 	interface = function(frame, data)
 	end,
@@ -67,6 +67,8 @@ nz.Tools.Functions.CreateTool("damagewall", {
 		local pnl = vgui.Create("DPanel", frame)
 		pnl:Dock(FILL)
 		
+		
+		
 		local data = data or {}
 		
 		local valz = {}
@@ -76,12 +78,16 @@ nz.Tools.Functions.CreateTool("damagewall", {
 			valz["DmgType"] = data.dmgtype or 1
 		end
 		
-		local function UpdateData()
+		function pnl.CompileData()
 			data.dmg = valz["Dmg"]
 			data.delay = valz["Delay"]
 			data.dmgtype = valz["DmgType"]
-
-			nz.Tools.Functions.SendData(data, "damagewall")
+			
+			return data
+		end
+		
+		function pnl.UpdateData(data)
+			nzTools:SendData(data, "damagewall", data) -- Save the same data here
 		end
 		
 		local chk = vgui.Create("DCheckBoxLabel", pnl)
@@ -99,19 +105,19 @@ nz.Tools.Functions.CreateTool("damagewall", {
 		local dmg = properties:CreateRow( "Damage Properties", "Damage" )
 		dmg:Setup( "Int", {min = 1, max = 250} )
 		dmg:SetValue( data.dmg )
-		dmg.DataChanged = function( _, val ) valz["Dmg"] = val UpdateData() end
+		dmg.DataChanged = function( _, val ) valz["Dmg"] = val pnl.UpdateData(pnl.CompileData()) end
 		
 		local delay = properties:CreateRow( "Damage Properties", "Delay" )
 		delay:Setup( "Float", {min = 0, max = 10} )
 		delay:SetValue( data.delay )
-		delay.DataChanged = function( _, val ) valz["Delay"] = val UpdateData() end
+		delay.DataChanged = function( _, val ) valz["Delay"] = val pnl.UpdateData(pnl.CompileData()) end
 		
 		local dmgtype = properties:CreateRow( "Damage Properties", "Type" )
 		dmgtype:Setup( "Combo", {text = "Select type ..."} )
 		dmgtype:AddChoice( "Radiation", 1 )
 		dmgtype:AddChoice( "Poison", 2 )
 		dmgtype:AddChoice( "Tesla", 3 )
-		dmgtype.DataChanged = function( _, val ) valz["DmgType"] = val UpdateData() end
+		dmgtype.DataChanged = function( _, val ) valz["DmgType"] = val pnl.UpdateData(pnl.CompileData()) end
 		
 		return pnl
 	end,

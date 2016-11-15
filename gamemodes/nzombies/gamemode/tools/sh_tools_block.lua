@@ -1,11 +1,17 @@
-nz.Tools.Functions.CreateTool("block", {
+nzTools:CreateTool("block", {
 	displayname = "Invisible Block Spawner",
 	desc = "LMB: Create Invisible Block, RMB: Remove Invisible Block, R: Change Model",
 	condition = function(wep, ply)
 		return true
 	end,
 	PrimaryAttack = function(wep, ply, tr, data)
-		nzMapping:BlockSpawn(tr.HitPos,Angle(90,(tr.HitPos - ply:GetPos()):Angle()[2] + 90,90), data.model, ply)
+		local ent = tr.Entity
+		if IsValid(ent) and ent:GetClass() == "wall_block" then
+			nzMapping:BlockSpawn(ent:GetPos(),ent:GetAngles(), data.model, ply)
+			ent:Remove()
+		else
+			nzMapping:BlockSpawn(tr.HitPos,Angle(90,(tr.HitPos - ply:GetPos()):Angle()[2] + 90,90), data.model, ply)
+		end
 	end,
 	SecondaryAttack = function(wep, ply, tr, data)
 		if IsValid(tr.Entity) and tr.Entity:GetClass() == "wall_block" then
@@ -31,20 +37,24 @@ nz.Tools.Functions.CreateTool("block", {
 	condition = function(wep, ply)
 		return true
 	end,
-	interface = function(frame, data)
+	interface = function(frame, data, context)
 		local Scroll = vgui.Create( "DScrollPanel", frame )
 		Scroll:SetSize( 280, 300 )
 		Scroll:SetPos( 10, 10 )
+		
+		function Scroll.CompileData()
+			return {model = data.model}
+		end
+		
+		function Scroll.UpdateData(data)
+			nzTools:SendData(data, "block", data) -- Save the same data here
+		end
 
 		local List	= vgui.Create( "DIconLayout", Scroll )
 		List:SetSize( 340, 200 )
 		List:SetPos( 0, 0 )
 		List:SetSpaceY( 5 )
 		List:SetSpaceX( 5 )
-
-		local function UpdateData()
-			nz.Tools.Functions.SendData( {model = data.model}, "block", {model = data.model})
-		end
 
 		local models = util.KeyValuesToTable((file.Read("settings/spawnlist/default/023-general.txt", "MOD")))
 
@@ -55,7 +65,7 @@ nz.Tools.Functions.CreateTool("block", {
 				Blockmodel:SetModel(v.model)
 				Blockmodel.DoClick = function()
 					data.model = v.model
-					UpdateData()
+					Scroll.UpdateData(Scroll.CompileData())
 				end
 				Blockmodel.Paint = function(self)
 					if data.model == v.model then
@@ -72,3 +82,16 @@ nz.Tools.Functions.CreateTool("block", {
 		model = "models/hunter/plates/plate2x2.mdl"
 	},
 })
+
+nzTools:EnableProperties("block", "Edit Model...", "icon16/brick_edit.png", 9009, true, function( self, ent, ply )
+	if ( !IsValid( ent ) or !IsValid(ply) ) then return false end
+	if ( ent:GetClass() != "wall_block" ) then return false end
+	if !nzRound:InState( ROUND_CREATE ) then return false end
+	if ( ent:IsPlayer() ) then return false end
+	if ( !ply:IsInCreative() ) then return false end
+
+	return true
+
+end, function(ent)
+	return {model = ent:GetModel()}
+end)

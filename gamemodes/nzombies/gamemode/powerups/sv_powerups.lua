@@ -10,12 +10,17 @@ hook.Add("Think", "CheckActivePowerups", function()
 		end
 	end
 	for k,v in pairs(nzPowerUps.ActivePlayerPowerUps) do
-		for id, time in pairs(v) do
-			if CurTime() >= time then
-				local func = nzPowerUps:Get(id).expirefunc
-				if func then func(id, k) end
-				nzPowerUps.ActivePlayerPowerUps[k][id] = nil
-				nzPowerUps:SendPlayerSync(k)
+		if !IsValid(k) then
+			nzPowerUps.ActivePlayerPowerUps[k] = nil
+			nzPowerUps:SendPlayerSyncFull()
+		else
+			for id, time in pairs(v) do
+				if CurTime() >= time then
+					local func = nzPowerUps:Get(id).expirefunc
+					if func then func(id, k) end
+					nzPowerUps.ActivePlayerPowerUps[k][id] = nil
+					nzPowerUps:SendPlayerSync(k)
+				end
 			end
 		end
 	end
@@ -26,29 +31,39 @@ function nzPowerUps:Nuke(pos, nopoints, noeffect)
 	local highesttime = 0
 	if pos and type(pos) == "Vector" then
 		for k,v in pairs(ents.GetAll()) do
-			if nzConfig.ValidEnemies[v:GetClass()] then
+			if v:IsValidZombie() then
 				if IsValid(v) then
 					v:SetBlockAttack(true) -- They cannot attack now!
 					local insta = DamageInfo()
-					insta:SetDamage(v:Health())
 					insta:SetAttacker(Entity(0))
 					insta:SetDamageType(DMG_BLAST_SURFACE)
 					-- Delay the death by the distance from the position in milliseconds
 					local time = v:GetPos():Distance(pos)/1000
 					if time > highesttime then highesttime = time end
-					timer.Simple(time, function() if IsValid(v) then v:TakeDamageInfo( insta ) end end)
+					timer.Simple(time, function()
+						if IsValid(v) then
+							insta:SetDamage(v:Health())
+							v:TakeDamageInfo( insta )
+						end
+					end)
 				end
 			end
 		end
 	else
 		for k,v in pairs(ents.GetAll()) do
-			if nzConfig.ValidEnemies[v:GetClass()] then
+			if v:IsValidZombie() then
+				print(v, IsValid(v))
 				if IsValid(v) then
 					local insta = DamageInfo()
-					insta:SetDamage(v:Health())
 					insta:SetAttacker(Entity(0))
+					insta:SetInflictor(Entity(0))
 					insta:SetDamageType(DMG_BLAST_SURFACE)
-					timer.Simple(0.1, function() if IsValid(v) then v:TakeDamageInfo( insta ) end end)
+					timer.Simple(0.1, function()
+						if IsValid(v) then
+							insta:SetDamage(v:Health())
+							v:TakeDamageInfo( insta )
+						end
+					end)
 				end
 			end
 		end
@@ -90,27 +105,29 @@ function nzPowerUps:FireSale()
 	
 	for k,v in pairs(all) do
 		if !v.HasBox then
-			if v != nil and !v.HasBox then
-				local box = ents.Create( "random_box" )
-				box:SetPos( v:GetPos() )
-				box:SetAngles( v:GetAngles() )
-				box:Spawn()
-				--box:PhysicsInit( SOLID_VPHYSICS )
-				box.SpawnPoint = v
-				v.FireSaleBox = box
+			local box = ents.Create( "random_box" )
+			box:SetPos( v:GetPos() )
+			box:SetAngles( v:GetAngles() )
+			box:Spawn()
+			--box:PhysicsInit( SOLID_VPHYSICS )
+			box.SpawnPoint = v
+			v.FireSaleBox = box
 
-				local phys = box:GetPhysicsObject()
-				if phys:IsValid() then
-					phys:EnableMotion(false)
-				end
-			else
-				print("No random box spawns have been set.")
+			local phys = box:GetPhysicsObject()
+			if phys:IsValid() then
+				phys:EnableMotion(false)
 			end
+			
+			box:EmitSound("nz_firesale_jingle")
+		else
+			local sound = ents.Create("nz_prop_effect_attachment")
+			sound:SetNoDraw(true)
+			sound:SetPos(v:GetPos())
+			sound:SetCollisionGroup(COLLISION_GROUP_DEBRIS)
+			sound:Spawn()
+			sound:EmitSound("nz_firesale_jingle")
+			v.FireSaleBox = sound
 		end
-	end
-	
-	for k,v in pairs(ents.FindByClass("random_box")) do
-		v:EmitSound("nz_firesale_jingle")
 	end
 end
 

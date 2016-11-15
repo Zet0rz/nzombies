@@ -1,7 +1,7 @@
-//Main Tables
-nzPerks = nzPerks or {}
+-- Main Tables
+nzPerks = nzPerks or AddNZModule("Perks")
 nzPerks.Data = nzPerks.Data or {}
 
-//_ Variables
+-- Variables
 
 nzPerks.Players = nzPerks.Players or {}

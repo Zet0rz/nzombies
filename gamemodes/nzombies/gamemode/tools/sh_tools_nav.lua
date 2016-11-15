@@ -1,4 +1,4 @@
-nz.Tools.Functions.CreateTool("navedit", {
+nzTools:CreateTool("navedit", {
 	displayname = "Navmesh Editor",
 	desc = "Q: Select edit mode",
 	condition = function(wep, ply)
@@ -39,12 +39,20 @@ nz.Tools.Functions.CreateTool("navedit", {
 	icon = "icon16/map.png",
 	weight = 39,
 	condition = function(wep, ply)
-		return nz.Tools.Advanced
+		return nzTools.Advanced
 	end,
 	interface = function(frame, data)
 
 		local cont = vgui.Create("DScrollPanel", frame)
 		cont:Dock(FILL)
+		
+		function cont.CompileData()
+			return data
+		end
+		
+		function cont.UpdateData(data)
+			nzTools:SendData(data, "navedit") -- Save the same data here
+		end
 
 		--command and mode declaration
 
@@ -113,10 +121,6 @@ nz.Tools.Functions.CreateTool("navedit", {
 
 		--update helper
 
-		local function UpdateData()
-			nz.Tools.Functions.SendData( data, "navedit" )
-		end
-
 		local function UpdateDesc()
 			local result = ""
 			if data.PrimaryDesc then
@@ -139,7 +143,7 @@ nz.Tools.Functions.CreateTool("navedit", {
 				end
 				result = result .. "R: Mark area"
 			end
-			nz.Tools.ToolData["navedit"].desc = result
+			nzTools.ToolData["navedit"].desc = result
 		end
 
 		--"basic" stuff
@@ -211,7 +215,7 @@ nz.Tools.Functions.CreateTool("navedit", {
 				data.Reload, data.ReloadDesc = reCust:GetSelected()
 			end
 			UpdateDesc()
-			UpdateData()
+			cont.UpdateData(cont.CompileData())
 		end
 
 		-- end custom mode
@@ -273,7 +277,7 @@ nz.Tools.Functions.CreateTool("navedit", {
 				data.PrimaryDesc = val.PrimaryDesc
 				data.SecondaryDesc = val.SecondaryDesc
 				UpdateDesc()
-				UpdateData()
+				cont.UpdateData(cont.CompileData())
 			end
 		end
 

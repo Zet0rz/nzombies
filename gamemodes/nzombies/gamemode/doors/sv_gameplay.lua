@@ -1,4 +1,6 @@
 function nzDoors:OpenDoor( ent, ply )
+	if !IsValid(ent) then return end
+	
 	local data = ent:GetDoorData()
 	local link = data.link
 	local rebuyable = data.rebuyable
@@ -56,13 +58,13 @@ function nzDoors:LockAllDoors()
 				v:SetKeyValue("wait",-1)
 				print("Locked door ", v)
 			else
-				//Unlocked doors get an output which forces it to stay open once you open it
+				-- Unlocked doors get an output which forces it to stay open once you open it
 				v:Fire("addoutput", "onclose !self:open::0:-1,0,-1")
 				v:Fire("addoutput", "onclose !self:unlock::0:-1,0,-1")
 				print("Added lock output to", v)
-				//They now get that output through OpenDoor too, but for safety
+				-- They now get that output through OpenDoor too, but for safety
 			end
-		//Allow locking buttons
+		-- Allow locking buttons
 		elseif v:IsButton() and self.MapDoors[v:DoorIndex()] then
 			v:ButtonLock()
 			v:SetUseType( SIMPLE_USE )
@@ -84,17 +86,20 @@ function nzDoors:BuyDoor( ply, ent )
 	--print("Entity info buying ", ent, link, req_elec, price, buyable, ent:IsLocked())
 	-- If it has a price and it can be bought
 	if price != nil and tonumber(buyable) == 1 then
-		if ply:CanAfford(price) and ent:IsLocked() then
-			-- If this door doesn't require electricity or if it does, then if the electricity is on at the same time
-			if (req_elec == 0 or (req_elec == 1 and IsElec())) then
-				ply:TakePoints(price)
-				if link == nil then
-					self:OpenDoor( ent, ply )
-				else
-					self:OpenLinkedDoors( link, ply )
+		ply:Buy(price, ent, function()
+			if ent:IsLocked() then
+				-- If this door doesn't require electricity or if it does, then if the electricity is on at the same time
+				if (req_elec == 0 or (req_elec == 1 and IsElec())) then
+					--ply:TakePoints(price)
+					if link == nil then
+						self:OpenDoor( ent, ply )
+					else
+						self:OpenLinkedDoors( link, ply )
+					end
+					return true
 				end
 			end
-		end
+		end)
 	elseif price == nil and buyable == nil and !ent:IsBuyableProp() then
 		-- Doors that can be opened because the gamemode doesn't lock them, still need to try and lock upon opening.
 		-- Additionally, they get the OnClose output added, in case they can still close
@@ -105,7 +110,7 @@ function nzDoors:BuyDoor( ply, ent )
 end
 
 
-//Hooks
+-- Hooks
 
 function nzDoors.OnUseDoor( ply, ent )
 	-- Downed players can't use anything!

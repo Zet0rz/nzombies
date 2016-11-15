@@ -36,7 +36,14 @@ function ENT:Initialize()
 		local wep = weapons.Get(self:GetWepClass())
 		if wep then
 			if wep.DrawWorldModel then self.WorldModelFunc = wep.DrawWorldModel end
-			util.PrecacheModel(wep.WM or wep.WorldModel)
+			
+			-- Forced precaching!
+			local model = ClientsideModel("models/hoff/props/teddy_bear/teddy_bear.mdl")
+			util.PrecacheModel(wep.VM or wep.ViewModel)
+			model:SetModel(wep.ViewModel)
+			if wep.VM then model:SetModel(wep.VM) end
+			model:Remove()
+			
 			self:RecalculateModelOutlines()
 		end
 	end
@@ -216,40 +223,39 @@ if SERVER then
 		--print(ammo_type, curr_ammo, give_ammo)
 
 		if !activator:HasWeapon( self.WeaponGive ) then
-			if activator:CanAfford(price) then
-				activator:TakePoints(price)
+			activator:Buy(price, self, function()
+				--activator:TakePoints(price)
 				activator:Give(self.WeaponGive)
 				nzWeps:GiveMaxAmmoWep(activator, self.WeaponGive)
 				self:SetBought(true)
+				return true
 				--activator:EmitSound("nz/effects/buy.wav")
-			else
-				print("Can't afford!")
-			end
-		elseif string.lower(ammo_type) != "none" then
-			if activator:GetWeapon(self.WeaponGive).pap then
-				if activator:CanAfford(ammo_price_pap) then
+			end)
+		elseif string.lower(ammo_type) != "none" and ammo_type != -1 then
+			if activator:GetWeapon(self.WeaponGive):HasNZModifier("pap") then
+				activator:Buy(ammo_price_pap, self, function()
 					if give_ammo != 0 then
-						activator:TakePoints(ammo_price_pap)
+						--activator:TakePoints(ammo_price_pap)
 						nzWeps:GiveMaxAmmoWep(activator, self.WeaponGive)
 						--activator:EmitSound("nz/effects/buy.wav")
+						return true
 					else
 						print("Max Clip!")
+						return false -- Didn't work, don't take points!
 					end
-				else
-					print("Can't afford!")
-				end
+				end)
 			else	-- Refill ammo
-				if activator:CanAfford(ammo_price) then
+				activator:Buy(ammo_price, self, function()
 					if give_ammo != 0 then
-						activator:TakePoints(ammo_price)
+						--activator:TakePoints(ammo_price)
 						nzWeps:GiveMaxAmmoWep(activator, self.WeaponGive)
 						--activator:EmitSound("nz/effects/buy.wav")
+						return true
 					else
 						print("Max Clip!")
+						return false
 					end
-				else
-					print("Can't afford!")
-				end
+				end)
 			end
 		end
 		return

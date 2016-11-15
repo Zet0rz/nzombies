@@ -14,4 +14,4 @@ function nzWeps:DoRoundResupply()
 end
 
 -- Standard grenades
-nzWeps:AddAmmoToRoundResupply("nz_grenade", 2, 4)
+nzWeps:AddAmmoToRoundResupply(GetNZAmmoID( "grenade" ) or "nz_grenade", 2, 4)

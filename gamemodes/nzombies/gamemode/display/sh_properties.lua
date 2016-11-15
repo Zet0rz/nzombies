@@ -1,3 +1,9 @@
+--[[
+	Properties added in here are added manually because they share tools and/or use specialized means of updating and fetching data
+	If you want to add a quick Properties for your tool, look at nzTools:EnableProperties() function.
+	(gamemode/tools/sh_tools.lua)
+]]
+
 properties.Add( "nz_remove", {
 	MenuLabel = "Remove",
 	Order = 1000,
@@ -47,7 +53,7 @@ properties.Add( "nz_remove", {
 } )
 
 properties.Add( "nz_editentity", {
-	MenuLabel = "Edit Properties..",
+	MenuLabel = "Edit Properties...",
 	Order = 90010,
 	PrependSpacer = true,
 	MenuIcon = "icon16/pencil.png",
@@ -85,25 +91,71 @@ properties.Add( "nz_editentity", {
 } )
 
 properties.Add( "nz_lock", {
-	MenuLabel = "Edit Lock..",
+	MenuLabel = "Edit Lock...",
 	Order = 9001,
 	PrependSpacer = true,
 	MenuIcon = "icon16/lock_edit.png",
 
 	Filter = function( self, ent, ply )
 
-		if ( !IsValid( ent ) ) then return false end
+		if ( !IsValid( ent ) or !IsValid(ply) ) then return false end
 		if !( ent:IsDoor() or ent:IsButton() or ent:IsBuyableProp() ) then return false end
 		if !nzRound:InState( ROUND_CREATE ) then return false end
-		if ( ent:IsPlayer() ) then return false end
-		if ( !ply:IsAdmin() ) then return false end
+		if ( !ply:IsInCreative() ) then return false end
 
 		return true
 
 	end,
 
 	Action = function( self, ent )
-		nz.Interfaces.Functions.DoorProps( {door = ent} )
+		local frame = vgui.Create("DFrame")
+		frame:SetPos( 100, 100 )
+		frame:SetSize( 300, 280 )
+		frame:SetTitle( "Edit Lock..." )
+		frame:SetVisible( true )
+		frame:SetDraggable( true )
+		frame:ShowCloseButton( true )
+		frame:MakePopup()
+		frame:Center()
+		
+		local door = ent:GetDoorData()
+		if !door then door = {} end
+		
+		door.flag = door.flag or 0
+		door.link = door.link or 1
+		door.price = door.price or 1000
+		door.elec = door.elec or 0
+		door.buyable = door.buyable or 1
+		door.rebuyable = door.rebuyable or 0
+		
+		
+		
+		local panel = nzTools.ToolData["door"].interface(frame, door, true)
+		panel:SetPos(10, 40)
+		
+		local data2 = panel.CompileData()
+		panel.UpdateData = function(data)
+			data2 = data
+		end
+		
+		local submit = vgui.Create("DButton", frame)
+		submit:SetText("Submit")
+		submit:SetPos(50, 245)
+		submit:SetSize(200, 25)
+		submit.DoClick = function(self2)
+			self:MsgStart()
+				net.WriteEntity( ent )
+				net.WriteTable( data2 )
+			self:MsgEnd()
+		end
+	end,
+	
+	Receive = function( self, length, ply )
+		local ent = net.ReadEntity()
+		local data = net.ReadTable()
+		if ( !self:Filter( ent, ply ) ) then return false end
+		
+		nzTools.ToolData["door"].PrimaryAttack(nil, ply, {Entity = ent}, data)
 	end
 } )
 
@@ -115,11 +167,10 @@ properties.Add( "nz_unlock", {
 
 	Filter = function( self, ent, ply )
 
-		if ( !IsValid( ent ) ) then return false end
+		if ( !IsValid( ent ) or !IsValid(ply) ) then return false end
 		if !( ent:IsDoor() or ent:IsButton() or ent:IsBuyableProp() ) then return false end
 		if !nzRound:InState( ROUND_CREATE ) then return false end
-		if ( ent:IsPlayer() ) then return false end
-		if ( !ply:IsAdmin() ) then return false end
+		if ( !ply:IsInCreative() ) then return false end
 		if ent:IsBuyableProp() then
 			if ( !nzDoors.PropDoors[ent:EntIndex()] ) then return false end
 		else
@@ -140,12 +191,6 @@ properties.Add( "nz_unlock", {
 
 	Receive = function( self, length, player )
 		local ent = net.ReadEntity()
-
-		if ( !IsValid( ent ) ) then return false end
-		if ( !IsValid( player ) ) then return false end
-		if !nzRound:InState( ROUND_CREATE ) then return false end
-		if ( !player:IsAdmin() ) then return false end
-		if ( ent:IsPlayer() ) then return false end
 		if ( !self:Filter( ent, player ) ) then return false end
 
 		nzDoors:RemoveLink( ent )
@@ -154,119 +199,72 @@ properties.Add( "nz_unlock", {
 } )
 
 properties.Add( "nz_editzspawn", {
-	MenuLabel = "Edit Spawnpoint..",
+	MenuLabel = "Edit Spawnpoint...",
 	Order = 9003,
 	PrependSpacer = true,
 	MenuIcon = "icon16/link_edit.png",
 
 	Filter = function( self, ent, ply )
 
-		if ( !IsValid( ent ) ) then return false end
-		if ( ent:GetClass() != "nz_spawn_zombie_normal" ) then return false end
+		if ( !IsValid( ent ) or !IsValid(ply) ) then return false end
+		if ( ent:GetClass() != "nz_spawn_zombie_normal" and ent:GetClass() != "nz_spawn_zombie_special" ) then return false end
 		if !nzRound:InState( ROUND_CREATE ) then return false end
-		if ( ent:IsPlayer() ) then return false end
-		if ( !ply:IsAdmin() ) then return false end
+		if ( !ply:IsInCreative() ) then return false end
 
 		return true
 
 	end,
 
 	Action = function( self, ent )
-		self:MsgStart()
-			net.WriteEntity( ent )
-		self:MsgEnd()
+		local frame = vgui.Create("DFrame")
+		frame:SetPos( 100, 100 )
+		frame:SetSize( 300, 280 )
+		frame:SetTitle( "Edit Spawnpoint..." )
+		frame:SetVisible( true )
+		frame:SetDraggable( true )
+		frame:ShowCloseButton( true )
+		frame:MakePopup()
+		frame:Center()
+		
+		local ztype = ent:GetClass() == "nz_spawn_zombie_normal" and "zspawn" or "zspecialspawn"
+		
+		local spawndata = {}
+		if ent:GetLink() then
+			spawndata.flag = 1
+			spawndata.link = ent:GetLink()
+		else
+			spawndata.flag = 0
+			spawndata.link = ""
+		end
+		
+		local panel = nzTools.ToolData[ztype].interface(frame, spawndata, true)
+		panel:SetPos(10, 40)
+		
+		local data2 = panel.CompileData()
+		panel.UpdateData = function(data)
+			data2 = data
+		end
+		
+		local submit = vgui.Create("DButton", frame)
+		submit:SetText("Submit")
+		submit:SetPos(50, 245)
+		submit:SetSize(200, 25)
+		submit.DoClick = function(self2)
+			self:MsgStart()
+				net.WriteEntity( ent )
+				net.WriteTable( data2 )
+			self:MsgEnd()
+		end
 	end,
 
 	Receive = function( self, length, player )
 		local ent = net.ReadEntity()
-
-		if ( !IsValid( ent ) ) then return false end
-		if ( !IsValid( player ) ) then return false end
-		if !nzRound:InState( ROUND_CREATE ) then return false end
-		if ( !player:IsAdmin() ) then return false end
-		if ( ent:IsPlayer() ) then return false end
+		local data = net.ReadTable()
 		if ( !self:Filter( ent, player ) ) then return false end
+		
+		local ztype = ent:GetClass() == "nz_spawn_zombie_normal" and "zspawn" or "zspecialspawn"
 
-		nz.Interfaces.Functions.SendInterface(player, "ZombLink", {ent = ent, link = ent.link, spawnable = ent.spawnable, respawnable = ent.respawnable})
-
-	end
-} )
-
-properties.Add( "nz_wepbuy", {
-	MenuLabel = "Edit Properties..",
-	Order = 9004,
-	PrependSpacer = true,
-	MenuIcon = "icon16/cart_edit.png",
-
-	Filter = function( self, ent, ply )
-
-		if ( !IsValid( ent ) ) then return false end
-		if ( ent:GetClass() != "wall_buys" ) then return false end
-		if !nzRound:InState( ROUND_CREATE ) then return false end
-		if ( ent:IsPlayer() ) then return false end
-		if ( !ply:IsAdmin() ) then return false end
-
-		return true
-
-	end,
-
-	Action = function( self, ent )
-		self:MsgStart()
-			net.WriteEntity( ent )
-		self:MsgEnd()
-	end,
-
-	Receive = function( self, length, player )
-		local ent = net.ReadEntity()
-
-		if ( !IsValid( ent ) ) then return false end
-		if ( !IsValid( player ) ) then return false end
-		if !nzRound:InState( ROUND_CREATE ) then return false end
-		if ( !player:IsAdmin() ) then return false end
-		if ( ent:IsPlayer() ) then return false end
-		if ( !self:Filter( ent, player ) ) then return false end
-
-		nz.Interfaces.Functions.SendInterface(player, "WepBuy", {vec = ent:GetPos(), ang = ent:GetAngles(), ent = ent})
-
-	end
-} )
-
-properties.Add( "nz_editperk", {
-	MenuLabel = "Edit Perk..",
-	Order = 9005,
-	PrependSpacer = true,
-	MenuIcon = "icon16/tag_blue_edit.png",
-
-	Filter = function( self, ent, ply )
-
-		if ( !IsValid( ent ) ) then return false end
-		if ( ent:GetClass() != "perk_machine" ) then return false end
-		if !nzRound:InState( ROUND_CREATE ) then return false end
-		if ( ent:IsPlayer() ) then return false end
-		if ( !ply:IsAdmin() ) then return false end
-
-		return true
-
-	end,
-
-	Action = function( self, ent )
-		self:MsgStart()
-			net.WriteEntity( ent )
-		self:MsgEnd()
-	end,
-
-	Receive = function( self, length, player )
-		local ent = net.ReadEntity()
-
-		if ( !IsValid( ent ) ) then return false end
-		if ( !IsValid( player ) ) then return false end
-		if !nzRound:InState( ROUND_CREATE ) then return false end
-		if ( !player:IsAdmin() ) then return false end
-		if ( ent:IsPlayer() ) then return false end
-		if ( !self:Filter( ent, player ) ) then return false end
-
-		nz.Interfaces.Functions.SendInterface(player, "PerkMachine", {ent = ent})
-
+		nzTools.ToolData[ztype].PrimaryAttack(nil, ply, {Entity = ent}, data)
 	end
 } )
 

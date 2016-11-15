@@ -24,8 +24,11 @@ ENT.AttackRange = 65
 ENT.RunSpeed = 200
 ENT.WalkSpeed = 100
 ENT.Acceleration = 400
-ENT.DamageLow = 50
-ENT.DamageHigh = 70
+ENT.DamageLow = 35
+ENT.DamageHigh = 45
+
+-- important for ent:IsZombie()
+ENT.bIsZombie = true
 
 --The Accessors will be partially shared, but should only be used serverside
 AccessorFunc( ENT, "fWalkSpeed", "WalkSpeed", FORCE_NUMBER)
@@ -59,24 +62,7 @@ AccessorFunc( ENT, "bBlockAttack", "BlockAttack", FORCE_BOOL)
 
 AccessorFunc( ENT, "iActStage", "ActStage", FORCE_NUMBER)
 
-ENT.ActStages = {
-	[1] = {
-		act = ACT_WALK,
-		minspeed = 5,
-	},
-	[2] = {
-		act = ACT_WALK_ANGRY,
-		minspeed = 40,
-	},
-	[3] = {
-		act = ACT_RUN,
-		minspeed = 100,
-	},
-	[4] = {
-		act = ACT_SPRINT,
-		minspeed = 160,
-	},
-}
+ENT.ActStages = {}
 
 function ENT:SetupDataTables()
 	-- If you want decapitation in you zombie and overwrote ENT:SetupDataTables() make sure to add self:NetworkVar("Bool", 0, "Decapitated") again.
@@ -183,7 +169,7 @@ function ENT:Initialize()
 		self:SetBodygroup( i-1, math.random(0, self:GetBodygroupCount(i-1) - 1))
 	end
 	self:SetSkin( math.random(self:SkinCount()) - 1 )
-	
+
 	self.ZombieAlive = true
 
 end
@@ -323,11 +309,13 @@ end
 
 function ENT:SoundThink()
 	if CurTime() > self:GetNextMoanSound() and !self:GetStop() then
-		--local soundName = self:GetActivity() == ACT_RUN and self.RunSounds[ math.random(#self.RunSounds ) ] or self.WalkSounds[ math.random(#self.WalkSounds ) ]
-		local soundName = self.WalkSounds[math.random(#self.WalkSounds)]
-		self:EmitSound( soundName, 80 )
-		local nextSound = SoundDuration( soundName ) + math.random(0,4) + CurTime()
-		self:SetNextMoanSound( nextSound )
+		local soundtbl = self.ActStages[self:GetActStage()] and self.ActStages[self:GetActStage()].sounds or self.WalkSounds
+		if soundtbl then
+			local soundName = soundtbl[math.random(#soundtbl)]
+			self:EmitSound( soundName, 80 )
+			local nextSound = SoundDuration( soundName ) + math.random(0,4) + CurTime()
+			self:SetNextMoanSound( nextSound )
+		end
 	end
 end
 
@@ -351,15 +339,15 @@ function ENT:RunBehaviour()
 						self:TimeOut(1)
 					end
 				elseif pathResult == "timeout" then --asume pathing timedout, maybe we are stuck maybe we are blocked by barricades
-					local barricade = self:CheckForBarricade()
+					local barricade, dir = self:CheckForBarricade()
 					if barricade then
-						self:OnBarricadeBlocking( barricade )
+						self:OnBarricadeBlocking( barricade, dir )
 					else
 						self:OnPathTimeOut()
 					end
 				else
-					-- self:TimeOut(2)
-					--path failed what should we do :/?
+					self:TimeOut(2)
+					-- path failed what should we do :/?
 				end
 			else
 				self:OnNoTarget()
@@ -376,7 +364,7 @@ function ENT:Stop()
 end
 
 --Draw sppoky red eyes
-local eyeGlow =  Material( "sprites/redglow1" )
+local eyeglow =  Material( "sprites/redglow1" )
 local white = Color( 255, 255, 255, 255 )
 
 function ENT:Draw()
@@ -386,13 +374,33 @@ function ENT:Draw()
 		--local leftEye = eyes + self:GetRight() * -1.5 + self:GetForward() * 0.5
 		--local rightEye = eyes + self:GetRight() * 1.5 + self:GetForward() * 0.5
 
-		local leftEye = self:GetAttachment(self:LookupAttachment("lefteye")).Pos
-		local rightEye = self:GetAttachment(self:LookupAttachment("righteye")).Pos
-		cam.Start3D(EyePos(),EyeAngles())
-			render.SetMaterial( eyeGlow )
-			render.DrawSprite( leftEye, 4, 4, white)
-			render.DrawSprite( rightEye, 4, 4, white)
-		cam.End3D()
+		local lefteye = self:GetAttachment(self:LookupAttachment("lefteye"))
+		local righteye = self:GetAttachment(self:LookupAttachment("righteye"))
+		
+		if !lefteye then lefteye = self:GetAttachment(self:LookupAttachment("left_eye")) end
+		if !righteye then righteye = self:GetAttachment(self:LookupAttachment("right_eye")) end
+		
+		local righteyepos
+		local lefteyepos
+		
+		if lefteye and righteye then
+			lefteyepos = lefteye.Pos
+			righteyepos = righteye.Pos
+		else
+			local eyes = self:GetAttachment(self:LookupAttachment("eyes"))
+			if eyes then
+				lefteyepos = eyes.Pos + self:GetRight() * -1.5 + self:GetForward() * 0.5
+				righteyepos = eyes.Pos + self:GetRight() * 1.5 + self:GetForward() * 0.5
+			end
+		end
+		
+		if lefteyepos and righteyepos then
+			cam.Start3D(EyePos(),EyeAngles())
+				render.SetMaterial( eyeglow )
+				render.DrawSprite( lefteye.Pos, 4, 4, white)
+				render.DrawSprite( righteye.Pos, 4, 4, white)
+			cam.End3D()
+		end
 	end
 	if GetConVar( "nz_zombie_debug" ):GetBool() then
 		render.DrawWireframeBox(self:GetPos(), Angle(0,0,0), self:OBBMins(), self:OBBMaxs(), Color(255,0,0), true)
@@ -429,7 +437,7 @@ function ENT:OnTargetInAttackRange()
 	end
 end
 
-function ENT:OnBarricadeBlocking( barricade )
+function ENT:OnBarricadeBlocking( barricade, dir )
 	if (IsValid(barricade) and barricade:GetClass() == "breakable_entry" ) then
 		if barricade:GetNumPlanks() > 0 then
 			timer.Simple(0.3, function()
@@ -441,8 +449,20 @@ function ENT:OnBarricadeBlocking( barricade )
 			end)
 
 			self:SetAngles(Angle(0,(barricade:GetPos()-self:GetPos()):Angle()[2],0))
-			local seq = self.AttackSequences[math.random( #self.AttackSequences )].seq
-			local dur = self:SequenceDuration(self:LookupSequence(seq))
+			
+			local seq, dur
+
+			local attacktbl = self.ActStages[1] and self.ActStages[1].attackanims or self.AttackSequences
+			local target = type(attacktbl) == "table" and attacktbl[math.random(#attacktbl)] or attacktbl
+			
+			if type(target) == "table" then
+				seq, dur = self:LookupSequenceAct(target.seq)
+			elseif target then -- It is a string or ACT
+				seq, dur = self:LookupSequenceAct(target)
+			else
+				seq, dur = self:LookupSequence("swing")
+			end
+			
 			self:SetAttacking(true)
 			self:PlaySequenceAndWait(seq, 1)
 			self:SetLastAttack(CurTime())
@@ -453,9 +473,10 @@ function ENT:OnBarricadeBlocking( barricade )
 			end
 
 			-- this will cause zombies to attack the barricade until it's destroyed
-			local stillBlocked = self:CheckForBarricade()
+			local stillBlocked, dir = self:CheckForBarricade()
 			if stillBlocked then
-				self:OnBarricadeBlocking(stillBlocked)
+				self:OnBarricadeBlocking(stillBlocked, dir)
+				return
 			end
 
 			-- Attacking a new barricade resets the counter
@@ -463,7 +484,7 @@ function ENT:OnBarricadeBlocking( barricade )
 		elseif barricade:GetTriggerJumps() and self.TriggerBarricadeJump then
 			local dist = barricade:GetPos():DistToSqr(self:GetPos())
 			if dist <= 3500 + (1000 * self.BarricadeJumpTries) then
-				self:TriggerBarricadeJump()
+				self:TriggerBarricadeJump(barricade, dir)
 				self.BarricadeJumpTries = 0
 			else
 				-- If we continuously fail, we need to increase the check range (if it is a bigger prop)
@@ -598,8 +619,7 @@ function ENT:Alive()
 end
 
 function ENT:OnKilled(dmgInfo)
-
-	if dmgInfo then
+	if dmgInfo and self:Alive() then -- Only call once!
 		self:OnZombieDeath(dmgInfo)
 	end
 
@@ -615,7 +635,7 @@ function ENT:OnKilled(dmgInfo)
 			self:SetDecapitated(true)
 		end
 	end
-	
+
 	self.ZombieAlive = false
 
 	hook.Call("OnZombieKilled", GAMEMODE, self, dmgInfo)
@@ -742,7 +762,6 @@ function ENT:ChaseTarget( options )
 		if path:IsValid() and math.abs(self:GetPos().z - path:GetClosestPosition(self:EyePos() + self.loco:GetGroundMotionVector() * scanDist).z) > 22 and (goal and goal.type != 1) then
 			self:Jump()
 		end
-
 		--[[if path:IsValid() and goal.type == 4 then
 			--self.loco:SetVelocity( Vector( 0, 0, 1000 ) )
 			self:SetPos( path:GetClosestPosition( goal.ladder:GetTopForwardArea():GetCenter() ) )
@@ -893,10 +912,10 @@ function ENT:CheckForBarricade()
 	--debugoverlay.Cross(self:GetPos() + Vector( 0, 0, self:OBBCenter().z ), 1)
 
 	if IsValid( trL.Entity ) and trL.Entity:GetClass() == "breakable_entry" then
-		return trL.Entity
+		return trL.Entity, trL.HitNormal
 	end
 
-	--perform a hull trace if line didnt hit just to make sure
+	-- Perform a hull trace if line didnt hit just to make sure
 	local dataH = {}
 	dataH.start = self:GetPos()
 	dataH.endpos = self:GetPos() + self.BarricadeCheckDir * 48
@@ -906,14 +925,14 @@ function ENT:CheckForBarricade()
 	local trH = util.TraceHull(dataH )
 
 	if IsValid( trH.Entity ) and trH.Entity:GetClass() == "breakable_entry" then
-		return trH.Entity
+		return trH.Entity, trH.HitNormal
 	end
 
 	return nil
 
 end
 
---A standard attack you can use it or create something fancy yourself
+-- A standard attack you can use it or create something fancy yourself
 function ENT:Attack( data )
 
 	self:SetLastAttack(CurTime())
@@ -921,20 +940,54 @@ function ENT:Attack( data )
 	--if self:Health() <= 0 then coroutine.yield() return end
 
 	data = data or {}
-	data.attackseq = data.attackseq or self.AttackSequences[ math.random( #self.AttackSequences ) ].seq or "swing"
-	data.attacksound = data.attacksound or self.AttackSounds[ math.random( #self.AttackSounds) ] or Sound( "npc/vort/claw_swing1.wav" )
-	data.hitsound = data.hitsound or self.AttackHitSounds[ math.random( #self.AttackHitSounds ) ]Sound( "npc/zombie/zombie_hit.wav" )
+	
+	data.attackseq = data.attackseq
+	if !data.attackseq then
+		local curstage = self:GetActStage()
+		local actstage = self.ActStages[curstage]
+		if !actstage and curstage <= 0 then actstage = self.ActStages[1] end
+		
+		local attacktbl = actstage and actstage.attackanims or self.AttackSequences
+		local target = type(attacktbl) == "table" and attacktbl[math.random(#attacktbl)] or attacktbl
+		
+		if type(target) == "table" then
+			local id, dur = self:LookupSequenceAct(target.seq)
+			data.attackseq = {seq = id, dmgtimes = target.dmgtimes or {0.5}}
+			data.attackdur = dur
+		elseif target then -- It is a string or ACT
+			local id, dur = self:LookupSequenceAct(attacktbl)
+			data.attackseq = {seq = id, dmgtimes = {dur/2}}
+			data.attackdur = dur
+		else
+			local id, dur = self:LookupSequence("swing")
+			data.attackseq = {seq = id, dmgtimes = {1}}
+			data.attackdur = dur
+		end
+	end
+	
+	data.attacksound = data.attacksound
+	if !data.attacksound then
+		local actstage = self.ActStages[self:GetActStage()]
+		local soundtbl = actstage and actstage.attacksounds or self.AttackSounds
+		data.attacksound = soundtbl and soundtbl[math.random(#soundtbl)] or Sound( "npc/vort/claw_swing1.wav" )
+	end
+	
+	data.hitsound = data.hitsound
+	if !data.hitsound then
+		local actstage = self.ActStages[self:GetActStage()]
+		local soundtbl = actstage and actstage.attackhitsounds or self.AttackHitSounds
+		data.hitsound = soundtbl and soundtbl[math.random(#soundtbl)] or Sound( "npc/zombie/zombie_hit.wav" )
+	end
+	
 	data.viewpunch = data.viewpunch or VectorRand():Angle() * 0.05
-	data.dmglow = data.dmglow or self.DamageLow or 50
-	data.dmghigh = data.dmghigh or self.DamageHigh or 70
+	data.dmglow = data.dmglow or self.DamageLow or 25
+	data.dmghigh = data.dmghigh or self.DamageHigh or 45
 	data.dmgtype = data.dmgtype or DMG_CLUB
 	data.dmgforce = data.dmgforce or (self:GetTarget():GetPos() - self:GetPos()) * 7 + Vector( 0, 0, 16 )
 	data.dmgforce.z = math.Clamp(data.dmgforce.z, 1, 16)
-	local seq, dur = self:LookupSequence( data.attackseq )
-	data.attackdur = (seq != - 1 and dur) or 0.6
-	data.dmgdelay = data.dmgdelay or ( ( data.attackdur != 0 ) and data.attackdur / 2 ) or 0.3
+	
 
-	self:EmitSound("npc/zombie_poison/pz_throw2.wav", 50, math.random(75, 125)) -- whatever this is!? I will keep it for now
+	self:EmitSound("npc/zombie_poison/pz_throw2.wav", 50, math.random(75, 125))
 
 	self:SetAttacking( true )
 
@@ -942,41 +995,44 @@ function ENT:Attack( data )
 		self:EmitSound( data.attacksound )
 	end)
 
-	self:TimedEvent( data.dmgdelay, function()
-		if self:IsValidTarget( self:GetTarget() ) and self:TargetInRange( self:GetAttackRange() + 10 ) then
-			local dmgAmount = math.random( data.dmglow, data.dmghigh )
-			local dmgInfo = DamageInfo()
-				dmgInfo:SetAttacker( self )
-				dmgInfo:SetDamage( dmgAmount )
-				dmgInfo:SetDamageType( data.dmgtype )
-				dmgInfo:SetDamageForce( data.dmgforce )
-			self:GetTarget():TakeDamageInfo(dmgInfo)
-			self:GetTarget():EmitSound( data.hitsound, 50, math.random( 80, 160 ) )
-			if self:GetTarget().ViewPunch then
-				self:GetTarget():ViewPunch( data.viewpunch )
-			end
-			self:GetTarget():SetVelocity( data.dmgforce )
+	if self:GetTarget():IsPlayer() then
+		for k,v in pairs(data.attackseq.dmgtimes) do
+			self:TimedEvent( v, function()
+				if !self:GetStop() and self:IsValidTarget( self:GetTarget() ) and self:TargetInRange( self:GetAttackRange() + 10 ) then
+					local dmgAmount = math.random( data.dmglow, data.dmghigh )
+					local dmgInfo = DamageInfo()
+						dmgInfo:SetAttacker( self )
+						dmgInfo:SetDamage( dmgAmount )
+						dmgInfo:SetDamageType( data.dmgtype )
+						dmgInfo:SetDamageForce( data.dmgforce )
+					self:GetTarget():TakeDamageInfo(dmgInfo)
+					if !IsValid(self:GetTarget()) then return end
+					self:GetTarget():EmitSound( data.hitsound, 50, math.random( 80, 160 ) )
+					self:GetTarget():ViewPunch( data.viewpunch )
+					self:GetTarget():SetVelocity( data.dmgforce )
 
-			local blood = ents.Create("env_blood")
-			blood:SetKeyValue("targetname", "carlbloodfx")
-			blood:SetKeyValue("parentname", "prop_ragdoll")
-			blood:SetKeyValue("spawnflags", 8)
-			blood:SetKeyValue("spraydir", math.random(500) .. " " .. math.random(500) .. " " .. math.random(500))
-			blood:SetKeyValue("amount", dmgAmount * 5)
-			blood:SetCollisionGroup( COLLISION_GROUP_WORLD )
-			blood:SetPos( self:GetTarget():GetPos() + self:GetTarget():OBBCenter() + Vector( 0, 0, 10 ) )
-			blood:Spawn()
-			blood:Fire("EmitBlood")
-			SafeRemoveEntityDelayed( blood, 2) --just to make sure everything gets cleaned
+					local blood = ents.Create("env_blood")
+					blood:SetKeyValue("targetname", "carlbloodfx")
+					blood:SetKeyValue("parentname", "prop_ragdoll")
+					blood:SetKeyValue("spawnflags", 8)
+					blood:SetKeyValue("spraydir", math.random(500) .. " " .. math.random(500) .. " " .. math.random(500))
+					blood:SetKeyValue("amount", dmgAmount * 5)
+					blood:SetCollisionGroup( COLLISION_GROUP_WORLD )
+					blood:SetPos( self:GetTarget():GetPos() + self:GetTarget():OBBCenter() + Vector( 0, 0, 10 ) )
+					blood:Spawn()
+					blood:Fire("EmitBlood")
+					SafeRemoveEntityDelayed( blood, 2) -- Just to make sure everything gets cleaned
+				end
+			end)
 		end
-	end)
+	end
 
 	self:TimedEvent(data.attackdur, function()
 		self:SetAttacking(false)
 		self:SetLastAttack(CurTime())
 	end)
 
-	self:PlayAttackAndWait(data.attackseq, 1)
+	self:PlayAttackAndWait(data.attackseq.seq, 1)
 end
 
 function ENT:PlayAttackAndWait( name, speed )
@@ -1087,6 +1143,12 @@ function ENT:RespawnZombie()
 
 		self:Remove()
 	end
+end
+
+function ENT:Freeze(time)
+	--self:TimeOut(time)
+	self:SetStop(true)
+	self.FrozenTime = CurTime() + time
 end
 
 function ENT:IsInSight()
@@ -1226,28 +1288,120 @@ function ENT:BodyUpdate()
 	elseif !self.ActStages[self:GetActStage() - 1] and len2d < curstage.minspeed - 4 then -- Much smaller range to go back to idling
 		self:SetActStage(0)
 	end
+	
+	curstage = self.ActStages[self:GetActStage()]
 
-	if self.ActStages[self:GetActStage()] then self.CalcIdeal = self.ActStages[self:GetActStage()].act end
+	if curstage and curstage.act then
+		local act = curstage.act
+		if type(act) == "table" then -- A table of sequences
+			local new = act[math.random(#act)]
+			self.CalcIdeal = new
+		elseif act then
+			self.CalcIdeal = act
+		end
+	end
 
 	if self:IsJumping() and self:WaterLevel() <= 0 then
 		self.CalcIdeal = ACT_JUMP
 	end
 
 	if !self:GetSpecialAnimation() and !self:IsAttacking() then
-		if self:GetActivity() != self.CalcIdeal and !self:GetStop() then self:StartActivity(self.CalcIdeal) end
+		if self:GetActivity() != self.CalcIdeal and !self:GetStop() then self:StartActivitySeq(self.CalcIdeal) end
 
-		if self.ActStages[self:GetActStage()] then
+		if self.ActStages[self:GetActStage()] and !self.FrozenTime then
 			self:BodyMoveXY()
 		end
 	end
 
-	self:FrameAdvance()
+	if self.FrozenTime then 
+		if self.FrozenTime < CurTime() then
+			self.FrozenTime = nil
+			self:SetStop(false)
+		end
+		self:BodyMoveXY()
+		--self:FrameAdvance()
+	else
+		self:FrameAdvance()
+	end
 
 end
 
 function ENT:UpdateSequence()
 	self:SetActStage(0)
 	self:BodyUpdate()
+	local actstage = self.ActStages[self:GetActStage()]
+	local act = actstage and actstage.act
+	if type(act) == "table" then -- A table of sequences
+		local new = act[math.random(#act)]
+		self:StartActivitySeq(new)
+	elseif act then
+		self:StartActivitySeq(act)
+	else
+		self:StartActivitySeq(self.CalcIdeal)
+	end
+end
+
+function ENT:TriggerBarricadeJump( barricade, dir )
+	if !self:GetSpecialAnimation() and (!self.NextBarricade or CurTime() > self.NextBarricade) then
+		self:SetSpecialAnimation(true)
+		self:SetBlockAttack(true)
+		
+		local id, dur, speed
+		local actstage = self.ActStages[self:GetActStage()]
+		local animtbl = actstage and actstage.barricadejumps or (self.ActStages[1] and self.ActStages[1].barricadejumps)
+		
+		if type(animtbl) == "number" then -- ACT_ is a number, this is set if it's an ACT
+			id = self:SelectWeightedSequence(animtbl)
+			dur = self:SequenceDuration(id)
+			speed = self:GetSequenceGroundSpeed(id)
+			if speed < 10 then
+				speed = 20
+			end
+		else
+			local targettbl = animtbl and animtbl[math.random(#animtbl)] or self.JumpSequences
+			if targettbl then -- It is a table of sequences
+				id, dur = self:LookupSequenceAct(targettbl.seq) -- Whether it's an ACT or a sequence string
+				speed = targettbl.speed
+				--dur = targettbl.time or dur
+			else
+				id = self:SelectWeightedSequence(ACT_JUMP)
+				dur = self:SequenceDuration(id)
+				speed = 30
+			end
+		end
+		
+		self:SetSolidMask(MASK_SOLID_BRUSHONLY)
+		self:SetCollisionGroup(COLLISION_GROUP_DEBRIS_TRIGGER)
+		--self.loco:SetAcceleration( 5000 )
+		self.loco:SetDesiredSpeed(speed)
+		self:SetVelocity(self:GetForward() * speed)
+		self:SetSequence(id)
+		self:SetCycle(0)
+		self:SetPlaybackRate(1)
+		--self:BodyMoveXY()
+		--PrintTable(self:GetSequenceInfo(id))
+		self:TimedEvent(dur, function()
+			self.NextBarricade = CurTime() + 2
+			self:SetSpecialAnimation(false)
+			self:SetBlockAttack(false)
+			self.loco:SetAcceleration( self.Acceleration )
+			self.loco:SetDesiredSpeed(self:GetRunSpeed())
+			self:UpdateSequence()
+		end)
+		
+		local pos = barricade:GetPos() - dir * 40
+		
+		--debugoverlay.Cross(pos, 5, 5)
+		-- This forces us to move straight through the barricade
+		-- in the opposite direction of where we hit the trace from
+		self:MoveToPos(pos, {
+			lookahead = 40,
+			tolerance = 1,
+			draw = false,
+			maxage = 3,
+			repath = 3,
+		})
+	end
 end
 
 function ENT:GetAimVector()
@@ -1260,6 +1414,27 @@ function ENT:GetShootPos()
 
 	return self:EyePos()
 
+end
+
+function ENT:LookupSequenceAct(id)
+	if type(id) == "number" then
+		local id = self:SelectWeightedSequence(id)
+		local dur = self:SequenceDuration(id)
+		return id, dur
+	else
+		return self:LookupSequence(id)
+	end
+end
+
+function ENT:StartActivitySeq(act)
+	if type(act) == "number" then
+		self:StartActivity(act)
+	else
+		local id, dur = self:LookupSequence(act)
+		--self:ResetSequenceInfo()
+		--self:ResetSequence(id)
+		self:SetSequence(id)
+	end
 end
 
 --Helper function

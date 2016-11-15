@@ -8,6 +8,8 @@ ENT.AdminOnly			= true
 ENT.PrintName			= "Color Correction Editor"
 ENT.Category			= "Editors"
 
+ENT.NZOnlyVisibleInCreative = true
+
 function ENT:Initialize()
 
 	BaseClass.Initialize( self )

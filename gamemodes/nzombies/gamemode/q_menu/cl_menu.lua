@@ -1,4 +1,4 @@
-function nz.QMenu.Functions.CreatePropsMenu( )
+function nzQMenu:CreatePropsMenu( )
 
 	-- Data we will need later
 	local data -- Table with spawnlist data
@@ -68,7 +68,7 @@ function nz.QMenu.Functions.CreatePropsMenu( )
 	end
 	
 	
-	nz.QMenu.Data.MainFrame = frame
+	nzQMenu.Data.MainFrame = frame
 
 	-- Loop to make all the tabs
 	local tabs = {}
@@ -179,7 +179,7 @@ function nz.QMenu.Functions.CreatePropsMenu( )
 	ReloadSpawnlist = function()
 	
 		if IsValid(SpawnSheet) then SpawnSheet:Remove() end
-		SpawnSheet = vgui.Create( "DPropertySheet", nz.QMenu.Data.MainFrame )
+		SpawnSheet = vgui.Create( "DPropertySheet", nzQMenu.Data.MainFrame )
 		SpawnSheet:SetPos( 10, 30 )
 		SpawnSheet:SetSize( 455, 300 )
 		
@@ -190,7 +190,7 @@ function nz.QMenu.Functions.CreatePropsMenu( )
 		-- Then re-add from the data table
 		for k,v in pairs(data) do		
 			local cat = v.name
-			tabs.Scrolls[cat] = vgui.Create( "DScrollPanel", nz.QMenu.Data.MainFrame )
+			tabs.Scrolls[cat] = vgui.Create( "DScrollPanel", nzQMenu.Data.MainFrame )
 			tabs.Scrolls[cat]:SetSize( 455, 300 )
 			tabs.Scrolls[cat]:SetPos( 10, 30 )
 
@@ -230,7 +230,7 @@ function nz.QMenu.Functions.CreatePropsMenu( )
 				ListItem:SetModel(v2)
 				ListItem.Model = v2
 				ListItem.DoClick = function( item )
-					nz.QMenu.Functions.Request(item.Model)
+					nzQMenu:Request(item.Model)
 					surface.PlaySound( "ui/buttonclickrelease.wav" )
 				end
 				ListItem.DoRightClick = function( item )
@@ -268,11 +268,11 @@ function nz.QMenu.Functions.CreatePropsMenu( )
 	tabs.Utilities = {}
 	local function CreateUtilities()
 		if IsValid(UtilitySheet) then UtilitySheet:Remove() end
-		UtilitySheet = vgui.Create( "DPropertySheet", nz.QMenu.Data.MainFrame )
+		UtilitySheet = vgui.Create( "DPropertySheet", nzQMenu.Data.MainFrame )
 		UtilitySheet:SetPos( 10, 30 )
 		UtilitySheet:SetSize( 455, 300 )
 	
-		tabs.Utilities["Entities"] = vgui.Create( "DScrollPanel", nz.QMenu.Data.MainFrame )
+		tabs.Utilities["Entities"] = vgui.Create( "DScrollPanel", nzQMenu.Data.MainFrame )
 		tabs.Utilities["Entities"]:SetSize( 455, 300 )
 		tabs.Utilities["Entities"]:SetPos( 10, 30 )
 
@@ -284,7 +284,7 @@ function nz.QMenu.Functions.CreatePropsMenu( )
 		tabs.Utilities["Entities"].List = lists
 		UtilitySheet:AddSheet( "Entities", tabs.Utilities["Entities"], nil, false, false, v )
 		
-		tabs.Utilities["Search"] = vgui.Create( "DPanel", nz.QMenu.Data.MainFrame )
+		tabs.Utilities["Search"] = vgui.Create( "DPanel", nzQMenu.Data.MainFrame )
 		tabs.Utilities["Search"]:SetSize( 455, 300 )
 		tabs.Utilities["Search"]:SetPos( 10, 30 )
 		
@@ -311,7 +311,7 @@ function nz.QMenu.Functions.CreatePropsMenu( )
 		lists:SetSpaceX( 5 )
 		tabs.Utilities["Search"].List = lists
 		
-		tabs.Utilities["MapProps"] = vgui.Create( "DPanel", nz.QMenu.Data.MainFrame )
+		tabs.Utilities["MapProps"] = vgui.Create( "DPanel", nzQMenu.Data.MainFrame )
 		tabs.Utilities["MapProps"]:SetSize( 455, 300 )
 		tabs.Utilities["MapProps"]:SetPos( 10, 30 )
 		
@@ -343,7 +343,7 @@ function nz.QMenu.Functions.CreatePropsMenu( )
 				ListItem:SetModel(v)
 				ListItem.Model = v
 				ListItem.DoClick = function( item )
-					nz.QMenu.Functions.Request(item.Model)
+					nzQMenu:Request(item.Model)
 					surface.PlaySound( "ui/buttonclickrelease.wav" )
 				end
 				ListItem.DoRightClick = function( item )
@@ -379,7 +379,7 @@ function nz.QMenu.Functions.CreatePropsMenu( )
 						ListItem:SetModel(model)
 						ListItem.Model = model
 						ListItem.DoClick = function( item )
-							nz.QMenu.Functions.Request(item.Model)
+							nzQMenu:Request(item.Model)
 							surface.PlaySound( "ui/buttonclickrelease.wav" )
 						end
 						ListItem.DoRightClick = function( item )
@@ -408,19 +408,96 @@ function nz.QMenu.Functions.CreatePropsMenu( )
 		UtilitySheet:AddSheet( "Map Props", tabs.Utilities["MapProps"], "icon16/map.png", false, false, v )
 		UtilitySheet:AddSheet( "Search", tabs.Utilities["Search"], "icon16/magnifier.png", false, false, v )
 		
-		for k,v in pairs(nz.QMenu.Data.Entities) do
+		for k,v in pairs(nzQMenu.Data.Entities) do
 			local ListItem = tabs.Utilities["Entities"].List:Add( "DImageButton" )
 			ListItem:SetSize( 48, 48 )
 			ListItem:SetImage(v[2])
 			ListItem.Entity = v[1]
 			ListItem.DoClick = function( item )
-				nz.QMenu.Functions.Request(item.Entity, true)
+				nzQMenu:Request(item.Entity, true)
 				surface.PlaySound( "ui/buttonclickrelease.wav" )
 			end
 			ListItem:SetTooltip(v[3] or v[1])
 			-- You don't need to set the position, that is done automatically
 
 		end
+		
+		tabs.Utilities["Addons"] = vgui.Create( "DPanel", nzQMenu.Data.MainFrame )
+		tabs.Utilities["Addons"]:SetSize( 455, 300 )
+		tabs.Utilities["Addons"]:SetPos( 0, 30 )
+		
+		tabs.Utilities["Addons"].AddonList = vgui.Create( "DTree", tabs.Utilities["Addons"] )
+		tabs.Utilities["Addons"].AddonList:SetSize(200, 280)
+		tabs.Utilities["Addons"].AddonList:SetPos(-20, 0)
+		tabs.Utilities["Addons"].AddonList:SetPadding(0)
+		
+		tabs.Utilities["Addons"].Content = vgui.Create( "DScrollPanel", tabs.Utilities["Addons"] )
+		tabs.Utilities["Addons"].Content:SetSize( 330, 220 )
+		tabs.Utilities["Addons"].Content:SetPos( 180, 10 )
+
+		lists = vgui.Create( "DIconLayout", tabs.Utilities["Addons"].Content )
+		lists:SetSize( 340, 210 )
+		lists:SetPos( 10, 0 )
+		lists:SetSpaceY( 5 )
+		lists:SetSpaceX( 5 )
+		tabs.Utilities["Addons"].List = lists
+		
+		-- From Sandbox
+		local function AddRecursive( pnl, folder, path, wildcard )
+			local files, folders = file.Find( folder .. "*", path )
+			for k, v in pairs( files ) do
+				if ( !string.EndsWith( v, ".mdl" ) ) then continue end
+				
+				local model = folder..v
+				
+				local ListItem = pnl:Add( "SpawnIcon" )
+				ListItem:SetSize( 45, 45 )
+				ListItem:SetModel(model)
+				ListItem.Model = model
+				ListItem.DoClick = function( item )
+					nzQMenu:Request(item.Model)
+					surface.PlaySound( "ui/buttonclickrelease.wav" )
+				end
+				ListItem.DoRightClick = function( item )
+					local menu = DermaMenu()
+					local submenu = menu:AddSubMenu( "Add to category" )
+					for k2,v2 in pairs(data) do
+						submenu:AddOption(v2.name, function()
+							table.insert(v2.models, model)
+							ReloadSpawnlist()
+						end)
+					end
+					
+					menu:AddSpacer()
+					
+					menu:AddOption("Add to new category ...", function()
+						CategoryEditor(nil, model)
+					end)
+					menu:Open()
+				end
+				
+			end
+			for k, v in pairs( folders ) do
+				AddRecursive( pnl, folder .. v .. "/", path, wildcard )
+			end
+		end
+		
+		for _, addon in SortedPairsByMemberValue( engine.GetAddons(), "title" ) do
+			if ( !addon.downloaded || !addon.mounted ) then continue end
+			if ( addon.models <= 0 ) then continue end
+
+			local models = tabs.Utilities["Addons"].AddonList:AddNode( addon.title .. " (" .. addon.models .. ")", "icon16/bricks.png" )
+			models.DoClick = function()
+
+				local pnl = tabs.Utilities["Addons"].List
+				pnl:Clear()
+				
+				AddRecursive(pnl, "models/", addon.title, "*.mdl")
+
+			end
+		end
+		
+		UtilitySheet:AddSheet( "Addons", tabs.Utilities["Addons"], "icon16/bricks.png", false, false, v )
 		
 		if !frame.SpawnlistActive then
 			UtilitySheet:SetVisible(false)
@@ -463,21 +540,21 @@ function nz.QMenu.Functions.CreatePropsMenu( )
 
 end
 
-function nz.QMenu.Functions.CreateToolsMenu( )
+function nzQMenu:CreateToolsMenu( )
 
 	-- Create a Frame to contain everything.
-	nz.QMenu.Data.MainFrame = vgui.Create( "DFrame" )
-	--nz.QMenu.Data.MainFrame:SetTitle( "Tools Menu" )
-	nz.QMenu.Data.MainFrame:SetSize( 465, 300 )
-	nz.QMenu.Data.MainFrame:Center()
-	nz.QMenu.Data.MainFrame:MakePopup()
-	nz.QMenu.Data.MainFrame:ShowCloseButton( true )
-	nz.QMenu.Data.MainFrame:SetTitle("")
-	nz.QMenu.Data.MainFrame.Paint = function(self, w, h) end
-	nz.QMenu.Data.MainFrame.ToolMode = true
-	nz.QMenu.Data.MainFrame:MakePopup()
+	nzQMenu.Data.MainFrame = vgui.Create( "DFrame" )
+	--nzQMenu.Data.MainFrame:SetTitle( "Tools Menu" )
+	nzQMenu.Data.MainFrame:SetSize( 465, 300 )
+	nzQMenu.Data.MainFrame:Center()
+	nzQMenu.Data.MainFrame:MakePopup()
+	nzQMenu.Data.MainFrame:ShowCloseButton( true )
+	nzQMenu.Data.MainFrame:SetTitle("")
+	nzQMenu.Data.MainFrame.Paint = function(self, w, h) end
+	nzQMenu.Data.MainFrame.ToolMode = true
+	nzQMenu.Data.MainFrame:MakePopup()
 	
-	local ToolPanel = vgui.Create("DFrame", nz.QMenu.Data.MainFrame )
+	local ToolPanel = vgui.Create("DFrame", nzQMenu.Data.MainFrame )
 	ToolPanel:SetPos( 305, 25 )
 	ToolPanel:SetSize( 155, 260 )
 	ToolPanel:SetZPos(-30)
@@ -485,14 +562,14 @@ function nz.QMenu.Functions.CreateToolsMenu( )
 	ToolPanel:SetDraggable(false)
 	ToolPanel:SetTitle("Tool List")
 	
-	local ToolInterface = vgui.Create("DFrame", nz.QMenu.Data.MainFrame )
+	local ToolInterface = vgui.Create("DFrame", nzQMenu.Data.MainFrame )
 	ToolInterface:SetPos( 0, 0 )
 	ToolInterface:SetSize( 310, 300 )
 	ToolInterface:ShowCloseButton(false)
 	ToolInterface:SetDraggable(true)
-	ToolInterface:SetTitle(nz.Tools.ToolData[LocalPlayer():GetActiveWeapon().ToolMode or "default"].displayname)
+	ToolInterface:SetTitle(nzTools.ToolData[LocalPlayer():GetActiveWeapon().ToolMode or "default"].displayname)
 	
-	local FrameMerge = vgui.Create("DPanel", nz.QMenu.Data.MainFrame )
+	local FrameMerge = vgui.Create("DPanel", nzQMenu.Data.MainFrame )
 	FrameMerge:SetPos( 308, 49 )
 	FrameMerge:SetSize( 4, 235 )
 	FrameMerge.Paint = function(self, w, h)
@@ -500,7 +577,7 @@ function nz.QMenu.Functions.CreateToolsMenu( )
 		surface.DrawRect(0, 0, w, h)
 	end
 	
-	local ToolList = vgui.Create( "DScrollPanel", nz.QMenu.Data.MainFrame )
+	local ToolList = vgui.Create( "DScrollPanel", nzQMenu.Data.MainFrame )
 	ToolList:SetPos( 305, 58 )
 	ToolList:SetSize( 150, 220 )
 	
@@ -516,13 +593,13 @@ function nz.QMenu.Functions.CreateToolsMenu( )
 	
 	local function RebuildToolInterface(id)
 		--print(ToolData.interface)
-		if nz.Tools.ToolData[id] then
+		if nzTools.ToolData[id] then
 			if ToolData.interface then ToolData.interface:Remove() end
-			ToolData.interface = nz.Tools.ToolData[id].interface(ToolData, nz.Tools.SavedData[id])
+			ToolData.interface = nzTools.ToolData[id].interface(ToolData, nzTools.SavedData[id])
 			
 			if tabs.Tools[curtool] then tabs.Tools[curtool]:SetBackgroundColor( Color(150, 150, 150) ) end
 			if tabs.Tools[id] then tabs.Tools[id]:SetBackgroundColor( Color(255, 255, 255) ) end
-			ToolInterface:SetTitle(nz.Tools.ToolData[id or "default"].displayname)
+			ToolInterface:SetTitle(nzTools.ToolData[id or "default"].displayname)
 			curtool = id
 			
 			if !IsValid(ToolData.interface) then
@@ -544,9 +621,9 @@ function nz.QMenu.Functions.CreateToolsMenu( )
 		local tbl = {}
 		
 		-- Create a new cloned table that we can sort by weight
-		for k,v in pairs(nz.Tools.ToolData) do
-			if !nz.Tools.SavedData[k] then
-				nz.Tools.SavedData[k] = v.defaultdata
+		for k,v in pairs(nzTools.ToolData) do
+			if !nzTools.SavedData[k] then
+				nzTools.SavedData[k] = v.defaultdata
 			end
 			local num = table.insert(tbl, v)
 			tbl[num].id = k
@@ -607,75 +684,75 @@ function nz.QMenu.Functions.CreateToolsMenu( )
 	local advanced = vgui.Create("DCheckBoxLabel", ToolInterface)
 	advanced:SetPos(200, 6)
 	advanced:SetText("Advanced Mode")
-	advanced:SetValue(nz.Tools.Advanced)
+	advanced:SetValue(nzTools.Advanced)
 	advanced:SizeToContents()
 	advanced.OnChange = function(self)
-		nz.Tools.Advanced = self:GetChecked()
+		nzTools.Advanced = self:GetChecked()
 		RebuildToolList()
 		RebuildToolInterface(LocalPlayer():GetActiveWeapon().ToolMode or "default")
 	end
 	
 end
 
-function nz.QMenu.Functions.Open()
+function nzQMenu:Open()
 	-- Check if we're in create mode
-	if nzRound:InState( ROUND_CREATE ) and LocalPlayer():IsSuperAdmin() then
-		if !IsValid(nz.QMenu.Data.MainFrame) then
+	if nzRound:InState( ROUND_CREATE ) and LocalPlayer():IsInCreative() then
+		if !IsValid(nzQMenu.Data.MainFrame) then
 			if IsValid(LocalPlayer():GetActiveWeapon()) and LocalPlayer():GetActiveWeapon():GetClass() == "nz_multi_tool" then
-				nz.QMenu.Functions.CreateToolsMenu()
+				nzQMenu:CreateToolsMenu()
 			else
-				nz.QMenu.Functions.CreatePropsMenu()
+				nzQMenu:CreatePropsMenu()
 			end
 		end
 		
 		-- If the toolgun is equipped and the menu isn't the toolmenu or vice versa, recreate
-		if IsValid(LocalPlayer():GetActiveWeapon()) and LocalPlayer():GetActiveWeapon():GetClass() == "nz_multi_tool" and !nz.QMenu.Data.MainFrame.ToolMode then
-			nz.QMenu.Data.MainFrame:Remove()
-			nz.QMenu.Functions.CreateToolsMenu()
-		elseif IsValid(LocalPlayer():GetActiveWeapon()) and LocalPlayer():GetActiveWeapon():GetClass() != "nz_multi_tool" and nz.QMenu.Data.MainFrame.ToolMode then
-			nz.QMenu.Data.MainFrame:Remove()
-			nz.QMenu.Functions.CreatePropsMenu()
+		if IsValid(LocalPlayer():GetActiveWeapon()) and LocalPlayer():GetActiveWeapon():GetClass() == "nz_multi_tool" and !nzQMenu.Data.MainFrame.ToolMode then
+			nzQMenu.Data.MainFrame:Remove()
+			nzQMenu:CreateToolsMenu()
+		elseif IsValid(LocalPlayer():GetActiveWeapon()) and LocalPlayer():GetActiveWeapon():GetClass() != "nz_multi_tool" and nzQMenu.Data.MainFrame.ToolMode then
+			nzQMenu.Data.MainFrame:Remove()
+			nzQMenu:CreatePropsMenu()
 		end
 
-		nz.QMenu.Data.MainFrame:SetVisible( true )
+		nzQMenu.Data.MainFrame:SetVisible( true )
 	end
 end
 
 local textentryfocus = false
 
-function nz.QMenu.Functions.Close()
+function nzQMenu:Close()
 
 	-- We don't want to close if we're currently typing
 	if textentryfocus then return end
 	
-	if !IsValid(nz.QMenu.Data.MainFrame) then
+	if !IsValid(nzQMenu.Data.MainFrame) then
 		if IsValid(LocalPlayer():GetActiveWeapon()) and LocalPlayer():GetActiveWeapon():GetClass() == "nz_multi_tool" then
-			nz.QMenu.Functions.CreateToolsMenu()
+			nzQMenu:CreateToolsMenu()
 		else
-			nz.QMenu.Functions.CreatePropsMenu()
+			nzQMenu:CreatePropsMenu()
 		end
 	end
 
-	nz.QMenu.Data.MainFrame:SetVisible( false )
-	nz.QMenu.Data.MainFrame:KillFocus()
-	nz.QMenu.Data.MainFrame:SetKeyboardInputEnabled(false)
+	nzQMenu.Data.MainFrame:SetVisible( false )
+	nzQMenu.Data.MainFrame:KillFocus()
+	nzQMenu.Data.MainFrame:SetKeyboardInputEnabled(false)
 	textentryfocus = false
 end
 
-hook.Add( "OnSpawnMenuOpen", "OpenSpawnMenu", nz.QMenu.Functions.Open )
-hook.Add( "OnSpawnMenuClose", "CloseSpawnMenu", nz.QMenu.Functions.Close )
+hook.Add( "OnSpawnMenuOpen", "OpenSpawnMenu", nzQMenu.Open )
+hook.Add( "OnSpawnMenuClose", "CloseSpawnMenu", nzQMenu.Close )
 
 hook.Add( "OnTextEntryGetFocus", "StartTextFocus", function(panel) 
 	textentryfocus = true
-	if IsValid(nz.QMenu.Data.MainFrame) then
-		nz.QMenu.Data.MainFrame:SetKeyboardInputEnabled(true)
+	if IsValid(nzQMenu.Data.MainFrame) then
+		nzQMenu.Data.MainFrame:SetKeyboardInputEnabled(true)
 	end
 end )
 hook.Add( "OnTextEntryLoseFocus", "EndTextFocus", function(panel) 
 	textentryfocus = false 
 	TextEntryLoseFocus()
-	if IsValid(nz.QMenu.Data.MainFrame) then
-		nz.QMenu.Data.MainFrame:KillFocus()
-		nz.QMenu.Data.MainFrame:SetKeyboardInputEnabled(false)
+	if IsValid(nzQMenu.Data.MainFrame) then
+		nzQMenu.Data.MainFrame:KillFocus()
+		nzQMenu.Data.MainFrame:SetKeyboardInputEnabled(false)
 	end
 end )

@@ -1,5 +1,5 @@
 -- Main Tables
-nzPowerUps = nzPowerUps or {}
+nzPowerUps = nzPowerUps or AddNZModule("PowerUps")
 nzPowerUps.Data = nzPowerUps.Data or {}
 
 -- Tables storing the active powerups and their expiration time
