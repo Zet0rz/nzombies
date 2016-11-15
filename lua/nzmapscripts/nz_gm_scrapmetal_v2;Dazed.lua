@@ -12,7 +12,7 @@
 		- Maybe allow for players to fall straight to the bottom in the elevator shafts? First fall platform (from spawn) can be
 			changed into wood from the elevator, and players can run from the elevator console area to underneath the bridges
 			but not back
-	- Players must activate the (4 or 5) console props in a specific order maybe randomized
+	- Players must activate the 5 console props in a specific order maybe randomized
 		- Set specific to generator order? Starting a generator allows for one of the console props to be pushed
 	- Console gets the lights above each button/prop to indicate on/off/unpowered state?
 	- Incorporate a way to fail? Final way to escape are the two garage doors, blocked by some panzers and shitton of zombies,
@@ -41,7 +41,15 @@ local gascanspawns = {
 	{ pos = Vector( -1992.562622, 1407.907593, -169.096786 ), ang = Angle( -0.000, 0.000, 0.000 ) } --Right next to the generator - Maybe move to Double Tap room?
 }
 
-local poweredgenerators = { }
+local links = {
+	{ pos = Vector( 0, 0, 0 ), ang = Angle( 0, 0, 0 ) },
+	{ pos = Vector( 0, 0, 0 ), ang = Angle( 0, 0, 0 ) },
+	{ pos = Vector( 0, 0, 0 ), ang = Angle( 0, 0, 0 ) },
+	{ pos = Vector( 0, 0, 0 ), ang = Angle( 0, 0, 0 ) },
+	{ pos = Vector( 0, 0, 0 ), ang = Angle( 0, 0, 0 ) }
+}
+
+local poweredgenerators, establishedlinks = { }, { }
 
 --//Creates all of the gas cans
 local gascans = nzItemCarry:CreateCategory( "gascan" )
@@ -88,7 +96,7 @@ gascans:SetPickupFunction( function( self, ply, ent )
 			ply:GiveCarryItem( self.id )
 			ent:Remove()
 			v.held = ply --Save the player who's holding the can
-			ply.ent = ent --Because for some reason there's no way to retrieve a held object
+			ply.ent = ent --Because for some reason there's no included way to retrieve a held object
 			break
 		end
 	end
@@ -135,6 +143,15 @@ end )
 
 lever:Update()
 
+function CheckTable( tbl )
+	for k, v in pairs( tbl ) do
+		if not v then
+			return false
+		end
+	end
+	return true
+end
+
 function mapscript.OnGameBegin()
     --nzElec:Reset()
     --EE option 2 door IDs: 5238, 5243
@@ -160,6 +177,27 @@ function mapscript.OnGameBegin()
 		--actualpowerswitch:Activate()
 		powerswitch:Remove()
 		ply:RemoveCarryItem( "lever" )
+	end
+
+	baselink = ents.Create( "nz_script_prop" )
+	baselink:SetPos( Vector( 0, 0, 0 ) )
+	baselink:SetAngles( Angle( 0, 0, 0 ) )
+	baselink:SetModel( "models/props_lab/reciever_cart.mdl" )
+	baselink:SetNWString( "NZText", "The power must be turned on before starting the linking." )
+	baselink:Spawn()
+	baselink:Active()
+	baselink.OnUsed = function( self, ply )
+		if not nzElec.IsOn() and linkstarted then return end
+		baselink:SetNWString( "NZText", "" )
+		linkstarted = true
+	end
+	baselink.Think = function() --Might not want this in a think function...
+		if linkstarted then
+			local effect = EffectData()
+			effect:SetScale( 1 )
+			effect:SetEntity( baselink )
+			util.Effect( "lightning_aura", effect )
+		end
 	end
 
 	--//Creates all of the generators
@@ -197,6 +235,26 @@ function mapscript.OnGameBegin()
 				end )]]
 			end
 		end
+		gen.Think = function()
+			if not poweredgenerators[ k ] and timer.Exists( "Gen" .. k ) then
+				timer.Destroy( "Gen" .. k )
+			end
+		end
+	end
+
+	for k, v in pairs( links ) do
+		local link = ent.Create( "nz_script_prop" )
+		link:SetPos( v.pos )
+		link:SetAngles( v.ang )
+		link:SetModel( "" ) 
+		link:SetNWString( "NZText", "You must activate the base link first." )
+		link:Spawn()
+		link:Activate()
+		link.OnUsed = function( self, ply )
+			if not linkstarted or establishedlinks[ k ] then return end
+			linkstarted = false
+			establishedlinks[ k ] = true --I think I'll use this for the thinking...?
+		end
 	end
 
 	gascans:Reset()
@@ -228,6 +286,9 @@ models/props_c17/light_cagelight01_on.mdl
 local initialactivation = false
 hook.Add( "ElectricityOn", "fuckoff", function() --What's the function I should be using...? mapscript.ElectricityOn() maybe did nothing?
 	initialactivation = true
+	if CheckTable( poweredgenerators ) then
+		baselink:SetNWString( "NZText", "Press E to begin linking." )
+	end
 	print( "ElectricityOn has been called..." )
 end )
 
