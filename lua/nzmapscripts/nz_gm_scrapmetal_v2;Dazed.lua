@@ -38,16 +38,35 @@ local gascanspawns = {
 	{ pos = Vector( -2614.193604, -792.145874, 6.813320 ), ang = Angle( -30.955, 92.504, -0.018 ) }, --Bathroom (PaP level)
 	{ pos = Vector( -1882.064575, -2003.087524, -384.468384 ), ang = Angle( 23.955, -0.368, 0.070 ) }, --Warehouse corner
 	{ pos = Vector( -663.979797, -1431.645508, -385.301178 ), ang = Angle( -0.000, -0.000, 0.000 ) }, --Creepy room off the garage - Hide it better?
-	{ pos = Vector( -1992.562622, 1407.907593, -169.096786 ), ang = Angle( -0.000, 0.000, 0.000 ) } --Right next to the generator - Maybe move to Double Tap room?
+	{ pos = Vector( -730.634888, -2468.336182, -5.215676 ), ang = Angle( -35.735, -90.746, 0.077 ) } --Double Tap room
 }
 
 local links = {
-	{ pos = Vector( 0, 0, 0 ), ang = Angle( 0, 0, 0 ) },
-	{ pos = Vector( 0, 0, 0 ), ang = Angle( 0, 0, 0 ) },
-	{ pos = Vector( 0, 0, 0 ), ang = Angle( 0, 0, 0 ) },
-	{ pos = Vector( 0, 0, 0 ), ang = Angle( 0, 0, 0 ) },
-	{ pos = Vector( 0, 0, 0 ), ang = Angle( 0, 0, 0 ) }
+	{ pos = Vector( -485.073120, 714.775635, 37.296597 ), ang = Angle( -2.823, -7.083, 0.082 ) }, --On desk
+	{ pos = Vector( -2060.613037, -2014.947021, 175.752914 ), ang = Angle( -8.780, 97.645, -1.173 ) }, --Steam room
+	{ pos = Vector( 190.453674, -1582.523315, -110.206749 ), ang = Angle( -0.665, -134.111, -0.199 ) }, --Warden
+	{ pos = Vector( -2342.335205, -239.686722, -386.362579 ), ang = Angle( -0.300, 42.795, 0.052 ) }, --Jugg
+	{ pos = Vector( -568.757507, 1237.885498, -180.267487 ), ang = Angle( -2.201, 122.529, 2.652 ) } --Elevator
 }
+
+local lights1 = {
+	{ pos = Vector( -575, -1467, 220.0 ), ang = Angle( 0.000, -90.000, -0.000 ) },
+	{ pos = Vector( -555, -1467, 220.0 ), ang = Angle( 0.000, -90.000, -0.000 ) },
+	{ pos = Vector( -535, -1467, 220.0 ), ang = Angle( 0.000, -90.000, -0.000 ) },
+	{ pos = Vector( -595, -1467, 220.0 ), ang = Angle( 0.000, -90.000, -0.000 ) },
+	{ pos = Vector( -615, -1467, 220.0 ), ang = Angle( 0.000, -90.000, -0.000 ) },
+}
+
+local lights2 = {
+	{ pos = Vector( -912.5, -130, -263 ), ang = Angle( 0, 0, 0 ) },
+	{ pos = Vector( -912.5, -80, -263 ), ang = Angle( 0, 0, 0 ) },
+	{ pos = Vector( -912.5, -30, -263 ), ang = Angle( 0, 0, 0 ) },
+	{ pos = Vector( -912.5, 20, -263 ), ang = Angle( 0, 0, 0 ) },
+	{ pos = Vector( -912.5, 70, -263 ), ang = Angle( 0, 0, 0 ) },
+}
+
+--//From left to right
+local consolebuttons = { 2335, 2337, 2338, 2339, 2340 }
 
 local poweredgenerators, establishedlinks = { }, { }
 
@@ -60,7 +79,7 @@ gascans:SetShowNotification( true )
 
 gascans:SetResetFunction( function( self )
 	for k, v in pairs( gascanspawns ) do
-		if !v.used and !v.held then --(!IsValid(v.ent) or (v.ent:IsPlayer() and (!v.ent:IsPlaying() or !v.ent:HasCarryItem("gascans")))) then -- Only spawn those that are not being carried
+		if !v.used and !v.held then --Only spawn those that are not being carried
 			local ent = ents.Create( "nz_script_prop" )
 			ent:SetModel( "models/props_junk/metalgascan.mdl" )
 			ent:SetPos( v.pos )
@@ -143,7 +162,9 @@ end )
 
 lever:Update()
 
+--//To be used to check for establishedlinks' or poweredgenerators' validity
 function CheckTable( tbl )
+	if #tbl == 0 then return false end
 	for k, v in pairs( tbl ) do
 		if not v then
 			return false
@@ -153,6 +174,7 @@ function CheckTable( tbl )
 end
 
 function mapscript.OnGameBegin()
+	local linkstarted = false
     --nzElec:Reset()
     --EE option 2 door IDs: 5238, 5243
 
@@ -168,43 +190,73 @@ function mapscript.OnGameBegin()
 	powerswitch:Activate()
 	powerswitch.OnUsed = function( self, ply )
 		if not ply:HasCarryItem( "lever" ) then return end
-		local actualpowerswitch = ents.Create( "power_box" ) --Is this the right one?
-		print( actualpowerswitch )
+		local actualpowerswitch = ents.Create( "power_box" )
 		actualpowerswitch:SetPos( self:GetPos() )
 		actualpowerswitch:SetAngles( self:GetAngles() )
-		--actualpowerswitch:SetText( "There's no certainty power will remain on..." )
-		actualpowerswitch:Spawn()
-		--actualpowerswitch:Activate()
-		powerswitch:Remove()
-		ply:RemoveCarryItem( "lever" )
+		timer.Simple( 0.1, function()
+			actualpowerswitch:Spawn()
+			actualpowerswitch:SetNWString( "NZText", "There's no certainty power will remain on..." )
+			powerswitch:Remove()
+			ply:RemoveCarryItem( "lever" )
+		end )
 	end
 
 	baselink = ents.Create( "nz_script_prop" )
-	baselink:SetPos( Vector( 0, 0, 0 ) )
-	baselink:SetAngles( Angle( 0, 0, 0 ) )
+	baselink:SetPos( Vector( -580.019531, -1488.002930, 143.345886 ) )
+	baselink:SetAngles( Angle( 0.008, -85.925, -0.133 ) )
 	baselink:SetModel( "models/props_lab/reciever_cart.mdl" )
 	baselink:SetNWString( "NZText", "The power must be turned on before starting the linking." )
 	baselink:Spawn()
-	baselink:Active()
+	baselink:Activate()
 	baselink.OnUsed = function( self, ply )
-		if not nzElec.IsOn() and linkstarted then return end
+		print( "BaseLink OnUse called, debug: ", nzElec.IsOn(), linkstarted, CheckTable( establishedlinks ) )
+		if not nzElec.IsOn() or linkstarted or CheckTable( establishedlinks ) then return end --//If electricity is on, linkstarted is true, and not all of the links are established
+		PrintMessage( HUD_PRINTTALK, "BaseLink has been activated." )
 		baselink:SetNWString( "NZText", "" )
 		linkstarted = true
+		for k, v in pairs( links ) do
+			if not establishedlinks[ k ] and poweredgenerators[ k ] then
+				v.ent:SetNWString( "Press E to establish a link with the home receiver." )
+			end
+		end
 	end
-	baselink.Think = function() --Might not want this in a think function...
-		if linkstarted then
+	local effecttimer = 0
+	baselink.Think = function()
+		if linkstarted and CurTime() > effecttimer then
 			local effect = EffectData()
 			effect:SetScale( 1 )
 			effect:SetEntity( baselink )
 			util.Effect( "lightning_aura", effect )
+			effecttimer = CurTime() + 0.5
+		end
+		if CheckTable( poweredgenerators ) and nzElec:IsOn() and not stop then
+			baselink:SetNWString( "NZText", "Press E to begin linking." )
+			stop = true
 		end
 	end
+
+	extra1 = ents.Create( "nz_script_prop" )
+	extra1:SetPos( Vector( -574.423828, -1495.917358, 129.057999 ) )
+	extra1:SetAngles( Angle( -0.294, -88.05,5 -0.171 ) )
+	extra1:SetModel( "models/props_lab/reciever01b.mdl" )
+	extra1:Spawn()
+
+	extra2 = ents.Create( "nz_script_prop" )
+	extra2:SetPos( Vector( -573.884705, -1496.818726, 134.691925 ) )
+	extra2:SetAngles( Angle( -1.788, -92.981, 0.029 ) )
+	extra2:SetModel( "models/props_lab/reciever01d.mdl" )
+	extra2:Spawn()
+
+	extra3 = ents.Create( "nz_script_prop" )
+	extra3:SetPos( Vector( -574.466370, -1495.319702, 121.456146 ) )
+	extra3:SetAngles( Angle( -0.769, -86.667, -0.191 ) )
+	extra3:SetModel( "models/props_lab/reciever01c.mdl" )
+	extra3:Spawn()
 
 	--//Creates all of the generators
 	for k, v in pairs( generators ) do
 		poweredgenerators[ k ] = false
 		local gen = ents.Create( "nz_script_prop" )
-		--gen:SetNoDraw( true )
 		gen:SetPos( v.pos )
 		gen:SetAngles( v.ang )
 		gen:SetModel( "models/props_wasteland/laundry_washer003.mdl" ) --It doesn't look anything like a washing machine?!
@@ -222,17 +274,21 @@ function mapscript.OnGameBegin()
 						continue
 					end
 				end
-				print( "Generator ", k, " has been fueled and is powered on." )
+				PrintMessage( HUD_PRINTTALK, "Generator " .. k .. " has been fueled." )
 				ply:RemoveCarryItem( "gascan" )
 				poweredgenerators[ k ] = true
 				gen:SetNWString( "NZText", "This generator is powered on." )
 				gen:SetNWString( "NZHasText", "This generator has already been fueled." )
-				--[[ent:EmitSound( "" ) --L4D2 generator fueling sound...
-				timer.Simple( 0, funciton() --Length of previous song
-					timer.Create( "Gen" .. k, 100, 0, function()
-						ent:EmitSound( "" ) --Some generator sound goes here...
+				gen:EmitSound( "l4d2/gas_pour.wav" )
+				timer.Simple( 4, function()
+					gen:EmitSound( "l4d2/generator_start.wav" )
+					timer.Simple( 9, function()
+						timer.Create( "Gen" .. k, 3, 0, function()
+							gen:EmitSound( "l4d2/generator_humm.ogg" )
+						end )
 					end )
-				end )]]
+				end )
+				links[ k ].ent:SetNWString( "NZText", "Press E to establish a link with the home receiver.")
 			end
 		end
 		gen.Think = function()
@@ -243,18 +299,54 @@ function mapscript.OnGameBegin()
 	end
 
 	for k, v in pairs( links ) do
-		local link = ent.Create( "nz_script_prop" )
+		establishedlinks[ k ] = false
+		local link = ents.Create( "nz_script_prop" )
+		v.ent = link
 		link:SetPos( v.pos )
 		link:SetAngles( v.ang )
-		link:SetModel( "" ) 
+		link:SetModel( "models/props_lab/reciever01b.mdl" ) 
 		link:SetNWString( "NZText", "You must activate the base link first." )
 		link:Spawn()
 		link:Activate()
 		link.OnUsed = function( self, ply )
-			if not linkstarted or establishedlinks[ k ] then return end
+			print( "Link debug: ", linkstarted, establishedlinks[ k ], poweredgenerators[ k ], "Link #" .. k )
+			if not linkstarted or establishedlinks[ k ] or not poweredgenerators[ k ] then return end --If linkstarted is true, the link hasn't yet been established, and it's respective generator is on
+			PrintMessage( HUD_PRINTTALK, "Link " .. k .. " has been activated." )
 			linkstarted = false
 			establishedlinks[ k ] = true --I think I'll use this for the thinking...?
+			link:EmitSound( "ambient/machines/teleport1.wav" )
+			link:SetNWString( "NZText", "" )
+			lights1[ k ].ent:SetModel( "models/props_c17/light_cagelight02_on.mdl" )
+			lights2[ k ].ent:SetModel( "models/props_c17/light_cagelight02_on.mdl" )
+			if not CheckTable( establishedlinks ) then
+				baselink:SetNWString( "NZText", "Press E to begin linking." )
+			end
 		end
+	end
+
+	for k, v in pairs( lights1 ) do
+		local light = ents.Create( "nz_script_prop" )
+		v.ent = light
+		light:SetPos( v.pos )
+		light:SetAngles( v.ang )
+		light:SetModel( "models/props_c17/light_cagelight02_off.mdl" )
+		--[[light.Think = funciont()
+			if CurTime() > thinkskip and nzElec:IsOn() then
+				if linkstarted then
+					light:SetModel( "" )
+
+				end
+				thinkskip = CurTime() + 0.75
+			end
+		end]]
+	end
+
+	for k, v in pairs( lights2 ) do
+		local light = ents.Create( "nz_script_prop" )
+		v.ent = light
+		light:SetPos( v.pos )
+		light:SetAngles( v.ang )
+		light:SetModel( "models/props_c17/light_cagelight02_off.mdl" )
 	end
 
 	gascans:Reset()
@@ -277,19 +369,23 @@ lua_run print( player.GetAll()[1]:GetEyeTrace().Entity:GetAngles() )
 Build station pos: -1375.442627 985.563049 -164.028244
 Build station ang: -0.000 -90.000 -0.000
 
-models/props_c17/light_cagelight02_off.mdl - Red
+models/props_c17/light_cagelight02_off.mdl - White
 models/props_c17/light_cagelight02_on.mdl
-models/props_c17/light_cagelight01_off.mdl - White
+models/props_c17/light_cagelight01_off.mdl - Red
 models/props_c17/light_cagelight01_on.mdl
 ]]
 
 local initialactivation = false
 hook.Add( "ElectricityOn", "fuckoff", function() --What's the function I should be using...? mapscript.ElectricityOn() maybe did nothing?
 	initialactivation = true
-	if CheckTable( poweredgenerators ) then
-		baselink:SetNWString( "NZText", "Press E to begin linking." )
-	end
+	baselink:SetNWString( "NZText", "Press E to begin linking." )
 	print( "ElectricityOn has been called..." )
+	for k, v in pairs( lights1 ) do
+		v.ent:SetModel( "models/props_c17/light_cagelight01_on.mdl" )
+	end
+	for k, v in pairs( lights2 ) do
+		v.ent:SetModel( "models/props_c17/light_cagelight01_on.mdl" )
+	end
 end )
 
 local chance, turnoff = math.Clamp( 1, 1, 5 ), { }
