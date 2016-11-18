@@ -46,7 +46,7 @@ local links = {
 	{ pos = Vector( -2060.613037, -2014.947021, 175.752914 ), ang = Angle( -8.780, 97.645, -1.173 ) }, --Steam room
 	{ pos = Vector( 190.453674, -1582.523315, -110.206749 ), ang = Angle( -0.665, -134.111, -0.199 ) }, --Warden
 	{ pos = Vector( -2342.335205, -239.686722, -386.362579 ), ang = Angle( -0.300, 42.795, 0.052 ) }, --Jugg
-	{ pos = Vector( -568.757507, 1237.885498, -180.267487 ), ang = Angle( -2.201, 122.529, 2.652 ) } --Elevator
+	{ pos = Vector( -1885.892090, 1419.159180, -420.200226 ), ang = Angle( -0.446, -46.191, 0.104 ) } --Under radiation
 }
 
 local lights1 = {
@@ -59,10 +59,10 @@ local lights1 = {
 
 local lights2 = {
 	{ pos = Vector( -912.5, -130, -263 ), ang = Angle( 0, 0, 0 ) },
-	{ pos = Vector( -912.5, -80, -263 ), ang = Angle( 0, 0, 0 ) },
-	{ pos = Vector( -912.5, -30, -263 ), ang = Angle( 0, 0, 0 ) },
-	{ pos = Vector( -912.5, 20, -263 ), ang = Angle( 0, 0, 0 ) },
-	{ pos = Vector( -912.5, 70, -263 ), ang = Angle( 0, 0, 0 ) },
+	{ pos = Vector( -912.5, -82, -263 ), ang = Angle( 0, 0, 0 ) },
+	{ pos = Vector( -912.5, -35, -263 ), ang = Angle( 0, 0, 0 ) },
+	{ pos = Vector( -912.5, 13, -263 ), ang = Angle( 0, 0, 0 ) },
+	{ pos = Vector( -912.5, 60, -263 ), ang = Angle( 0, 0, 0 ) },
 }
 
 --//From left to right
@@ -173,10 +173,20 @@ function CheckTable( tbl )
 	return true
 end
 
+function StartPuzzle()
+	--Start doing stuff here
+end
+
 function mapscript.OnGameBegin()
 	local linkstarted = false
-    --nzElec:Reset()
-    --EE option 2 door IDs: 5238, 5243
+	initialactivation = false
+
+	local fakelist, buttonorder = consolebuttons, { }
+	for i = 1, #fakelist do
+		local choice = table.Random( fakelist )
+		table.insert( buttonorder, choice )
+		table.RemoveByValue( fakelist, choice )
+	end
 
 	--//Creates the broken power switch
 	local powerswitch = ents.Create( "nz_script_prop" )
@@ -209,28 +219,27 @@ function mapscript.OnGameBegin()
 	baselink:Spawn()
 	baselink:Activate()
 	baselink.OnUsed = function( self, ply )
-		print( "BaseLink OnUse called, debug: ", nzElec.IsOn(), linkstarted, CheckTable( establishedlinks ) )
-		if not nzElec.IsOn() or linkstarted or CheckTable( establishedlinks ) then return end --//If electricity is on, linkstarted is true, and not all of the links are established
-		PrintMessage( HUD_PRINTTALK, "BaseLink has been activated." )
+		--print( "BaseLink OnUse called, debug: ", nzElec.IsOn(), linkstarted, CheckTable( establishedlinks ) )
+		if not nzElec.IsOn() or linkstarted or CheckTable( establishedlinks ) then return end --//If electricity is on, link isn't currently activated, and not all of the links are established
 		baselink:SetNWString( "NZText", "" )
 		linkstarted = true
 		for k, v in pairs( links ) do
-			if not establishedlinks[ k ] and poweredgenerators[ k ] then
+			if not establishedlinks[ k ] and poweredgenerators[ k ] then --Only receivers that have their generator powered and don't have a link established yet
 				v.ent:SetNWString( "Press E to establish a link with the home receiver." )
 			end
 		end
 	end
-	local effecttimer = 0
+	local effecttimer, stop = 0, false
 	baselink.Think = function()
-		if linkstarted and CurTime() > effecttimer then
+		if linkstarted and CurTime() > effecttimer and nzElec.IsOn() or CheckTable( establishedlinks ) and nzElec.IsOn() then
 			local effect = EffectData()
 			effect:SetScale( 1 )
 			effect:SetEntity( baselink )
 			util.Effect( "lightning_aura", effect )
 			effecttimer = CurTime() + 0.5
 		end
-		if CheckTable( poweredgenerators ) and nzElec:IsOn() and not stop then
-			baselink:SetNWString( "NZText", "Press E to begin linking." )
+		if CheckTable( establishedlinks ) and not stop then
+			baselink:SetNWString( "NZText", "Do you remember which lights represents each link?" )
 			stop = true
 		end
 	end
@@ -281,14 +290,20 @@ function mapscript.OnGameBegin()
 				gen:SetNWString( "NZHasText", "This generator has already been fueled." )
 				gen:EmitSound( "l4d2/gas_pour.wav" )
 				timer.Simple( 4, function()
+					if not gen then return end
 					gen:EmitSound( "l4d2/generator_start.wav" )
 					timer.Simple( 9, function()
 						timer.Create( "Gen" .. k, 3, 0, function()
+							if not gen then return end
 							gen:EmitSound( "l4d2/generator_humm.ogg" )
 						end )
 					end )
 				end )
-				links[ k ].ent:SetNWString( "NZText", "Press E to establish a link with the home receiver.")
+				if linkstarted then
+					links[ k ].ent:SetNWString( "NZText", "Press E to establish a link with the home receiver.")
+				else
+					links[ k ].ent:SetNWString( "NZText", "You must activate the home link first.")
+				end
 			end
 		end
 		gen.Think = function()
@@ -305,21 +320,23 @@ function mapscript.OnGameBegin()
 		link:SetPos( v.pos )
 		link:SetAngles( v.ang )
 		link:SetModel( "models/props_lab/reciever01b.mdl" ) 
-		link:SetNWString( "NZText", "You must activate the base link first." )
+		link:SetNWString( "NZText", "The room's generator must be powered on first." )
 		link:Spawn()
 		link:Activate()
 		link.OnUsed = function( self, ply )
-			print( "Link debug: ", linkstarted, establishedlinks[ k ], poweredgenerators[ k ], "Link #" .. k )
-			if not linkstarted or establishedlinks[ k ] or not poweredgenerators[ k ] then return end --If linkstarted is true, the link hasn't yet been established, and it's respective generator is on
+			--print( "Link debug: ", linkstarted, establishedlinks[ k ], poweredgenerators[ k ], "Link #" .. k )
+			if not linkstarted or establishedlinks[ k ] or not poweredgenerators[ k ] or not nzElec.IsOn() then return end --If linkstarted is true, the link hasn't yet been established, and it's respective generator is on
 			PrintMessage( HUD_PRINTTALK, "Link " .. k .. " has been activated." )
 			linkstarted = false
-			establishedlinks[ k ] = true --I think I'll use this for the thinking...?
+			establishedlinks[ k ] = true
 			link:EmitSound( "ambient/machines/teleport1.wav" )
 			link:SetNWString( "NZText", "" )
 			lights1[ k ].ent:SetModel( "models/props_c17/light_cagelight02_on.mdl" )
 			lights2[ k ].ent:SetModel( "models/props_c17/light_cagelight02_on.mdl" )
 			if not CheckTable( establishedlinks ) then
 				baselink:SetNWString( "NZText", "Press E to begin linking." )
+			elseif CheckTable( establishedlinks ) then
+				StartPuzzle() --Should this be an EE step function?
 			end
 		end
 	end
@@ -330,15 +347,6 @@ function mapscript.OnGameBegin()
 		light:SetPos( v.pos )
 		light:SetAngles( v.ang )
 		light:SetModel( "models/props_c17/light_cagelight02_off.mdl" )
-		--[[light.Think = funciont()
-			if CurTime() > thinkskip and nzElec:IsOn() then
-				if linkstarted then
-					light:SetModel( "" )
-
-				end
-				thinkskip = CurTime() + 0.75
-			end
-		end]]
 	end
 
 	for k, v in pairs( lights2 ) do
@@ -369,59 +377,79 @@ lua_run print( player.GetAll()[1]:GetEyeTrace().Entity:GetAngles() )
 Build station pos: -1375.442627 985.563049 -164.028244
 Build station ang: -0.000 -90.000 -0.000
 
-models/props_c17/light_cagelight02_off.mdl - White
-models/props_c17/light_cagelight02_on.mdl
-models/props_c17/light_cagelight01_off.mdl - Red
-models/props_c17/light_cagelight01_on.mdl
+EE option 2 door IDs: 5238, 5243
 ]]
 
+--Need a way to "disable" the power switch so players can't re-enable it.
 local initialactivation = false
 hook.Add( "ElectricityOn", "fuckoff", function() --What's the function I should be using...? mapscript.ElectricityOn() maybe did nothing?
-	initialactivation = true
-	baselink:SetNWString( "NZText", "Press E to begin linking." )
-	print( "ElectricityOn has been called..." )
+	if linkstarted then
+		baselink:SetNWString( "NZText", "" )
+	elseif CheckTable( establishedlinks ) then
+		baselink:SetNWString( "NZText", "Do you remember which lights represents each link?" )
+	else
+		baselink:SetNWString( "NZText", "Press E to begin linking." )
+	end
+	if initialactivation then return end
 	for k, v in pairs( lights1 ) do
 		v.ent:SetModel( "models/props_c17/light_cagelight01_on.mdl" )
 	end
 	for k, v in pairs( lights2 ) do
 		v.ent:SetModel( "models/props_c17/light_cagelight01_on.mdl" )
 	end
+	initialactivation = true
 end )
 
-local chance, turnoff = math.Clamp( 1, 1, 5 ), { }
-function mapscript.OnRoundBegin()
-	print( "mapscript.OnRoundBegin() has been called" )
-	if initialactivation then
-		print( "electricity has been turned on by the player" )
-		for i = 1, 5 - chance do
+hook.Add( "ElectricityOff", "doublefuckoff", function()
+	for k, v in pairs( lights1 ) do
+		v.ent:SetModel( "models/props_c17/light_cagelight02_off.mdl" )
+	end
+	for k, v in pairs( lights2 ) do
+		v.ent:SetModel( "models/props_c17/light_cagelight02_off.mdl" )
+	end
+end )
+
+local chance, turnoff, propinfo = math.Clamp( 1, 1, 5 ), { }, { }
+function mapscript.OnRoundStart()
+	if initialactivation then --If we've activated the electricity before, see if we should turn it on/off.
+		--[[By default, there is a 1 and 5 chance (20%) the power will turn off (or stay off) for any given round AFTER the electricity has been turn on. For every round the power DOESN'T
+		turn off, the chance increases by an additional 20% until the power WILL turn off. I think this is called pseudo-random? I might make the chance smaller if it's too obtrusive.]]
+		for i = 1, 5 - chance do 
 			turnoff[ i ] = false
 		end
-		for i = 5 - chance, 10 do
+		for i = 6 - chance, 5 do
 			turnoff[ i ] = true
 		end
-		print( "should we turn off power this round?" )
 		if turnoff[ math.random( 1, #turnoff ) ] then
-			if not nzElec.IsOn() then
+			if nzElec.IsOn() then
+				for k, v in pairs( lights1 ) do
+					table.insert( propinfo, v.ent:GetModel() )
+				end
+				for k, v in pairs( lights2 ) do
+					table.insert( propinfo, v.ent:GetModel() )
+				end
 				nzElec:Reset()
+				if CheckTable( establishedlinks ) then
+					baselink:SetNWString( "NZText", "Do you remember which lights represent each link?" )
+				else
+					baselink:SetNWString( "NZText", "The power must be turned on before starting the linking." )
+				end
 			end
 			chance = 1
-			print( "turning off power" )
 		else
 			if not nzElec.IsOn() then
-				nzElec:Active()
+				nzElec:Activate()
+				for k, v in pairs( lights1 ) do
+					v.ent:SetModel( propinfo[ k ] )
+				end
+				for k, v in pairs( lights2 ) do
+					v.ent:SetModel( propinfo[ 5 + k ] )
+				end
+				propinfo = { }
 			end
 			chance = chance + 1
-			print( "turning power back on" )
 		end
 	end
-end
-
-function mapscript.RoundThink()
-
-end
-
-function mapscript.RoundEnd()
-
 end
 
 return mapscript
