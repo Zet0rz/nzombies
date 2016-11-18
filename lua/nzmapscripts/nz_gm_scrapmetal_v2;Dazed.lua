@@ -68,7 +68,7 @@ local lights2 = {
 --//From left to right
 local consolebuttons = { 2335, 2337, 2338, 2339, 2340 }
 
-local poweredgenerators, establishedlinks = { }, { }
+local poweredgenerators, establishedlinks, buttonorder = { }, { }, { }
 
 --//Creates all of the gas cans
 local gascans = nzItemCarry:CreateCategory( "gascan" )
@@ -173,15 +173,52 @@ function CheckTable( tbl )
 	return true
 end
 
+--[[Not the best variable names, but currentbutton is used as the logic for the the next button to be pushed, activebutton is used as a hint for players.
+The electrocuted outlier link is the reference for the order in which the console buttons must be pushed.]]
+local currentbutton, activebutton = 1, table.KeyFromValue( consolebuttons, buttonorder[ 1 ] )
 function StartPuzzle()
-	--Start doing stuff here
+	for k, v in pairs( buttonorder ) do
+		local consolebutton = ents.GetMapCreatedEntity( v )
+		consolebutton:SetText( "Press E to activate button " .. consolebuttons[ table.KeyFromValue( buttonorder, v ) ] )
+		consolebutton.OnUsed = function()
+			if k == currentbutton then
+				currentbutton = currentbutton + 1
+				activebutton = table.KeyFromValue( consolebuttons, buttonorder[ currentbutton ] )
+			else
+				FailPrimaryEE()
+				currentbutton = 0
+				activebutton = 0
+			end
+		end
+	end
+end
+
+local availabletext = { "A", "a", "B", "b", "C", "c", "D", "d", "E", "e", "F", "f", "G", "g", "H", "h", "I", "i", "J", "j", "K", "k", "L", "l", "M", "m",
+						"N", "n", "O", "o", "P", "p", "Q", "q", "R", "r", "S", "s", "T", "t", "U", "u", "V", "v", "W", "w", "X", "x", "Y", "y", "Z", "z",
+						"!", "%", "ERROR", "*", "&", "SELf-DESTRUCT", "ESCAPE", "#", "SYSTEM", "POWER", "OFF", "ON", "HUMANOID", "METRO", " ", "ENTER", "EXIT",
+						"ASCEND FROM DARKNESS" }--, } --Can we add more Nazi Zombie easter egg sayings?
+function FailPrimaryEE()
+	for k, v in pairs( player.GetAll() ) do
+		v:SendLua( "surface.PlaySound( \"insertsoundhere.wav\" ) " )
+	end
+	for k, v in pairs(  ) do
+
+	end
+	for k, v in pairs(  ) do
+
+	end
+	local mixedtext
+	for i = 1, 10 do
+	mixedtext = mixedtext .. table.random(  )
+	end
+	baselink:SetNWString( "NZText", "" )
 end
 
 function mapscript.OnGameBegin()
 	local linkstarted = false
 	initialactivation = false
 
-	local fakelist, buttonorder = consolebuttons, { }
+	local fakelist = consolebuttons
 	for i = 1, #fakelist do
 		local choice = table.Random( fakelist )
 		table.insert( buttonorder, choice )
@@ -211,6 +248,7 @@ function mapscript.OnGameBegin()
 		end )
 	end
 
+	--//The base link the must be pushed before pushing an outlying link
 	baselink = ents.Create( "nz_script_prop" )
 	baselink:SetPos( Vector( -580.019531, -1488.002930, 143.345886 ) )
 	baselink:SetAngles( Angle( 0.008, -85.925, -0.133 ) )
@@ -239,7 +277,7 @@ function mapscript.OnGameBegin()
 			effecttimer = CurTime() + 0.5
 		end
 		if CheckTable( establishedlinks ) and not stop then
-			baselink:SetNWString( "NZText", "Do you remember which lights represents each link?" )
+			baselink:SetNWString( "NZText", "All receivers have been linked." )
 			stop = true
 		end
 	end
@@ -336,7 +374,19 @@ function mapscript.OnGameBegin()
 			if not CheckTable( establishedlinks ) then
 				baselink:SetNWString( "NZText", "Press E to begin linking." )
 			elseif CheckTable( establishedlinks ) then
-				StartPuzzle() --Should this be an EE step function?
+				StartPuzzle() --Should this be an EE step function? - Probably
+			end
+		end
+		local effecttimer2 = 0
+		link.Think = function()
+			if CheckTable( establishedlinks ) then
+				if k == activebutton and CurTime() > effecttimer2 and nzElec.IsOn() then
+					local effect = EffectData()
+					effect:SetScale( 0.5 )
+					effect:SetEntity( baselink )
+					util.Effect( "lightning_aura", effect )
+					effecttimer2 = CurTime() + 0.5
+				end
 			end
 		end
 	end
@@ -386,7 +436,7 @@ hook.Add( "ElectricityOn", "fuckoff", function() --What's the function I should 
 	if linkstarted then
 		baselink:SetNWString( "NZText", "" )
 	elseif CheckTable( establishedlinks ) then
-		baselink:SetNWString( "NZText", "Do you remember which lights represents each link?" )
+		baselink:SetNWString( "NZText", "All receivers have been linked." )
 	else
 		baselink:SetNWString( "NZText", "Press E to begin linking." )
 	end
@@ -430,7 +480,7 @@ function mapscript.OnRoundStart()
 				end
 				nzElec:Reset()
 				if CheckTable( establishedlinks ) then
-					baselink:SetNWString( "NZText", "Do you remember which lights represent each link?" )
+					baselink:SetNWString( "NZText", "All receivers have been linked." )
 				else
 					baselink:SetNWString( "NZText", "The power must be turned on before starting the linking." )
 				end
