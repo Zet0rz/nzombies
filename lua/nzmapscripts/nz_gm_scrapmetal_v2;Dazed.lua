@@ -115,12 +115,13 @@ gascans:SetPickupFunction( function( self, ply, ent )
 			ply:GiveCarryItem( self.id )
 			ent:Remove()
 			v.held = ply --Save the player who's holding the can
-			ply.ent = ent --Because for some reason there's no included way to retrieve a held object
+			ply.ent = ent --Because I don't know how to retrieve held objects
 			break
 		end
 	end
 end )
 gascans:SetCondition( function( self, ply )
+	print( "Does player have a gascan?", ply:HasCarryItem( "gascan" ) )
 	return !ply:HasCarryItem( "gascan" )
 end )
 
@@ -173,24 +174,25 @@ function CheckTable( tbl )
 	return true
 end
 
---[[Not the best variable names, but currentbutton is used as the logic for the the next button to be pushed, activebutton is used as a hint for players.
+--[[Nextpush is used as the logic for the the next button to be pushed, activehint is used as a hint for players.
 The electrocuted outlier link is the reference for the order in which the console buttons must be pushed.]]
-local currentbutton, activebutton = 1, table.KeyFromValue( consolebuttons, buttonorder[ 1 ] )
+local nextpush, activehint = 1, table.KeyFromValue( consolebuttons, buttonorder[ 1 ] )
 function StartPuzzle()
-	for k, v in pairs( buttonorder ) do
-		print( "Button 1: ", v, currentbutton, activebutton )
+	print( "StartPuzzle DEBUG", nextpush, activehint )
+	for k, v in pairs( buttonorder ) do --At this point, buttonorder is a randomized version of consolebuttons
+		print( "Button " .. k .. ": ", v )
 		local consolebutton = ents.GetMapCreatedEntity( v )
 		consolebutton:SetNWString( "NZText", "Press E to activate button " .. consolebuttons[ table.KeyFromValue( buttonorder, v ) ] )
 		consolebutton.OnUsed = function()
-			if k == currentbutton then
-				currentbutton = currentbutton + 1
-				if currentbutton < 6 then
-					activebutton = table.KeyFromValue( consolebuttons, buttonorder[ currentbutton ] )
+			if k == nextpush then
+				nextpush = nextpush + 1
+				if nextpush < 6 then
+					activehint = table.KeyFromValue( consolebuttons, buttonorder[ nextpush ] )
 				end
 			else
 				FailPrimaryEE()
-				currentbutton = 0
-				activebutton = 0
+				nextpush = 0
+				activehint = 0
 			end
 		end
 	end
@@ -200,7 +202,10 @@ local availabletext = { "A", "a", "B", "b", "C", "c", "D", "d", "E", "e", "F", "
 						"N", "n", "O", "o", "P", "p", "Q", "q", "R", "r", "S", "s", "T", "t", "U", "u", "V", "v", "W", "w", "X", "x", "Y", "y", "Z", "z",
 						"!", "%", "ERROR", "*", "&", "SELf-DESTRUCT", "ESCAPE", "#", "SYSTEM", "POWER", "OFF", "ON", "HUMANOID", "METRO", " ", "ENTER", "EXIT",
 						"ASCEND_FROM_DARKNESS" }--, "" } --Can we add more Nazi Zombie easter egg sayings?
+local PermaOff
 function FailPrimaryEE()
+	nzElec:Reset()
+	PermaOff = true
 	local mixedtext = ""
 	for k, v in pairs( player.GetAll() ) do
 		v:SendLua( "surface.PlaySound( \"ambient/levels/labs/electric_explosion4.wav\" ) " )
@@ -242,6 +247,7 @@ end
 function mapscript.OnGameBegin()
 	local linkstarted = false
 	initialactivation = false
+	PermaOff = false
 
 	local fakelist = table.Copy( consolebuttons )
 	for i = 1, #fakelist do
@@ -251,7 +257,7 @@ function mapscript.OnGameBegin()
 	end
 
 	--//Creates the broken power switch
-	local powerswitch = ents.Create( "nz_script_prop" )
+	powerswitch = ents.Create( "nz_script_prop" )
 	powerswitch:SetPos( Vector( 109.952400, -1472.475220, 107.462799 ) )
 	powerswitch:SetAngles( Angle( -0.000, -90.000, 0.000 ) )
 	powerswitch:SetModel( "models/nzprops/zombies_power_lever.mdl" ) 
@@ -406,7 +412,7 @@ function mapscript.OnGameBegin()
 		local effecttimer2 = 0
 		link.Think = function()
 			if CheckTable( establishedlinks ) then
-				if k == activebutton and CurTime() > effecttimer2 and nzElec.IsOn() then
+				if k == activehint and CurTime() > effecttimer2 and nzElec.IsOn() then
 					local effect = EffectData()
 					effect:SetScale( 0.5 )
 					effect:SetEntity( baselink )
@@ -487,7 +493,7 @@ end )
 
 local chance, turnoff, propinfo = math.Clamp( 1, 1, 5 ), { }, { }
 function mapscript.OnRoundStart()
-	if initialactivation then --If we've activated the electricity before, see if we should turn it on/off.
+	if initialactivation not PermaOff then --If we've activated the electricity before, see if we should turn it on/off.
 		--[[By default, there is a 1 and 5 chance (20%) the power will turn off (or stay off) for any given round AFTER the electricity has been turn on. For every round the power DOESN'T
 		turn off, the chance increases by an additional 20% until the power WILL turn off. I think this is called pseudo-random? I might make the chance smaller if it's too obtrusive.]]
 		for i = 1, 5 - chance do 
@@ -497,6 +503,9 @@ function mapscript.OnRoundStart()
 			turnoff[ i ] = true
 		end
 		if turnoff[ math.random( 1, #turnoff ) ] then
+			powerswitch.OnUsed = function()
+				return false
+			end
 			if nzElec.IsOn() then
 				for k, v in pairs( lights1 ) do
 					table.insert( propinfo, v.ent:GetModel() )
