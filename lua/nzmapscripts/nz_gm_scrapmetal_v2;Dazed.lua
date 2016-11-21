@@ -178,12 +178,15 @@ The electrocuted outlier link is the reference for the order in which the consol
 local currentbutton, activebutton = 1, table.KeyFromValue( consolebuttons, buttonorder[ 1 ] )
 function StartPuzzle()
 	for k, v in pairs( buttonorder ) do
+		print( "Button 1: ", v, currentbutton, activebutton )
 		local consolebutton = ents.GetMapCreatedEntity( v )
-		consolebutton:SetText( "Press E to activate button " .. consolebuttons[ table.KeyFromValue( buttonorder, v ) ] )
+		consolebutton:SetNWString( "NZText", "Press E to activate button " .. consolebuttons[ table.KeyFromValue( buttonorder, v ) ] )
 		consolebutton.OnUsed = function()
 			if k == currentbutton then
 				currentbutton = currentbutton + 1
-				activebutton = table.KeyFromValue( consolebuttons, buttonorder[ currentbutton ] )
+				if currentbutton < 6 then
+					activebutton = table.KeyFromValue( consolebuttons, buttonorder[ currentbutton ] )
+				end
 			else
 				FailPrimaryEE()
 				currentbutton = 0
@@ -196,29 +199,51 @@ end
 local availabletext = { "A", "a", "B", "b", "C", "c", "D", "d", "E", "e", "F", "f", "G", "g", "H", "h", "I", "i", "J", "j", "K", "k", "L", "l", "M", "m",
 						"N", "n", "O", "o", "P", "p", "Q", "q", "R", "r", "S", "s", "T", "t", "U", "u", "V", "v", "W", "w", "X", "x", "Y", "y", "Z", "z",
 						"!", "%", "ERROR", "*", "&", "SELf-DESTRUCT", "ESCAPE", "#", "SYSTEM", "POWER", "OFF", "ON", "HUMANOID", "METRO", " ", "ENTER", "EXIT",
-						"ASCEND FROM DARKNESS" }--, } --Can we add more Nazi Zombie easter egg sayings?
+						"ASCEND_FROM_DARKNESS" }--, "" } --Can we add more Nazi Zombie easter egg sayings?
 function FailPrimaryEE()
+	local mixedtext = ""
 	for k, v in pairs( player.GetAll() ) do
-		v:SendLua( "surface.PlaySound( \"insertsoundhere.wav\" ) " )
+		v:SendLua( "surface.PlaySound( \"ambient/levels/labs/electric_explosion4.wav\" ) " )
 	end
-	for k, v in pairs(  ) do
-
+	for k, v in pairs( links ) do
+		for i = 1, 6 do
+			mixedtext = mixedtext .. table.Random( availabletext )
+		end
+		v.ent:EmitSound( "" )
+		v.ent:SetNWString( "NZText", mixedtext )
+		mixedtext = ""
+		v.ent.OnUsed = function()
+			return false
+		end
 	end
-	for k, v in pairs(  ) do
-
+	for k, v in pairs( consolebuttons ) do
+		local consolebutton = ents.GetMapCreatedEntity( v )
+		for i = 1, 6 do
+			mixedtext = mixedtext .. table.Random( availabletext )
+		end
+		consolebutton:EmitSound( "" )
+		consolebutton:SetNWString( "NZText", mixedtext )
+		mixedtext = ""
+		consolebutton.OnUsed = function()
+			return false
+		end
 	end
-	local mixedtext
-	for i = 1, 10 do
-	mixedtext = mixedtext .. table.random(  )
+	for i = 1, 6 do
+	mixedtext = mixedtext .. table.Random( availabletext )
 	end
-	baselink:SetNWString( "NZText", "" )
+	baselink:EmitSound( "" )
+	baselink:SetNWString( "NZText", mixedtext )
+	mixedtext = ""
+	baselink.OnUsed = function()
+		return false
+	end
 end
 
 function mapscript.OnGameBegin()
 	local linkstarted = false
 	initialactivation = false
 
-	local fakelist = consolebuttons
+	local fakelist = table.Copy( consolebuttons )
 	for i = 1, #fakelist do
 		local choice = table.Random( fakelist )
 		table.insert( buttonorder, choice )
@@ -374,6 +399,7 @@ function mapscript.OnGameBegin()
 			if not CheckTable( establishedlinks ) then
 				baselink:SetNWString( "NZText", "Press E to begin linking." )
 			elseif CheckTable( establishedlinks ) then
+				PrintMessage( HUD_PRINTTALK, "All receivers have been linked." )
 				StartPuzzle() --Should this be an EE step function? - Probably
 			end
 		end
