@@ -71,6 +71,7 @@ function ENT:Initialize()
 end
 
 function ENT:Use( activator, caller )
+	if self:GetWepClass() == "nz_box_teddy" then hook.Call( "nzRandomBoxTeddy", nil, caller ) end
 	if !self:GetWinding() and self:GetWepClass() != "nz_box_teddy" then
 		if activator == self.Buyer then
 			local class = self:GetWepClass()
@@ -78,6 +79,7 @@ function ENT:Use( activator, caller )
 			nzWeps:GiveMaxAmmoWep(activator, class)
 			self.Box:Close()
 			self:Remove()
+			hook.Call( "nzRandomBoxWeapon", nil, caller, class )
 		else
 			if IsValid(self.Buyer) then
 				activator:PrintMessage( HUD_PRINTTALK, "This is " .. self.Buyer:Nick() .. "'s gun. You cannot take it." )

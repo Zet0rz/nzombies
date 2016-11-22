@@ -100,5 +100,7 @@ function nzRandomBox.DecideWep(ply)
 		end
 	end
 
-	return table.Random(guns)
+	local decision = table.Random(guns)
+	hook.Call( "nzPlayerBoughtBox", nil, ply, decision )
+	return decision
 end

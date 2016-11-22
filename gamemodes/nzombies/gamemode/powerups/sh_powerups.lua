@@ -32,6 +32,7 @@ if SERVER then
 		-- Notify
 		ply:EmitSound("nz/powerups/power_up_grab.wav")
 		powerupData.func(id, ply)
+		hook.Call( "nzPowerupActivated", nil, id, ply)
 	end
 
 	function nzPowerUps:SpawnPowerUp(pos, specific)
