@@ -148,7 +148,7 @@ if engine.ActiveGamemode() == "nzombies" then
 					local wep = ply:GetActiveWeapon()
 					if wep:GetClass() == "nz_monkey_bomb" then
 						if !ply:KeyDown(IN_GRENADE2) then
-							wep:ThrowBomb(700)
+							wep:ThrowBomb(350)
 							ply:SetAmmo(ply:GetAmmoCount("nz_specialgrenade") - 1, "nz_specialgrenade")
 							timer.Simple(1, function()
 								if IsValid(ply) then
