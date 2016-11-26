@@ -1,26 +1,15 @@
 --//Made by Logan - written for Zet0r to (hopefully) be included in the official gamemode
 --[[
-	Things I need:
-	- Way to retrieve invisible walls on an indivdual basis - try prop remover tool?
-	- Way to immediately enable or disable electricity (on game start what would normally be done if the power lever WAS spawned?)
-	- Way to disable parts of the nav mesh? For when enabling the first EE ending with the control panel, there will be floating nav areas
-	- What are the specifics of round infinity?
+7:00 PM - Logan: Can you reply with the suggestions you had
+7:00 PM - Logan: so I can write them down for later
+7:08 PM - Zet0r is now Online.
+7:09 PM - Zet0r: timed use/kuckle crack on power switch build
+7:09 PM - Zet0r: possibly timed use on generator fueling
+7:09 PM - Zet0r: only 3 music EE's to find
+7:10 PM - Zet0r: Some way of rehinting the order of which buttons were linked, not a giveaway but a rehint (might be too hard to remember)
+7:10 PM - Zet0r: randomized gascan spawns and/or generator order
+7:10 PM - Zet0r: and then fix the few things like the few navmeshes and the power switch and texts
 
-	Idea(s):
-	- Create a system of links, where starting a generator allows the link in each respective room to be activated,
-		after all are finished, players can do final EE run (such props: models/props_lab/reciever_cart.mdl, models/props_lab/reciever01a.mdl, models/props_lab/reciever01b.mdl )
-		- Maybe allow for players to fall straight to the bottom in the elevator shafts? First fall platform (from spawn) can be
-			changed into wood from the elevator, and players can run from the elevator console area to underneath the bridges
-			but not back
-	- Players must activate the 5 console props in a specific order maybe randomized
-		- Set specific to generator order? Starting a generator allows for one of the console props to be pushed
-	- Console gets the lights above each button/prop to indicate on/off/unpowered state?
-	- Incorporate a way to fail? Final way to escape are the two garage doors, blocked by some panzers and shitton of zombies,
-		doors open after 30 seconds or so after activating them
-		- Failing primary EE will perma-disable power, have all the generators and power switch being zapped with the electricity effect
-	- At some point in the EE steps, the power should turn back off
-		- Maybe on a randomized per-round basis AFTER power has been initially restored?
-		- Every round it turns off, could disable flashlights / use the electricity damage effect as well
 ]]
 local mapscript = {}
 
