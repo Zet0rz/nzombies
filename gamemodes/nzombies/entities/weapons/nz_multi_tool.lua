@@ -169,7 +169,7 @@ function SWEP:Reload()
 		self:DoShootEffect( trace.HitPos, trace.HitNormal, trace.Entity, trace.PhysicsBone, IsFirstTimePredicted() )
 
 		reload_cd = CurTime() + 0.3
-		
+
 		if CLIENT and !game.SinglePlayer() and !IsFirstTimePredicted() then return end
 		if nzTools.ToolData[self.ToolMode] and nzTools.ToolData[self.ToolMode].Reload then
 			nzTools.ToolData[self.ToolMode].Reload(self, self.Owner, trace, self.Owner.NZToolData)
@@ -264,7 +264,7 @@ if CLIENT then
 			text = nzTools.ToolData[self.ToolMode].displayname
 			if nzTools.SavedData[self.ToolMode] then
 				for k,v in pairs(nzTools.SavedData[self.ToolMode]) do
-					text = text .."    -    "..k..": "..v
+					text = text .."    -    "..k..": ".. tostring(v)
 				end
 				text = text .. "    - "
 			end
@@ -287,7 +287,7 @@ if CLIENT then
 		render.SetRenderTarget( OldRT )
 		render.SetViewPort( 0, 0, oldW, oldH )
 	end
-	
+
 	function SWEP:DrawHUD()
 		if nzTools.ToolData[self.ToolMode] and nzTools.ToolData[self.ToolMode].drawhud then
 			nzTools.ToolData[self.ToolMode].drawhud()

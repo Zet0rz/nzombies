@@ -146,13 +146,14 @@ if SERVER then
 	end)
 	
 	hook.Add("OnRoundWaiting", "nzVoteOnRoundEnd", function()
-		if nextvote and CurTime() >= nextvote then
+		if nextvote and CurTime() >= nextvote and GetConVar("nz_rtv_enabled"):GetBool() then
 			nzInterfaces.StartVote( 30 )
 		end
 	end)
 	
 	
 	nzChatCommand.Add("/rtv", function(ply, text)
+		if !GetConVar("nz_rtv_enabled"):GetBool() then return end
 		if IsValid(ply) then
 			if voting then
 				ply:ChatPrint("A vote is already going. Press F1 to open the window.")

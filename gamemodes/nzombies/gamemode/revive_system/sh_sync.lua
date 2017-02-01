@@ -1,4 +1,4 @@
-//Client Server Syncing
+-- Client Server Syncing
 
 if SERVER then
 
@@ -77,7 +77,7 @@ if CLIENT then
 		
 		local ply = Entity(id)
 		if IsValid(ply) and ply:IsPlayer() then
-			ply:AnimRestartGesture(GESTURE_SLOT_GRENADE, ACT_HL2MP_SIT_PISTOL)
+			--ply:AnimRestartGesture(GESTURE_SLOT_CUSTOM, ACT_HL2MP_SWIM_PISTOL)
 			nzRevive:DownedHeadsUp(ply, "needs to be revived!")
 		end
 	end
@@ -87,7 +87,7 @@ if CLIENT then
 		nzRevive.Players[id] = nil
 		local ply = Entity(id)
 		if IsValid(ply) and ply:IsPlayer() then
-			ply:AnimResetGestureSlot(GESTURE_SLOT_GRENADE)
+			--ply:AnimResetGestureSlot(GESTURE_SLOT_CUSTOM)
 			if ply == LocalPlayer() then nzRevive:ResetColorFade() end
 			nzRevive:DownedHeadsUp(ply, "has been revived!")
 		end
@@ -123,7 +123,7 @@ if CLIENT then
 		nzRevive.Players[id] = nil
 		local ply = Entity(id)
 		if IsValid(ply) and ply:IsPlayer() then
-			ply:AnimResetGestureSlot(GESTURE_SLOT_GRENADE)
+			--ply:AnimResetGestureSlot(GESTURE_SLOT_CUSTOM)
 			if ply == LocalPlayer() then nzRevive:ResetColorFade() end
 			nzRevive:DownedHeadsUp(ply, "has died!")
 		end
@@ -139,12 +139,12 @@ if CLIENT then
 		if IsValid(revivor) then revivor.Reviving = ply end
 		
 		if IsValid(ply) and ply:IsPlayer() then
-			ply:AnimRestartGesture(GESTURE_SLOT_GRENADE, ACT_HL2MP_SIT_PISTOL)
+			--ply:AnimRestartGesture(GESTURE_SLOT_CUSTOM, ACT_HL2MP_SWIM_PISTOL)
 			nzRevive:DownedHeadsUp(ply, "has been downed!")
 		end
 	end
 
-	//Receivers
+	-- Receivers
 	net.Receive( "nzRevivePlayerDowned", ReceivePlayerDowned )
 	net.Receive( "nzRevivePlayerRevived", ReceivePlayerRevived )
 	net.Receive( "nzRevivePlayerBeingRevived", ReceivePlayerBeingRevived )

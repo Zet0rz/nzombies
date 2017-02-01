@@ -68,6 +68,8 @@ function EFFECT:Init( data )
 			end
 		end
 	em:Finish()
+	
+	sound.Play("nz/zombies/spawn/zm_spawn_dirt"..math.random(1,2)..".wav", pos, 75, 100, 1)
 end
 
 function EFFECT:Think()

@@ -3,22 +3,25 @@ nzPlayers = nzPlayers or AddNZModule("Players")
 nzPlayers.Data = nzPlayers.Data or {}
 
 -- Variables
+local downedspeed = 30
+
+-- Copy-pasted from the wiki, a nice little function
+local CMoveData = FindMetaTable( "CMoveData" )
+function CMoveData:RemoveKeys( keys )
+	-- Using bitwise operations to clear the key bits.
+	local newbuttons = bit.band( self:GetButtons(), bit.bnot( keys ) )
+	self:SetButtons( newbuttons )
+end
 
 -- Stops players from moving if downed
-hook.Add( "SetupMove", "FreezePlayersDowned", function( ply, mv, cmd )
+hook.Add( "SetupMove", "nzFreezePlayersDowned", function( ply, mv, cmd )
 	if !ply:GetNotDowned() then
-		mv:SetUpSpeed( 0 )
-		cmd:SetUpMove( 0 )
-		mv:SetSideSpeed( 0 )
-		cmd:SetSideMove( 0 )
-		mv:SetForwardSpeed( 0 )
-		cmd:SetForwardMove( 0 )
-		if cmd:KeyDown( IN_JUMP ) then
-			cmd:RemoveKey( IN_JUMP )
-		end
-		if cmd:KeyDown( IN_DUCK ) then
-			cmd:RemoveKey( IN_DUCK )
-		end
+		mv:SetMaxClientSpeed( downedspeed )
+		mv:RemoveKeys(IN_JUMP + IN_DUCK)
+		
+		--[[if mv:GetVelocity():Length2D() > 10 then -- Can't shoot while crawling!
+			mv:RemoveKeys(IN_ATTACK + IN_ATTACK2) -- Doesn't work for some reason? :(
+		end]]
 	end
 end )
 

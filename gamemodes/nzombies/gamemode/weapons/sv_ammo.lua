@@ -52,11 +52,11 @@ function plymeta:GiveMaxAmmo(papoverwrite)
 		if !v:IsSpecial() then
 			v:GiveMaxAmmo()
 		else
-			local wepdata = nzSpecialWeapons.Weapons[v:GetClass()] or v.NZSpecialWeaponData
+			local wepdata = v.NZSpecialWeaponData
 			if !wepdata then return end
 			
-			local ammo = usesammo[v:GetSpecialCategory()] or wepdata.ammotype
-			local maxammo = wepdata.maxammo
+			local ammo = usesammo[v:GetSpecialCategory()] or wepdata.AmmoType
+			local maxammo = wepdata.MaxAmmo
 			
 			if ammo and maxammo then
 				self:SetAmmo(maxammo, GetNZAmmoID(ammo) or ammo) -- Special weapon ammo or just that ammo

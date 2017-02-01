@@ -14,14 +14,19 @@ function nzRandomBox.Spawn(exclude, first)
 
 	local rand = possible[ math.random( #possible ) ]
 
-	if rand != nil and !rand.HasBox then
+	if rand != nil and !IsValid(rand.Box) then
 		local box = ents.Create( "random_box" )
-		box:SetPos( rand:GetPos() )
-		box:SetAngles( rand:GetAngles() )
+		local pos = rand:GetPos()
+		local ang = rand:GetAngles()
+		
+		box:SetPos( pos + ang:Up()*10 + ang:Right()*7 )
+		box:SetAngles( ang )
 		box:Spawn()
 		--box:PhysicsInit( SOLID_VPHYSICS )
 		box.SpawnPoint = rand
-		rand.HasBox = true
+		rand.Box = box
+		
+		rand:SetBodygroup(1,1)
 
 		local phys = box:GetPhysicsObject()
 		if phys:IsValid() then
@@ -37,7 +42,7 @@ function nzRandomBox.Remove()
 	local all = ents.FindByClass("random_box")
 	--Loop just incase
 	for k,v in pairs(all) do
-		v.SpawnPoint.HasBox = false
+		v.SpawnPoint.Box = nil
 		v:Remove()
 	end
 end

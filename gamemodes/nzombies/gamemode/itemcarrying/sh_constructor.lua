@@ -18,7 +18,7 @@ if SERVER then
 		end,
 		resetfunction = function() end,
 		condition = function(self, ply)
-			return true
+			return !ply:HasCarryItem(self.id)
 		end,
 		pickupfunction = function(self, ply, ent)
 			ply:GiveCarryItem(self.id)

@@ -255,11 +255,11 @@ CreateMismatchCheck("Map Settings", function()
 	local startwep = settings.startwep or nzConfig.BaseStartingWeapons[1] or "Invalid"
 	if !weapons.Get(startwep) then tbl["startwep"] = startwep end
 	
-	local specialround = settings.specialroundtype or "Invalid"
-	if !nzRound.SpecialData[specialround] and specialround != "None" then tbl["specialroundtype"] = specialround end
+	local specialround = settings.specialroundtype
+	if !nzRound.SpecialData[specialround] and specialround != "None" and specialround != nil then tbl["specialroundtype"] = specialround end
 	
-	local boss = settings.bosstype or "Invalid"
-	if !nzRound.BossData[boss] and boss != "None" then tbl["bosstype"] = boss end
+	local boss = settings.bosstype
+	if !nzRound.BossData[boss] and boss != "None" and boss != nil then tbl["bosstype"] = boss end
 
 	return tbl
 
@@ -488,7 +488,7 @@ CreateMismatchCheck("Map Script", function()
 	end, function( data )
 
 		if data.load then
-			nzMapping:LoadScript(nzMapping.CurrentConfig)
+			nzMapping:LoadScript(nzMapping.ConfigFile)
 		end
 
 		nzMapping.MismatchData["Map Script"] = nil

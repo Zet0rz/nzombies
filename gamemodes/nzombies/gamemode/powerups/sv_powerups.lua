@@ -106,12 +106,17 @@ function nzPowerUps:FireSale()
 	for k,v in pairs(all) do
 		if !v.HasBox then
 			local box = ents.Create( "random_box" )
-			box:SetPos( v:GetPos() )
-			box:SetAngles( v:GetAngles() )
+			local pos = v:GetPos()
+			local ang = v:GetAngles()
+			
+			box:SetPos( pos + ang:Up()*10 + ang:Right()*7 )
+			box:SetAngles( ang )
 			box:Spawn()
 			--box:PhysicsInit( SOLID_VPHYSICS )
 			box.SpawnPoint = v
 			v.FireSaleBox = box
+			
+			v:SetBodygroup(1,1)
 
 			local phys = box:GetPhysicsObject()
 			if phys:IsValid() then

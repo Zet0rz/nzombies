@@ -11,45 +11,45 @@ if SERVER then
 		
 		--print("Weapon reload modified")
 		
-		wep.Reload = function()
-			if wep.ReloadFinish and wep.ReloadFinish > CurTime() then return end
-			local ply = wep.Owner
+		wep.Reload = function( self, ... )
+			if self.ReloadFinish and self.ReloadFinish > CurTime() then return end
+			local ply = self.Owner
 			if ply:HasPerk("speed") then
 				--print("Hasd perk")
-				local cur = wep:Clip1()
-				if cur >= wep:GetMaxClip1() then return end
-				local give = wep:GetMaxClip1() - cur
-				if give > ply:GetAmmoCount(wep:GetPrimaryAmmoType()) then
-					give = ply:GetAmmoCount(wep:GetPrimaryAmmoType())
+				local cur = self:Clip1()
+				if cur >= self:GetMaxClip1() then return end
+				local give = self:GetMaxClip1() - cur
+				if give > ply:GetAmmoCount(self:GetPrimaryAmmoType()) then
+					give = ply:GetAmmoCount(self:GetPrimaryAmmoType())
 				end
 				if give <= 0 then return end
 				--print(give)
 				
-				wep:SendWeaponAnim(ACT_VM_RELOAD)
-				oldreload(wep)
-				local rtime = wep:SequenceDuration(wep:SelectWeightedSequence(ACT_VM_RELOAD))/2
-				wep:SetPlaybackRate(2)
+				self:SendWeaponAnim(ACT_VM_RELOAD)
+				oldreload(self, ...)
+				local rtime = self:SequenceDuration(self:SelectWeightedSequence(ACT_VM_RELOAD))/2
+				self:SetPlaybackRate(2)
 				ply:GetViewModel():SetPlaybackRate(2)
 
 				local nexttime = CurTime() + rtime
 
-				wep:SetNextPrimaryFire(nexttime)
-				wep:SetNextSecondaryFire(nexttime)
-				wep.ReloadFinish = nexttime
+				self:SetNextPrimaryFire(nexttime)
+				self:SetNextSecondaryFire(nexttime)
+				self.ReloadFinish = nexttime
 				
 				timer.Simple(rtime, function()
-					if IsValid(wep) and ply:GetActiveWeapon() == wep then
-						wep:SetPlaybackRate(1)
+					if IsValid(self) and ply:GetActiveWeapon() == self then
+						self:SetPlaybackRate(1)
 						ply:GetViewModel():SetPlaybackRate(1)
-						wep:SendWeaponAnim(ACT_VM_IDLE)
-						wep:SetClip1(give + cur)
-						ply:RemoveAmmo(give, wep:GetPrimaryAmmoType())
-						wep:SetNextPrimaryFire(0)
-						wep:SetNextSecondaryFire(0)
+						self:SendWeaponAnim(ACT_VM_IDLE)
+						self:SetClip1(give + cur)
+						ply:RemoveAmmo(give, self:GetPrimaryAmmoType())
+						self:SetNextPrimaryFire(0)
+						self:SetNextSecondaryFire(0)
 					end
 				end)
 			else
-				oldreload(wep)
+				oldreload(self, ...)
 			end
 		end
 	end
@@ -61,8 +61,8 @@ if SERVER then
 		
 		--print("Weapon fire modified")
 		
-		wep.PrimaryAttack = function()
-			oldfire(wep)
+		wep.PrimaryAttack = function(...)
+			oldfire(wep, ...)
 			
 			-- FAS2 weapons have built-in DTap functionality
 			if wep:IsFAS2() then return end
@@ -81,8 +81,8 @@ if SERVER then
 		
 		--print("Weapon fire modified")
 		
-		wep.SecondaryAttack = function()
-			oldfire(wep)
+		wep.SecondaryAttack = function(...)
+			oldfire(wep, ...)
 			-- With deadshot, aim at the head of the entity aimed at
 			if wep.Owner:HasPerk("deadshot") then
 				local tr = wep.Owner:GetEyeTrace()

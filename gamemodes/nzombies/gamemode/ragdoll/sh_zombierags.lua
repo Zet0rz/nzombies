@@ -1,8 +1,6 @@
-if not ConVarExists("nz_ragdolltime") then CreateConVar("nz_ragdolltime", 30, {FCVAR_ARCHIVE}, "How long Zombie ragdolls will stay in the map.") end
 
-function GM:CreateClientsideRagdoll( ent, ragdoll )
-	local convar = GetConVar("nz_ragdolltime"):GetInt()
-	local dTime = math.random( convar*0.75, convar*1.25 )
+local function cleanrag(ent, ragdoll, time)
+	local dTime = math.random( time*0.75, time*1.25 )
 
 	if ent.GetDecapitated and ent:GetDecapitated() then
 		local bone = ragdoll:LookupBone("ValveBiped.Bip01_Head1")
@@ -39,6 +37,20 @@ function GM:CreateClientsideRagdoll( ent, ragdoll )
 	end)
 	]]--
 	SafeRemoveEntityDelayed( ragdoll, dTime + 2.5 )
-	
-	--print("Client side ragdoll")
+end
+
+if CLIENT then
+	if not ConVarExists("nz_client_ragdolltime") then CreateConVar("nz_client_ragdolltime", 30, {FCVAR_ARCHIVE}, "How long clientside Zombie ragdolls will stay in the map.") end
+
+	function GM:CreateClientsideRagdoll( ent, ragdoll )
+		local convar = GetConVar("nz_client_ragdolltime"):GetInt()
+		cleanrag(ent, ragdoll, convar)
+	end
+else -- Server ragdolls
+	if not ConVarExists("nz_server_ragdolltime") then CreateConVar("nz_server_ragdolltime", 30, {FCVAR_ARCHIVE}, "How long serverside Zombie ragdolls will stay in the map.") end
+
+	function GM:CreateEntityRagdoll( ent, ragdoll )
+		local convar = GetConVar("nz_server_ragdolltime"):GetInt()
+		cleanrag(ent, ragdoll, convar)
+	end
 end

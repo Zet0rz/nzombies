@@ -87,8 +87,8 @@ end, false, "   Generate a new naviagtion mesh.")
 
 nzChatCommand.Add("/save", SERVER, function(ply, text)
 	if nzRound:InState( ROUND_CREATE ) then
-		-- nzMapping:SaveConfig()
 		net.Start("nz_SaveConfig")
+			net.WriteString(nzMapping.CurrentConfig or "")
 		net.Send(ply)
 	else
 		ply:PrintMessage( HUD_PRINTTALK, "[nZ] You can't save a config outside of creative mode." )
@@ -253,3 +253,10 @@ nzChatCommand.Add("/navflush", SERVER, function(ply, text)
 	nzNav.FlushAllNavModifications()
 	PrintMessage(HUD_PRINTTALK, "[nZ] Navlocks successfully flushed. Remember to redo them for best playing experience.")
 end)
+
+nzChatCommand.Add("/tools", SERVER, function(ply, text)
+	if ply:IsInCreative() then
+		ply:Give("weapon_physgun")
+		ply:Give("nz_multi_tool")
+	end
+end, true, "Give creative mode tools to yourself if in Creative.")

@@ -3,7 +3,7 @@ if SERVER then
 
 	function playerMeta:DownPlayer()
 		local id = self:EntIndex()
-		self:AnimRestartGesture(GESTURE_SLOT_GRENADE, ACT_HL2MP_SIT_PISTOL)
+		--self:AnimRestartGesture(GESTURE_SLOT_CUSTOM, ACT_HL2MP_SIT_PISTOL)
 
 		nzRevive.Players[id] = {}
 		nzRevive.Players[id].DownTime = CurTime()
@@ -17,7 +17,7 @@ if SERVER then
 			timer.Simple(5, function()
 				-- If you choose to use Tombstone within these seconds, you won't make a clone and will get Who's Who back from Tombstone
 				if IsValid(self) and !self:GetNotDowned() then
-					print("Should've respawned by now")
+					--print("Should've respawned by now")
 					nzRevive:CreateWhosWhoClone(self)
 					nzRevive:RespawnWithWhosWho(self)
 				end
@@ -35,7 +35,7 @@ if SERVER then
 					self:RevivePlayer(self)
 				end
 			end)
-			print(self, "Downed with solo revive")
+			--print(self, "Downed with solo revive")
 		end
 
 		self.OldPerks = self:GetPerks()
@@ -67,7 +67,7 @@ if SERVER then
 	function playerMeta:RevivePlayer(revivor, nosync)
 		local id = self:EntIndex()
 		if !nzRevive.Players[id] then return end
-		self:AnimResetGestureSlot(GESTURE_SLOT_GRENADE)
+		--self:AnimResetGestureSlot(GESTURE_SLOT_CUSTOM)
 		nzRevive.Players[id] = nil
 		if !nosync then
 			hook.Call("PlayerRevived", nzRevive, self, revivor)
@@ -83,6 +83,9 @@ if SERVER then
 		self.DownPoints = nil
 		self.HasWhosWho = nil
 		self.DownedWithSoloRevive = nil
+		
+		self:SetPos(self:GetPos() + Vector(0,0,25))
+		self:ResetHull()
 	end
 
 	function playerMeta:StartRevive(revivor, nosync)
@@ -146,6 +149,9 @@ if SERVER then
 		end
 		
 		self:RemoveAllPowerUps()
+		
+		--self:SetPos(self:GetPos() + Vector(0,0,25))
+		self:ResetHull()
 	end
 
 end
@@ -176,5 +182,5 @@ end
 local oldshootpos = playerMeta.GetShootPos
 function playerMeta:GetShootPos()
 	if self:GetNotDowned() then return oldshootpos(self) end
-	return oldshootpos(self) + Vector(0,0,-30)
+	return oldshootpos(self) + Vector(0,0,-15)
 end

@@ -111,7 +111,6 @@ function ENT:Use(activator, caller)
 			if #activator:GetPerks() < GetConVar("nz_difficulty_perks_max"):GetInt() then
 				-- If they have enough money
 				activator:Buy(price, self, function()
-					activator:TakePoints(price)
 					self:SetBeingUsed(true)
 					self:SetUser(activator)
 					
@@ -142,7 +141,11 @@ function ENT:Use(activator, caller)
 		elseif self:GetUser() == activator and !self.Bottle:GetWinding() and !self:GetIsTeddy() then
 			local perk = self:GetPerkID()
 			local wep = activator:Give("nz_perk_bottle")
-			wep:SetPerk(perk)
+			timer.Simple(0, function()
+				if IsValid(wep) then
+					wep:SetPerk(perk)
+				end
+			end)
 			activator:GivePerk(perk)
 			self:SetBeingUsed(false)
 			self:SetPerkID("")

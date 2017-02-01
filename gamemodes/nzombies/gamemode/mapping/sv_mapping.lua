@@ -1,4 +1,4 @@
--- 
+--
 
 function nzMapping:ZedSpawn(pos, link, ply)
 
@@ -259,7 +259,7 @@ function nzMapping:BreakEntry(pos, ang, planks, jump, ply)
 	if planks == nil then planks = true else planks = tobool(planks) end
 	local jump = jump
 	if jump == nil then jump = false else jump = tobool(jump) end
-	
+
 	local entry = ents.Create( "breakable_entry" )
 	entry:SetPos( pos )
 	entry:SetAngles( ang )
@@ -310,7 +310,7 @@ function nzMapping:SpawnEntity(pos, ang, ent, ply)
 	entity:PhysicsInit( SOLID_VPHYSICS )
 
 	table.insert(nzQMenu.Data.SpawnedEntities, entity)
-	
+
 	entity:CallOnRemove("nzSpawnedEntityClean", function(ent)
 		table.RemoveByValue(nzQMenu.Data.SpawnedEntities, ent)
 	end)
@@ -357,7 +357,7 @@ function nzMapping:CreateInvisibleDamageWall(vec1, vec2, ply, dmg, delay, radiat
 	wall:SetTrigger(true)
 	wall:SetDamage(dmg)
 	wall:SetDelay(delay)
-	
+
 	wall:SetRadiation(radiation)
 	wall:SetPoison(poison)
 	wall:SetTesla(tesla)
@@ -386,20 +386,23 @@ local ghostentities = {
 }
 local function onPhysgunPickup( ply, ent )
 	local class = ent:GetClass()
-	if ghostentities[class] then
+	if ghostentities[class] or ent:ShouldPhysgunNoCollide() then
 		-- Ghost the entity so we can put them in walls.
 		local phys = ent:GetPhysicsObject()
 		phys:EnableCollisions(false)
+		phys:Wake()
 	end
 
 end
 
 local function onPhysgunDrop( ply, ent )
 	local class = ent:GetClass()
-	if ghostentities[class] then
+	if ghostentities[class] or ent:ShouldPhysgunNoCollide() then
 		-- Unghost the entity so we can put them in walls.
 		local phys = ent:GetPhysicsObject()
 		phys:EnableCollisions(true)
+		phys:EnableMotion(false)
+		phys:Sleep()
 	end
 
 end

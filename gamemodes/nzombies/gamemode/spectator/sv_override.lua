@@ -43,7 +43,7 @@ local function disableDeadUse( ply, ent )
 	if !ply:Alive() then return false end
 end
 
-hook.Add( "PlayerUse", "disableDeadUse", disableDeadUse)
+hook.Add( "PlayerUse", "nzDisableDeadUse", disableDeadUse)
 
 local hooks = hook.GetTable().AllowPlayerPickup
 if hooks then
@@ -67,4 +67,4 @@ local function disableDeadPickups( ply, ent )
 	end
 end
 
-hook.Add( "AllowPlayerPickup", "1_nzDisableDeadPickups", disableDeadPickups)
+hook.Add( "AllowPlayerPickup", "_nzDisableDeadPickups", disableDeadPickups)

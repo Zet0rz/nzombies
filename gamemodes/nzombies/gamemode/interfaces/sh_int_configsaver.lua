@@ -1,4 +1,4 @@
-//
+-- 
 
 if SERVER then
 	util.AddNetworkString("nz_SaveConfig")
@@ -11,7 +11,7 @@ if SERVER then
 end
 
 if CLIENT then
-	function nzInterfaces.ConfigSaver()
+	function nzInterfaces.ConfigSaver(name)
 		local DermaPanel = vgui.Create( "DFrame" )
 		DermaPanel:SetPos( 100, 100 )
 		DermaPanel:SetSize( 300, 120 )
@@ -31,6 +31,7 @@ if CLIENT then
 		local TextEntry = vgui.Create("DTextEntry", DermaPanel)
 		TextEntry:SetPos(10, 30)
 		TextEntry:SetSize(280, 20)
+		TextEntry:SetText(name)
 		TextEntry.OnChange = function(self)
 			if string.find(self:GetValue(), ";") then
 				WarnText:SetText("The name cannot contain ';'!")
@@ -49,6 +50,9 @@ if CLIENT then
 		end
 	end
 	
-	net.Receive("nz_SaveConfig", nzInterfaces.ConfigSaver)
+	net.Receive("nz_SaveConfig", function()
+		local name = net.ReadString()
+		nzInterfaces.ConfigSaver(name)
+	end)
 	
 end

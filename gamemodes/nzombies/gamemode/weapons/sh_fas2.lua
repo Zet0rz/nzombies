@@ -254,4 +254,159 @@ hook.Add("InitPostEntity", "ReplaceCW2BaseFunctions", function()
 	
 	end
 	
+	local fas2 = weapons.Get("fas2_base")
+	if fas2 then
+		fas2.PrimaryAttack = function(self) -- Overwrite to prevent up-against-wall-stuff
+			if self.FireMode == "safe" then
+				if IsFirstTimePredicted() then
+					self:CycleFiremodes()
+				end
+				
+				return
+			end
+			
+			if IsFirstTimePredicted() then
+				if self.BurstAmount > 0 and self.dt.Shots >= self.BurstAmount then
+					return
+				end
+				
+				if self.ReloadState != 0 then
+					self.ReloadState = 3
+					return
+				end
+				
+				if self.dt.Status == FAS_STAT_CUSTOMIZE then
+					return
+				end
+				
+				if self.Cooking or self.FuseTime then
+					return
+				end
+			
+				if self.Owner:KeyDown(IN_USE) then
+					if self:CanThrowGrenade() then
+						self:InitialiseGrenadeThrow()
+						return
+					end
+				end
+				
+				if self.dt.Status == FAS_STAT_SPRINT or self.dt.Status == FAS_STAT_QUICKGRENADE then
+					return
+				end
+				
+				mag = self:Clip1()
+				CT = CurTime()
+				
+				if mag <= 0 or self.Owner:WaterLevel() >= 3 then
+					self:EmitSound(self.EmptySound, 60, 100)
+					self:SetNextPrimaryFire(CT + 0.2)
+					//self:EmitSound("FAS2_DRYFIRE", 70, 100)
+					return
+				end
+			
+				if self.CockAfterShot and not self.Cocked then
+					if SERVER then
+						if SP then
+							SendUserMessage("FAS2_COCKREMIND", self.Owner) -- wow okay
+						end
+					else
+						self.CockRemindTime = CurTime() + 1
+					end
+					
+					return
+				end
+					
+				self:FireBullet()
+				
+				if CLIENT then
+					self:CreateMuzzle()
+					
+					if self.Shell and self.CreateShell then
+						self:CreateShell()
+					end
+				end
+				
+				ef = EffectData()
+				ef:SetEntity(self)
+				util.Effect("fas2_ef_muzzleflash", ef)
+				
+				mod = self.Owner:Crouching() and 0.75 or 1
+				
+				self:PlayFireAnim(mag)
+					
+				if self.dt.Status == FAS_STAT_ADS then
+					if self.BurstAmount > 0 then
+						if self.DelayedBurstRecoil then
+							if self.dt.Shots == self.ShotToDelayUntil then
+								self:AimRecoil(self.BurstRecoilMod)
+							end
+						else
+							self:AimRecoil(self.BurstRecoilMod)
+						end
+					else
+						self:AimRecoil()
+					end
+				else
+					if self.BurstAmount > 0 then
+						if self.DelayedBurstRecoil then
+							if self.dt.Shots == self.ShotToDelayUntil then
+								self:HipRecoil(self.BurstRecoilMod)
+							end
+						else
+							self:HipRecoil(self.BurstRecoilMod)
+						end
+					else
+						self:HipRecoil()
+					end
+				end
+				
+				self.SpreadWait = CT + self.SpreadCooldown
+				
+				if self.BurstAmount > 0 then
+					self.AddSpread = math.Clamp(self.AddSpread + self.SpreadPerShot * mod * 0.5, 0, self.MaxSpreadInc)
+					self.AddSpreadSpeed = math.Clamp(self.AddSpreadSpeed - 0.2 * mod * 0.5, 0, 1)
+				else
+					self.AddSpread = math.Clamp(self.AddSpread + self.SpreadPerShot * mod, 0, self.MaxSpreadInc)
+					self.AddSpreadSpeed = math.Clamp(self.AddSpreadSpeed - 0.2 * mod, 0, 1)
+				end
+				
+				if self.CockAfterShot then
+					self.Cocked = false
+				end
+			
+				if SERVER and SP then
+					SendUserMessage("FAS2SPREAD", self.Owner)
+				end
+				
+				if CLIENT then
+					self.CheckTime = 0
+				end
+				
+				if self.dt.Suppressed then
+					self:EmitSound(self.FireSound_Suppressed, 75, 100)
+				else
+					self:EmitSound(self.FireSound, 105, 100)
+				end
+				
+				self.Owner:SetAnimation(PLAYER_ATTACK1)
+				
+				self.ReloadWait = CT + 0.3
+			end
+			
+			if self.BurstAmount > 0 then
+				self.dt.Shots = self.dt.Shots + 1
+				self:SetNextPrimaryFire(CT + self.FireDelay * self.BurstFireDelayMod)
+			else
+				self:SetNextPrimaryFire(CT + self.FireDelay)
+			end
+			
+			self:TakePrimaryAmmo(1)
+			
+			//self:SetNextSecondaryFire(CT + 0.1)
+			
+			return
+		end
+		weapons.Register(fas2, "fas2_base")
+	end
+	
 end)

@@ -56,8 +56,9 @@ if SERVER then
 	end
 
 	function meta:ApplyWebFreeze(time)
+		local block = false
 		if self.Freeze then
-			self:Freeze(time)
+			block = self:Freeze(time) -- Return true to not apply effect
 		else
 			self.loco:SetDesiredSpeed(0)
 			timer.Simple(time, function()
@@ -73,6 +74,8 @@ if SERVER then
 			end)
 		end
 
+		if block then return end
+		
 		local e = EffectData()
 		e:SetMagnitude(1.5)
 		e:SetScale(time) -- The time the effect lasts
@@ -94,3 +97,8 @@ end
 nzEnemies:AddValidZombieType("nz_zombie_walker")
 nzEnemies:AddValidZombieType("nz_zombie_special_burning")
 nzEnemies:AddValidZombieType("nz_zombie_special_dog")
+
+
+function meta:ShouldPhysgunNoCollide()
+	return self.bPhysgunNoCollide
+end

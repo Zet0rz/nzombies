@@ -124,19 +124,19 @@ function EFFECT:Render()
 	for _, arc in pairs(self.Arcs) do
 		self:RenderArc(arc)
 	end
-	
+
 	render.SetMaterial( self.MatEdge )
 
 	for _, arc in pairs(self.Arcs) do
 		self:RenderArc(arc, true)
 	end
-	
+
 	render.SetMaterial( self.MatGlow )
-	
+
 	render.DrawSprite( self.EndPos + Vector(0,0,30), math.random(400,1000), math.random(400,1000), Color(255,255,255,math.random(0,250)))
 
 	util.ScreenShake( EyePos(), 0.5, 1, 0.1, 10 )
-	
+
 end
 
 function EFFECT:RenderArc(arc, edge)

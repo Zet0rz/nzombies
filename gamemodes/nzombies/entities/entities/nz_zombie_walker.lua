@@ -202,7 +202,7 @@ function ENT:SpecialInit()
 
 	if CLIENT then
 		--make them invisible for a really short duration to blend the emerge sequences
-		self:TimedEvent(0, function() -- Tiny delay just to make sure they are fully initialized
+		self:TimedEvent(0.1, function() -- Tiny delay just to make sure they are fully initialized
 			if string.find(self:GetSequenceName(self:GetSequence()), "nz_emerge") then
 				self:SetNoDraw(true)
 				self:TimedEvent( 0.15, function()

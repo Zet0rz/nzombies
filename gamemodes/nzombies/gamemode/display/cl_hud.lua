@@ -481,6 +481,7 @@ function GM:HUDWeaponPickedUp( wep )
 	self.PickupHistoryLast = pickup.time
 	
 	if wep.NearWallEnabled then wep.NearWallEnabled = false end
+	if wep:IsFAS2() then wep.NoNearWall = true end
 
 end
 

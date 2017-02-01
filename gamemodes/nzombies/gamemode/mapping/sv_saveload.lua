@@ -47,6 +47,8 @@ function nzMapping:SaveConfig(name)
 
 	file.Write( configname, util.TableToJSON( main ) ) -- Save it all in a JSON format
 	PrintMessage( HUD_PRINTTALK, "[nZ] Saved to garrysmod/data/" .. configname) -- And write it to our file! >:D
+	
+	nzMapping.CurrentConfig = name
 
 end
 
@@ -112,6 +114,7 @@ function nzMapping:ClearConfig(noclean)
 	nzItemCarry:CleanUp()
 
 	nzMapping.CurrentConfig = nil
+	nzMapping.ConfigFile = nil
 
 	if !noclean then
 		game.CleanUpMap() -- No need for restorative measures (nzMapping:CleanUpMap())
@@ -138,8 +141,10 @@ function nzMapping:LoadConfig( name, loader )
 	if file.Exists( filepath, location )then
 		print("[nZ] MAP CONFIG FOUND!")
 		
+		local cfg = string.Explode(";", string.StripExtension(name))
+		local map, configname, workshopid = string.sub(cfg[1], 4), cfg[2], cfg[3]
+		
 		-- BUT WAIT! Is it another map? :O
-		local map = string.sub(string.Explode(";", string.StripExtension(name))[1], 4)
 		if map and map != game.GetMap() then
 			file.Write("nz/autoload.txt", loader and name.."@"..loader:SteamID() or name.."@INVALIDPLAYER")
 			RunConsoleCommand("changelevel", map)
@@ -151,6 +156,11 @@ function nzMapping:LoadConfig( name, loader )
 		nzMapping:UnloadScript()
 
 		local data = util.JSONToTable( file.Read( filepath, location ) )
+		
+		if !data then
+			print("Critical Warning: Could not read data from file! Is the save corrupted? It might be possible to recover with manual text editing.")
+			return
+		end
 
 		local version = data.version
 
@@ -228,8 +238,9 @@ function nzMapping:LoadConfig( name, loader )
 		nzMapping:CheckMismatch( loader )
 
 		-- Set the current config name, we will use this to load scripts via mismatch window
-		nzMapping.CurrentConfig = name
+		nzMapping.CurrentConfig = configname
 		nzMapping.OfficialConfig = official
+		nzMapping.ConfigFile = name
 		
 		if !nzRound:InState(ROUND_CREATE) then
 			for k,v in pairs(ents.GetAll()) do

@@ -47,6 +47,38 @@ function nzDoors:OpenLinkedDoors( link, ply )
 	self.OpenedLinks[link] = true
 end
 
+function nzDoors:CloseLinkedDoors( link, ply )
+	-- Go through all the doors
+	for k,v in pairs(self.MapDoors) do
+		if v.flags then
+			local doorlink = v.flags.link
+			if doorlink and doorlink == link then
+				if v:IsButton() then
+					v:ButtonLock()
+					v:SetUseType( SIMPLE_USE )
+				else
+					v:SetUseType( SIMPLE_USE )
+					v:LockDoor()
+					v:SetKeyValue("wait",-1)
+					--print("Locked door ", v)
+				end
+			end
+		end
+	end
+	
+	for k,v in pairs(self.PropDoors) do
+		if v.flags then
+			local doorlink = v.flags.link
+			if doorlink and doorlink == link then
+				v:SetUseType( SIMPLE_USE )
+				v:LockDoor()
+			end
+		end
+	end
+	
+	self.OpenedLinks[link] = nil
+end
+
 function nzDoors:LockAllDoors()
 	-- Force all doors to lock and stay open when opened
 	for k,v in pairs(ents.GetAll()) do

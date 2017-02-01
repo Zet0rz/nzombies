@@ -49,7 +49,7 @@ end
 
 local function CalcDownView(ply, pos, ang, fov, znear, zfar)
 	if nzRevive.Players[LocalPlayer():EntIndex()] then
-		local pos = pos + Vector(0,0,-30)
+		local pos = pos + Vector(0,0,-15)
 		local ang = ang + Angle(0,0,20)
 		
 		return {origin = pos, angles = ang, fov = fov, znear = znear, zfar = zfar, drawviewer = false }
@@ -58,7 +58,7 @@ end
 
 local function CalcDownViewmodelView(wep, vm, oldpos, oldang, pos, ang)
 	if nzRevive.Players[LocalPlayer():EntIndex()] then
-		local oldpos = oldpos + Vector(0,0,-30)
+		local oldpos = oldpos + Vector(0,0,-15)
 		local oldang = oldang + Angle(0,0,20)
 		if wep:IsCW2() or wep:IsFAS2() then oldpos = oldpos + oldang:Up() * -100 end
 		
@@ -68,7 +68,7 @@ end
 
 local function DrawColorModulation()
 	if nzRevive.Players[LocalPlayer():EntIndex()] then
-		local fadeadd = ((1/GetConVar("nz_downtime"):GetFloat()) * FrameTime()) * -1 	//Change 45 to the revival time
+		local fadeadd = ((1/GetConVar("nz_downtime"):GetFloat()) * FrameTime()) * -1 	-- Change 45 to the revival time
 		tab[ "$pp_colour_colour" ] = math.Approach(tab[ "$pp_colour_colour" ], 0, fadeadd)
 		tab[ "$pp_colour_addr" ] = math.Approach(tab[ "$pp_colour_addr" ], 0.5, fadeadd *-0.5)
 		tab[ "$pp_colour_mulr" ] = math.Approach(tab[ "$pp_colour_mulr" ], 1, -fadeadd)
@@ -277,7 +277,7 @@ local function DrawWhosWhoOverlay()
 	end]]
 end
 
-//Hooks
+-- Hooks
 hook.Add("CalcView", "CalcDownedView", CalcDownView )
 hook.Add("CalcViewModelView", "CalcDownedViewmodelView", CalcDownViewmodelView )
 hook.Add("RenderScreenspaceEffects", "DrawColorModulation", DrawColorModulation)

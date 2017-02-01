@@ -64,7 +64,7 @@ net.Receive( "nzItemCarryPlayersNotif", function()
 		end
 	end
 	
-	surface.PlaySound("ambient/levels/caves/dist_grub3.wav")
+	surface.PlaySound("nz/easteregg/ee_item_grab1.wav")
 end)
 
 local function DrawItemCarryNotifications()

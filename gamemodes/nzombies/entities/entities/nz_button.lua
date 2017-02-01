@@ -3,9 +3,12 @@ AddCSLuaFile( )
 ENT.Type = "anim"
 ENT.Base = "base_entity"
 
-ENT.PrintName = "nz_button"
+nzLogic:Register("nz_button")
+ENT.SpawnIcon = "models/nzprops/zapper_handle.mdl"
+ENT.PrintName = "Button"
+ENT.Description = "Simple Button that can trigger one or multiple other logic entities or traps."
 
-ENT.WireMat = Material( "effects/tool_tracer" )
+ENT.WireMat = Material( "cable/cable2" )
 
 ENT.ModelTranslate = {
 	-- 1
@@ -33,9 +36,6 @@ DEFINE_BASECLASS("nz_activatable")
 function ENT:SetupDataTables()
 	BaseClass.SetupDataTables( self )
 
-	--the name of the linked ents
-	self:ButtonSetupDataTables()
-
 	local modelTbl = {}
 	modelTbl["Trap Handle"] = 1
 	modelTbl["Power Switch"] = 2
@@ -47,11 +47,14 @@ function ENT:SetupDataTables()
 	modelTbl["Gmod Button 6"] = 8
 	modelTbl["Gmod Button 7"] = 9
 
-	self:NetworkVar( "Int", 0, "ModelID", {KeyName = "nz_model_id", Edit = {order = -1, type = "Combo", text = "Select a model!", values = modelTbl}} )
+	self:NetworkVar( "Int", 1, "ModelID", {KeyName = "nz_model_id", Edit = {order = -1, type = "Combo", text = "Select a model!", values = modelTbl}} )
 
 	self:NetworkVarNotify( "ModelID", self.OnModelChange)
 
 	self:SetModelID(1)
+
+	--the name of the linked ents
+	self:ButtonSetupDataTables()
 end
 
 function ENT:ButtonSetupDataTables()
@@ -74,10 +77,13 @@ function ENT:OnModelChange(name, old, new)
 end
 
 function ENT:Initialize()
+	self:SetModel(self.ModelTranslate[self:GetModelID()].model)
+
 	self:PhysicsInit( SOLID_VPHYSICS )
-	self:SetMoveType( MOVETYPE_NONE )
 	self:SetSolid( SOLID_VPHYSICS )
 
+	local phys = self:GetPhysicsObject()
+	phys:EnableMotion(false)
 	self.PosePosition = 0
 end
 
@@ -102,7 +108,7 @@ if CLIENT then
 					if IsValid(lEnt) and !lEnt:IsPlayer() then
 						local texcoord = math.Rand( 0, 1 )
 						render.SetMaterial(self.WireMat)
-						render.DrawBeam(self:GetPos() + self:OBBCenter(), lEnt:GetPos() + lEnt:OBBCenter(), 8, texcoord, texcoord + 1, Color( 255, 255, 255 ) )
+						render.DrawBeam(self:GetPos() + self:OBBCenter(), lEnt:GetPos() + lEnt:OBBCenter(), 1, texcoord, texcoord + 1, Color( 20, 255, 30 ) )
 					end
 				end
 			end

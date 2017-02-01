@@ -210,7 +210,8 @@ nzPerks:NewPerk("pap", {
 
 				wep:Remove()
 				local wep = ents.Create("pap_weapon_fly")
-				wep:SetPos(machine:GetPos() + ang:Forward()*30 + ang:Up()*25 + ang:Right()*-3)
+				local startpos = machine:GetPos() + ang:Forward()*30 + ang:Up()*25 + ang:Right()*-3
+				wep:SetPos(startpos)
 				wep:SetAngles(ang + Angle(0,90,0))
 				wep.WepClass = class
 				wep:Spawn()
@@ -247,7 +248,7 @@ nzPerks:NewPerk("pap", {
 							wep:SetAngles(ang)
 							wep.WepClass = weapon.NZPaPReplacement
 							wep:Spawn()
-							wep.TriggerPos = machine:GetPos() + ang:Forward()*30 + ang:Up()*25 + ang:Right()*-3
+							wep.TriggerPos = startpos
 							
 							local replacewep = weapons.Get(weapon.NZPaPReplacement)
 							local model = (replacewep and replacewep.WM or replacewep.WorldModel) or "models/weapons/w_rif_ak47.mdl"
@@ -258,7 +259,7 @@ nzPerks:NewPerk("pap", {
 							wep:SetMoveType( MOVETYPE_FLY )
 						end
 						
-						print(wep, wep.WepClass, wep:GetModel())
+						--print(wep, wep.WepClass, wep:GetModel())
 					
 						machine:EmitSound("nz/machines/pap_ready.wav")
 						wep:SetCollisionBounds(Vector(0,0,0), Vector(0,0,0))

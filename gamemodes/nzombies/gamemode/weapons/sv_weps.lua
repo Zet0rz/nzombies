@@ -70,6 +70,7 @@ local function OnWeaponAdded( weapon )
 				end)
 			end
 			if weapon.NearWallEnabled then weapon.NearWallEnabled = false end
+			if weapon:IsFAS2() then weapon.NoNearWall = true end
 		end)
 	end
 	

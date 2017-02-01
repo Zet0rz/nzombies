@@ -14,7 +14,7 @@ ENT.TablesBeingCrafted = {} -- Shared between all entities of this type!
 -- models/props_debris/wood_board02a.mdl
 function ENT:Initialize()
 
-	self:SetModel("models/props_interiors/table_kitchen.mdl")
+	self:SetModel("models/nzprops/table_workbench.mdl")
 	self:SetMoveType( MOVETYPE_NONE )
 	self:SetSolid( SOLID_VPHYSICS )
 	if SERVER then
@@ -183,6 +183,10 @@ function ENT:FinishTimedUse(ply)
 			end
 		end
 	end
+end
+
+function ENT:OnRemove()
+	if IsValid(self.CraftedModel) then self.CraftedModel:Remove() end
 end
 
 if CLIENT then

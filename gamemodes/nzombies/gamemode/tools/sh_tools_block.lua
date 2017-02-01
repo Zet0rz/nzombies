@@ -41,11 +41,11 @@ nzTools:CreateTool("block", {
 		local Scroll = vgui.Create( "DScrollPanel", frame )
 		Scroll:SetSize( 280, 300 )
 		Scroll:SetPos( 10, 10 )
-		
+
 		function Scroll.CompileData()
 			return {model = data.model}
 		end
-		
+
 		function Scroll.UpdateData(data)
 			nzTools:SendData(data, "block", data) -- Save the same data here
 		end
@@ -68,9 +68,10 @@ nzTools:CreateTool("block", {
 					Scroll.UpdateData(Scroll.CompileData())
 				end
 				Blockmodel.Paint = function(self)
-					if data.model == v.model then
-						surface.SetDrawColor(0,0,200)
-						self:DrawOutlinedRect()
+					self.OverlayFade = math.Clamp( ( self.OverlayFade or 0 ) - RealFrameTime() * 640 * 2, 0, 255 )
+
+					if data.model == v.model or self:IsHovered() then
+						self.OverlayFade = math.Clamp( self.OverlayFade + RealFrameTime() * 640 * 8, 0, 255 )
 					end
 				end
 			end

@@ -3,11 +3,16 @@ AddCSLuaFile( )
 ENT.Type = "anim"
 ENT.Base = "base_entity"
 
-ENT.PrintName = "nz_button_and"
+nzLogic:Register("nz_button_and")
+ENT.SpawnIcon = "models/maxofs2d/button_03.mdl"
+ENT.PrintName = "AND Gate/Button"
+ENT.Description = "This Gate will trigger if all activators linked to this butoons are activate at the same time."
 
 DEFINE_BASECLASS("nz_button")
 
 function ENT:ButtonSetupDataTables()
+	self:SetModelID(5)
+
 	self:NetworkVar( "String", 1, "ActivatorNZName1", {KeyName = "nz_activator_name1", Edit = {order = 20, type = "Generic"}} )
 	self:NetworkVar( "String", 2, "ActivatorNZName2", {KeyName = "nz_activator_name2", Edit = {order = 21, type = "Generic"}} )
 	self:NetworkVar( "String", 3, "LinkedNZName", {KeyName = "nz_linked_name1", Edit = {order = 22, type = "Generic"}} )

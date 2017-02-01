@@ -119,13 +119,13 @@ function nzRound:Prepare( time )
 			end
 			
 			local specialDelay
-			if roundData.normalDelayMod then
+			if roundData.specialDelayMod then
 				local mod = roundData.specialDelayMod
 				specialDelay = mod(self:GetZombiesMax())
 			elseif roundData.specialDelay then
 				specialDelay = roundData.specialDelay
 			else
-				specialDelay = 0.25
+				specialDelay = 0.5
 			end
 
 			local specialData = roundData.specialTypes
