@@ -22,13 +22,6 @@ lua_run print( player.GetAll()[1]:GetEyeTrace().Entity:GetAngles() )
 Build station pos: -1375.442627 985.563049 -164.028244
 Build station ang: -0.000 -90.000 -0.000
 
-Soul Catcher pos: -1013.565002 -1750.850830 -392.342163
-Soul Catcher ang: -0.000 -0.000 0.000
-Soul Catcher model: models/props_vehicles/generatortrailer01.mdl
-
-Console Box on Soul Catcher pos: -1018.099365 -1729.259888 -334.313202
-Console Box on Soul Catcher ang: -90.000 90.000 180.000
-
 Tire pos: -1889.828125 -1512.047974 -384.140137
 Tire ang: 17.772 -19.848 -49.948
 
@@ -39,7 +32,7 @@ Nitroamine model: models/props_lab/jar01a.mdl
 Wire spool model: models/props_c17/pulleywheels_small01.mdl
 
 Possible Blasting Cap model: models/Items/grenadeAmmo.mdl --HL2 grenade
-Possible Blasting Cap model: models/Items/AR2_Grenade.mdl --HL2 SMG grenade
+Possible Blasting Cap model: models/Items/AR2_Grenade.mdl --HL2 SMG grenade - this is probably the best of the two
 
 EE failure door IDs: 5238, 5243
 
@@ -281,7 +274,7 @@ end )
 lever:Update()
 
 local detonator = nzItemCarry:CreateCategory( "detonator" )
-detonator:SetIcon( "" )
+detonator:SetIcon( "spawnicons/models/props_c17/consolebox05a.png" )
 detonator:SetText( "Press E to pick up the console box." )
 detonator:SetDropOnDowned( true )
 detonator:SetShowNotification( true )
@@ -310,12 +303,12 @@ end )
 detonator:Update()
 
 local chargeddetonator = nzItemCarry:CreateCategory( "charged_detonator" )
-chargeddetonator:SetIcon( "" )
+chargeddetonator:SetIcon( "spawnicons/models/props_c17/consolebox05a.png" )
 chargeddetonator:SetText( "Press E to pick up the charged console box." )
 chargeddetonator:SetDropOnDowned( true )
 chargeddetonator:SetShowNotification( true )
 chargeddetonator:SetDropFunction( function( self, ply )
-	local chrgddtntr = ents.Create("nz_script_prop")
+	local chrgddtntr = ents.Create( "nz_script_prop" )
 	chrgddtntr:SetModel( "models/props_c17/consolebox05a.mdl" )
 	chrgddtntr:SetPos( ply:GetPos() )
 	chrgddtntr:SetAngles( Angle( 0, 0, 0 ) )
@@ -325,14 +318,17 @@ chargeddetonator:SetDropFunction( function( self, ply )
 	self:RegisterEntity( chrgddtntr )
 end )
 chargeddetonator:SetResetFunction( function( self )
-	local chrgddtntr = ents.Create("nz_script_prop")
+	--//I'm not gonna have this be local
+	chrgddtntr = ents.Create( "nz_script_prop" )
 	chrgddtntr:SetModel( "models/props_c17/consolebox05a.mdl" )
-	chrgddtntr:SetPos(  )
-	chrgddtntr:SetAngles(  )
+	chrgddtntr:SetPos( Vector( -1018.099365, -1729.259888, -334.313202 ) )
+	chrgddtntr:SetAngles( Angle( -90.000, 90.000, 180.000 ) )
 	chrgddtntr:Spawn()
+	chrgddtntr:SetNoDraw( true )
 	self:RegisterEntity( chrgddtntr )
 end )
 chargeddetonator:SetPickupFunction( function(self, ply, ent)
+	if not ent.CanPickup then return end
 	ply:GiveCarryItem( self.id )
 	ent:Remove()
 end )
@@ -691,9 +687,41 @@ function mapscript.OnGameBegin()
 		light:SetModel( "models/props_c17/light_cagelight02_off.mdl" )
 	end
 
+	soulcatcher = ents.Create( "nz_script_soulcatcher" )
+	soulcatcher:SetPos( Vector( -1013.565002, -1750.850830, -392.342163 ) )
+	soulcatcher:SetAngles( Angle( -0.000, -0.000, 0.000 ) )
+	soulcatcher:SetModel( "models/props_vehicles/generatortrailer01.mdl" )
+	soulcatcher:SetNWString( "NZText", "Use this generator to charge something." )
+	soulcatcher:SetNWString( "NZRequiredItem", "detonator" )
+	soulcatcher:SetNWString( "NZHasText", "Press E to place and charge the console box battery." )
+	soulcatcher:Spawn()
+	soulcatcher:Activate()
+	soulcatcher:SetRange( 500 )
+	soulcatcher:SetTargetAmount( 30 )
+	soulcatcher:SetCondition( function( self, z, dmg )
+    	return soulcatcher.AllowSouls
+	end)
+	soulcatcher:Reset()
+	soulcatcher.OnUsed = function( self, ply )
+		if ply:HasCarryItem( "detonator" ) then
+			soulcatcher.AllowSouls = true
+			ply:RemoveCarryItem( "detonator" )
+			chrgddtntr:SetNoDraw( false )
+			chrgddtntr:SetNWString( "NZText", "" )
+			soulcatcher:SetNWString( "NZText", "Kill zombies near this generator to charge the console box battery." )
+			soulcatcher:SetNWString( "NZHasText", "Kill zombies near this generator to charge the console box battery." )
+		end
+	end
+	soulcatcher:SetCompleteFunction( function( self )
+		soulcatcher.AllowSouls = false
+		chrgddtntr.CanPickup = true
+		chrgddtntr:SetNWString( "NZText", "Press E to pick up the charged console box." )
+	end )
+
 	gascans:Reset()
 	lever:Reset()
 	detonator:Reset()
+	chargeddetonator:Reset()
 
 	--//Fixes the bugged doorways
     local shittodelete = { 2169, 1858, 2959, 2465, 1921, 1918, 1939, 2209, 1976, 1973, 2373 } --, 2518 } the culprit
