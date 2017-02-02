@@ -1,10 +1,10 @@
 --//Made by Logan - written for Zet0r to (hopefully) be included in the official gamemode
 --//This of course may be edited to work better, I ain't no great coder
---//Looking back on this, none of the code is in any order
 
 --[[
 TO-DO:	- Disallow returning power after failing the EE
-		- Test the EE
+		- Randomize the power switch lever spawning
+		- Get Counter Strike: Source C4 stuff, such as spawnicons
 		- Add final step in EE steps where player builds bomb to destroy fence to escape, 
 			can be created before console buttons, but only used after
 			- In-game C-4 materials: timed detonator (remote or controller), blasting cap (wires...?), 
@@ -18,9 +18,6 @@ TO-DO:	- Disallow returning power after failing the EE
 
 lua_run print( player.GetAll()[1]:GetEyeTrace().Entity:GetPos() )
 lua_run print( player.GetAll()[1]:GetEyeTrace().Entity:GetAngles() )
-
-Build station pos: -1375.442627 985.563049 -164.028244
-Build station ang: -0.000 -90.000 -0.000
 
 Tire pos: -1889.828125 -1512.047974 -384.140137
 Tire ang: 17.772 -19.848 -49.948
@@ -185,7 +182,27 @@ local prophints = { }
 
 	--//--
 
---//Console buttons from left to right
+--//Build Table Information
+local buildabletbl = {
+	model = "", --insert C4 world model here
+	pos = Vector(  ), --C4 Position relative to the table
+	ang = Angle(  ), --C4 Angles
+	parts = {
+		[ "charged_detonator" ] = { 0, 1 },
+		[ "tire" ] = { 2 },
+		[ "" ] = { 3 }, --Nitroamine
+		[ "" ] = { 4 }, --Wire
+		[ "" ] = { 5 } --Blasting Caps
+	},
+	usefunc = function( self, ply ) -- When it's completed and a player presses E
+		if !ply:HasWeapon("nz_zombieshield") then
+			ply:GiveCarryItem( "" )
+		end
+	end,
+	text = "Press E to pick up the plastic explosive."
+}
+
+--//Console buttons, from left to right
 local consolebuttons = { 2335, 2337, 2338, 2339, 2340 }
 
 local poweredgenerators, establishedlinks, buttonorder = { }, { }, { }
@@ -333,6 +350,37 @@ chargeddetonator:SetPickupFunction( function(self, ply, ent)
 	ent:Remove()
 end )
 chargeddetonator:Update()
+
+local rubber = nzItemCarry:CreateCategory( "tire" )
+rubber:SetIcon( "spawnicons/.png" )
+rubber:SetText( "Press E to pick up the tire." )
+rubber:SetDropOnDowned( true )
+rubber:SetShowNotification( true )
+rubber:SetDropFunction( function( self, ply )
+	local rbr = ents.Create( "nz_script_prop" )
+	rbr:SetModel( "" )
+	rbr:SetPos( ply:GetPos() )
+	rbr:SetAngles( Angle( 0, 0, 0 ) )
+	rbr:Spawn()
+	rbr:DropToFloor()
+	ply:RemoveCarryItem( "tire" )
+	self:RegisterEntity( rbr )
+end )
+rubber:SetResetFunction( function( self )
+	local rbr = ents.Create( "nz_script_prop" )
+	rbr:SetModel( "" )
+	rbr:SetPos( Vector( -1889.828125, -1512.047974, -384.140137 ) )
+	rbr:SetAngles( Angle( 17.772, -19.848, -49.948 ) )
+	rbr:Spawn()
+	rbr:SetNoDraw( true )
+	self:RegisterEntity( rbr )
+end )
+rubber:SetPickupFunction( function(self, ply, ent)
+	if not ent.CanPickup then return end
+	ply:GiveCarryItem( self.id )
+	ent:Remove()
+end )
+rubber:Update()
 
 --//To be used to check for establishedlinks' or poweredgenerators' validity
 function CheckTable( tbl )
@@ -504,13 +552,20 @@ function FailPrimaryEE()
 end
 
 function mapscript.OnGameBegin()
-
+	--//Generates the random list of console buttons and their prop hint entity
 	local fakelist = table.Copy( consolebuttons )
 	for i = 1, #fakelist do
 		local choice = table.Random( fakelist )
 		table.insert( buttonorder, { choice, prophints[ table.KeyFromValue( consolebuttons, choice ) ] } )
 		table.RemoveByValue( fakelist, choice )
 	end
+	
+	--//Build Table Info Continued
+	local tbl = ents.Create( "buildable_table" )
+	tbl:AddValidCraft( "Plastic Explosive", buildabletbl )
+	tbl:SetPos( Vector( -1375.442627, 985.563049, -164.028244 ) )
+	tbl:SetAngles( Angle( -0.000, -90.000, -0.000 ) )
+	tbl:Spawn()
 
 	--//Creates the broken power switch
 	powerswitch = ents.Create( "nz_script_prop" )
