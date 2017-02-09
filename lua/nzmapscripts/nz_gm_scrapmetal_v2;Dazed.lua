@@ -563,8 +563,8 @@ function mapscript.OnGameBegin()
 	--//Build Table Info Continued
 	local tbl = ents.Create( "buildable_table" )
 	tbl:AddValidCraft( "Plastic Explosive", buildabletbl )
-	tbl:SetPos( Vector( -1375.442627, 985.563049, -164.028244 ) )
-	tbl:SetAngles( Angle( -0.000, -90.000, -0.000 ) )
+	tbl:SetPos( Vector( -1384.457886, 971.894897, -184.897278 ) )
+	tbl:SetAngles( Angle( 0.000, -90.000, 0.000 ) )
 	tbl:Spawn()
 
 	--//Creates the broken power switch
