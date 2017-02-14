@@ -3,17 +3,17 @@
 
 --[[
 TO-DO:	- Disallow returning power after failing the EE
+		- Raise the invisible wall over the Soul Catcher
 		- Randomize the power switch lever spawning
 		- Get Counter Strike: Source C4 stuff, such as spawnicons
 		- Add final step in EE steps where player builds bomb to destroy fence to escape, 
 			can be created before console buttons, but only used after
-			- In-game C-4 materials: timed detonator (remote or controller), blasting cap (wires...?), 
+			- In-game C-4 materials: timed detonator (remote or controller), blasting cap, 
 				explosive (a nitroamine, nitrogen and amino acid mix, compound, gunpowder prop?), & rubber (any tire)
 			- Have mini EE for the materials
-				- Blasting Caps (whatever they are) drop on Panzer kill
-				- Charged Remote/Controller given on soul catcher fill, it's found lying around randomly and must be charged
+				- Blasting Caps are found by destroying the door to the warden's office (lock model found in map de_cherno)
 				- Tire found lying around
-				- Nitroamine powder is rewarded... how?
+				- Nitroamine powder is rewarded by shooting something with a PaP weapon
 		- Finalize navmesh (and fix that one zombie spawn after first door buy)
 
 lua_run print( player.GetAll()[1]:GetEyeTrace().Entity:GetPos() )
@@ -25,8 +25,6 @@ Tire ang: 17.772 -19.848 -49.948
 Nitroamine pos: -1817.329224 1417.655273 -177.375412
 Nitroamine ang: -0.696 -45.993 -0.042
 Nitroamine model: models/props_lab/jar01a.mdl
-
-Wire spool model: models/props_c17/pulleywheels_small01.mdl
 
 Possible Blasting Cap model: models/Items/grenadeAmmo.mdl --HL2 grenade
 Possible Blasting Cap model: models/Items/AR2_Grenade.mdl --HL2 SMG grenade - this is probably the best of the two
@@ -190,9 +188,8 @@ local buildabletbl = {
 	parts = {
 		[ "charged_detonator" ] = { 0, 1 },
 		[ "tire" ] = { 2 },
-		[ "" ] = { 3 }, --Nitroamine
-		[ "" ] = { 4 }, --Wire
-		[ "" ] = { 5 } --Blasting Caps
+		[ "nitroamine" ] = { 3 }, --Nitroamine
+		[ "blastcap" ] = { 4 } --Blasting Caps
 	},
 	usefunc = function( self, ply ) -- When it's completed and a player presses E
 		if !ply:HasWeapon("nz_zombieshield") then
@@ -381,6 +378,38 @@ rubber:SetPickupFunction( function(self, ply, ent)
 	ent:Remove()
 end )
 rubber:Update()
+
+local powder = nzItemCarry:CreateCategory( "nitroamine" )
+powder:SetIcon( "" )
+powder:SetText( "" )
+powder:SetDropOnDowned( true )
+powder:SetShowNotification( true )
+powder:SetDropFunction( function( self, ply )
+
+end )
+powder:SetResetFunction( function( self )
+
+end )
+powder:SetPickupFunction( function( self, ply, ent )
+
+end )
+powder:Update()
+
+local blast = nzItemCarry:CreateCategory( "blastcap" )
+blast:SetIcon( "" )
+blast:SetText( "" )
+blast:SetDropOnDowned( true )
+blast:SetShowNotification( true )
+blast:SetDropFunction( function( self, ply )
+
+end )
+blast:SetResetFunction( function( self )
+
+end )
+blast:SetPickupFunction( function( self, ply, ent )
+
+end )
+blast:Update()
 
 --//To be used to check for establishedlinks' or poweredgenerators' validity
 function CheckTable( tbl )
@@ -757,6 +786,7 @@ function mapscript.OnGameBegin()
     	return soulcatcher.AllowSouls
 	end)
 	soulcatcher:Reset()
+	chrgddtntr:SetNWString( "NZText", "" )
 	soulcatcher.OnUsed = function( self, ply )
 		if ply:HasCarryItem( "detonator" ) then
 			soulcatcher.AllowSouls = true
