@@ -4,14 +4,20 @@
 --[[
 TO-DO:	- Disallow returning power after failing the EE
 		- Raise the invisible wall over the Soul Catcher
+		- Fix zombie spawning in the boiler room
 		- Randomize the power switch lever spawning
 		- Get Counter Strike: Source C4 stuff, such as spawnicons
+		- Get Tire model
+		- Check door locking is working as intended (in the warehouse and such)
+		- Get lock model from de_cherno, get pos/ang for later use
+		- What should be shot w/ PaP weapon to get powder? The Thumpers?
+			- What should unlock after? Possible rooms: Blue room in power room, Roof of warehouse building, Side room in garage
 		- Add final step in EE steps where player builds bomb to destroy fence to escape, 
 			can be created before console buttons, but only used after
 			- In-game C-4 materials: timed detonator (remote or controller), blasting cap, 
 				explosive (a nitroamine, nitrogen and amino acid mix, compound, gunpowder prop?), & rubber (any tire)
 			- Have mini EE for the materials
-				- Blasting Caps are found by destroying the door to the warden's office (lock model found in map de_cherno)
+				- Blasting Caps are found by destroying the door to the warden's office
 				- Tire found lying around
 				- Nitroamine powder is rewarded by shooting something with a PaP weapon
 		- Finalize navmesh (and fix that one zombie spawn after first door buy)
@@ -380,8 +386,8 @@ end )
 rubber:Update()
 
 local powder = nzItemCarry:CreateCategory( "nitroamine" )
-powder:SetIcon( "" )
-powder:SetText( "" )
+powder:SetIcon( "spawnicons/models/props_lab/jar01a.png" )
+powder:SetText( "Press E to pick up the nitroamine powder." )
 powder:SetDropOnDowned( true )
 powder:SetShowNotification( true )
 powder:SetDropFunction( function( self, ply )
