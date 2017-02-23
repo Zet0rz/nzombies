@@ -3,11 +3,9 @@
 
 --[[
 TO-DO:	- Disallow returning power after failing the EE
-		- Raise the invisible wall over the Soul Catcher
 		- Fix zombie spawning in the boiler room
 		- Randomize the power switch lever spawning
 		- Get Counter Strike: Source C4 stuff, such as spawnicons
-		- Get Tire model
 		- Check door locking is working as intended (in the warehouse and such)
 		- Get lock model from de_cherno, get pos/ang for later use
 		- What should be shot w/ PaP weapon to get powder? The Thumpers?
@@ -27,6 +25,7 @@ lua_run print( player.GetAll()[1]:GetEyeTrace().Entity:GetAngles() )
 
 Tire pos: -1889.828125 -1512.047974 -384.140137
 Tire ang: 17.772 -19.848 -49.948
+Tire model: models/props_vehicles/carparts_tire01a.mdl
 
 Nitroamine pos: -1817.329224 1417.655273 -177.375412
 Nitroamine ang: -0.696 -45.993 -0.042
