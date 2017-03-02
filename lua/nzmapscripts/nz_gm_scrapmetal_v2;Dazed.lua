@@ -2,30 +2,19 @@
 --//This of course may be edited to work better, I ain't no great coder
 
 --[[
-TO-DO:	- Disallow returning power after failing the EE
+TO-DO:	- Garage Side-Room to have nitroamine powder. Have door open via power first then shooting something w/ a PaP weapon
+			- What do we shoot? Gas Generators? Thumpers?
 		- Fix zombie spawning in the boiler room
-		- Randomize the power switch lever spawning
+		- Spawn blasting cap in Warden's Office, along with a dead Combine soldier and an SMG
+		- Get lock model from de_cherno, get pos/ang for later use
 		- Get Counter Strike: Source C4 stuff, such as spawnicons
 		- Check door locking is working as intended (in the warehouse and such)
-		- Get lock model from de_cherno, get pos/ang for later use
-		- What should be shot w/ PaP weapon to get powder? The Thumpers?
-			- What should unlock after? Possible rooms: Blue room in power room, Roof of warehouse building, Side room in garage
-		- Add final step in EE steps where player builds bomb to destroy fence to escape, 
-			can be created before console buttons, but only used after
-			- In-game C-4 materials: timed detonator (remote or controller), blasting cap, 
-				explosive (a nitroamine, nitrogen and amino acid mix, compound, gunpowder prop?), & rubber (any tire)
-			- Have mini EE for the materials
-				- Blasting Caps are found by destroying the door to the warden's office
-				- Tire found lying around
-				- Nitroamine powder is rewarded by shooting something with a PaP weapon
+		- Disallow returning power after failing the EE
+		- Add final step in EE steps where player builds bomb to destroy fence to escape, can be created before console buttons, but only used after
 		- Finalize navmesh (and fix that one zombie spawn after first door buy)
 
 lua_run print( player.GetAll()[1]:GetEyeTrace().Entity:GetPos() )
 lua_run print( player.GetAll()[1]:GetEyeTrace().Entity:GetAngles() )
-
-Tire pos: -1889.828125 -1512.047974 -384.140137
-Tire ang: 17.772 -19.848 -49.948
-Tire model: models/props_vehicles/carparts_tire01a.mdl
 
 Nitroamine pos: -1817.329224 1417.655273 -177.375412
 Nitroamine ang: -0.696 -45.993 -0.042
@@ -354,13 +343,13 @@ end )
 chargeddetonator:Update()
 
 local rubber = nzItemCarry:CreateCategory( "tire" )
-rubber:SetIcon( "spawnicons/.png" )
+rubber:SetIcon( "spawnicons/models/props_vehicles/carparts_tire01a.png" )
 rubber:SetText( "Press E to pick up the tire." )
 rubber:SetDropOnDowned( true )
 rubber:SetShowNotification( true )
 rubber:SetDropFunction( function( self, ply )
 	local rbr = ents.Create( "nz_script_prop" )
-	rbr:SetModel( "" )
+	rbr:SetModel( "models/props_vehicles/carparts_tire01a.mdl" )
 	rbr:SetPos( ply:GetPos() )
 	rbr:SetAngles( Angle( 0, 0, 0 ) )
 	rbr:Spawn()
@@ -370,7 +359,7 @@ rubber:SetDropFunction( function( self, ply )
 end )
 rubber:SetResetFunction( function( self )
 	local rbr = ents.Create( "nz_script_prop" )
-	rbr:SetModel( "" )
+	rbr:SetModel( "models/props_vehicles/carparts_tire01a.mdl" )
 	rbr:SetPos( Vector( -1889.828125, -1512.047974, -384.140137 ) )
 	rbr:SetAngles( Angle( 17.772, -19.848, -49.948 ) )
 	rbr:Spawn()
@@ -390,19 +379,34 @@ powder:SetText( "Press E to pick up the nitroamine powder." )
 powder:SetDropOnDowned( true )
 powder:SetShowNotification( true )
 powder:SetDropFunction( function( self, ply )
-
+	local pwdr = ents.Create( "nz_script_prop" )
+	pwdr:SetModel( "models/props_lab/jar01a.mdl" )
+	pwdr:SetPos( ply:GetPos() )
+	pwdr:SetAngles( Angle( 0, 0, 0 ) )
+	pwdr:Spawn()
+	pwdr:DropToFloor()
+	ply:RemoveCarryItem( "nitroamine" )
+	self:RegisterEntity( pwdr )
 end )
 powder:SetResetFunction( function( self )
-
+	local pwdr = ents.Create( "nz_script_prop" )
+	pwdr:SetModel( "models/props_lab/jar01a.mdl" )
+	pwdr:SetPos( Vector( -1817.329224, 1417.655273, -177.375412 ) )
+	pwdr:SetAngles( Angle( -0.696, -45.993, -0.042 ) )
+	pwdr:Spawn()
+	ply:RemoveCarryItem( "nitroamine" )
+	self:RegisterEntity( pwdr )
 end )
 powder:SetPickupFunction( function( self, ply, ent )
-
+	if not ent.CanPickup then return end
+	ply:GiveCarryItem( self.id )
+	ent:Remove()
 end )
 powder:Update()
 
 local blast = nzItemCarry:CreateCategory( "blastcap" )
-blast:SetIcon( "" )
-blast:SetText( "" )
+blast:SetIcon( "spawnicons/models/Items/AR2_Grenade.png" )
+blast:SetText( "Press E to pick up the impact grenade." )
 blast:SetDropOnDowned( true )
 blast:SetShowNotification( true )
 blast:SetDropFunction( function( self, ply )
@@ -412,7 +416,9 @@ blast:SetResetFunction( function( self )
 
 end )
 blast:SetPickupFunction( function( self, ply, ent )
-
+	if not ent.CanPickup then return end
+	ply:GiveCarryItem( self.id )
+	ent:Remove()
 end )
 blast:Update()
 
