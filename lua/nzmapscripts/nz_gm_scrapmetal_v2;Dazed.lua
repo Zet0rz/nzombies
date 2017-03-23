@@ -29,7 +29,7 @@ Train horn sound: ambient/alarms/train_horn2.wav
 ]]
 local mapscript = {}
 
---//Positions of generators and gas cans
+--//Positions of generators
 local generators = {
 	{ pos = Vector( -324.481293, 985.716675, 27.194300 ), ang = Angle( -0.008, -1.304, 0.013 ) },
 	{ pos = Vector( -2503.098877, -637.548645, 146.832428 ), ang = Angle( -0.000, 180.000, 0.000 ) },
@@ -38,6 +38,7 @@ local generators = {
 	{ pos = Vector( -2061.307373, 1403.317261, -157.157211 ), ang = Angle( -0.000, 180.000, 0.000 ) }
 }
 
+--//Possible positions of the Gas Cans
 local gascanspawns = {
 	{ { pos = Vector( 281.657257, -1538.109131, 122.891541 ), ang = Angle( 0.000, 90.000, 0.000 ) }, --Power Switch Room
 		{ pos = Vector( -956.488892, -1478.487671, 123.242821 ), ang = Angle( -0.000, -180.000, 0.000 ) }, 
@@ -57,6 +58,7 @@ local gascanspawns = {
 }
 local gascanlist = { }
 
+--//Position of outer links
 local links = {
 	{ pos = Vector( -485.073120, 714.775635, 37.296597 ), ang = Angle( -2.823, -7.083, 0.082 ) }, --On desk
 	{ pos = Vector( -2060.613037, -2014.947021, 175.752914 ), ang = Angle( -8.780, 97.645, -1.173 ) }, --Steam room
@@ -92,7 +94,7 @@ local detonatorspawn = {
 
 	--//These are the props used for the EE hinting with console buttons. Hint#a is the outlying prop w/ hint text, 
 	--//hint#b is the prop above the console buttons, hint#a will electrocute when the respective button needs pushing
-	--//This could have been one giant for statement with outlying tables... buuuuuuuuuuuuuut...
+	--//This could have been one giant "for" statement with outlying tables... buuuuuuuuuuuuuut...
 local prophints = { }
 	local hint1a = ents.Create( "nz_script_prop" )
 	hint1a:SetPos( Vector( -281.893066, -1002.959473, 9.120822 ) ) --By the rubble where the crashed helicopter normally lies
@@ -196,6 +198,7 @@ local buildabletbl = {
 --//Console buttons, from left to right
 local consolebuttons = { 2335, 2337, 2338, 2339, 2340 }
 
+--//Setting up some extra variables
 local poweredgenerators, establishedlinks, buttonorder = { }, { }, { }
 
 --//Creates all of the gas cans
@@ -281,6 +284,7 @@ lever:SetPickupFunction( function(self, ply, ent)
 end )
 lever:Update()
 
+--//Creates the console box which is used as the "detonator" by the C4 that is crafted
 local detonator = nzItemCarry:CreateCategory( "detonator" )
 detonator:SetIcon( "spawnicons/models/props_c17/consolebox05a.png" )
 detonator:SetText( "Press E to pick up the console box." )
@@ -310,6 +314,7 @@ detonator:SetPickupFunction( function(self, ply, ent)
 end )
 detonator:Update()
 
+--//The entity you pick up from the soul catcher that is ACTUALLY used with the part creator table
 local chargeddetonator = nzItemCarry:CreateCategory( "charged_detonator" )
 chargeddetonator:SetIcon( "spawnicons/models/props_c17/consolebox05a.png" )
 chargeddetonator:SetText( "Press E to pick up the charged console box." )
@@ -342,6 +347,7 @@ chargeddetonator:SetPickupFunction( function(self, ply, ent)
 end )
 chargeddetonator:Update()
 
+--//Tire that is used for the C4 and prop table
 local rubber = nzItemCarry:CreateCategory( "tire" )
 rubber:SetIcon( "spawnicons/models/props_vehicles/carparts_tire01a.png" )
 rubber:SetText( "Press E to pick up the tire." )
@@ -373,6 +379,7 @@ rubber:SetPickupFunction( function(self, ply, ent)
 end )
 rubber:Update()
 
+--//Nitroamine powder used for the C4
 local powder = nzItemCarry:CreateCategory( "nitroamine" )
 powder:SetIcon( "spawnicons/models/props_lab/jar01a.png" )
 powder:SetText( "Press E to pick up the nitroamine powder." )
@@ -404,6 +411,7 @@ powder:SetPickupFunction( function( self, ply, ent )
 end )
 powder:Update()
 
+--//Blasting Cap used for the C4
 local blast = nzItemCarry:CreateCategory( "blastcap" )
 blast:SetIcon( "spawnicons/models/Items/AR2_Grenade.png" )
 blast:SetText( "Press E to pick up the impact grenade." )
@@ -422,7 +430,7 @@ blast:SetPickupFunction( function( self, ply, ent )
 end )
 blast:Update()
 
---//To be used to check for establishedlinks' or poweredgenerators' validity
+--//Function to be used to check for establishedlinks' or poweredgenerators' validity
 function CheckTable( tbl )
 	if #tbl == 0 then return false end
 	for k, v in pairs( tbl ) do
@@ -433,7 +441,7 @@ function CheckTable( tbl )
 	return true
 end
 
---//I use this to check and set text for the base link and the outlying links. Not super efficient, but it should be 100% consistent, whereas it wasn't before
+--//I use this to check and set text for the base link and the outlying links. Maybe not super efficient, but it should be 100% consistent, whereas it wasn't before
 function SetTexts()
 	print( "function SetTexts called")
 	if nzElec:IsOn() then
@@ -496,36 +504,24 @@ function SetTexts()
 	end
 end
 
---[[Nextpush is used as the logic for the the next button to be pushed, an integer seperate from buttonorder, 
-	activehint is the hint entity to be electrocuted when it's respective button is to be pushed.]]
+--[[Here I try to explain the logic to make it easier for others looking for it -/-
+	This function starts the end-game of the script. Nextpush is used as the logic for the the next button to be pushed, an integer seperate from buttonorder.
+	The button order will be random every time the script loads. Button order is set after all links have been activated, but hint items remains the same
+	between button re-order. On EE failure, ALL EE items (beside generators and music EE) will get randomized text, power is permanenetly disabled, 
+	and the game is on round infinity until the players "escape" via opening the garage doors after a timer upon garage door activation. 
+	This way of escaping the map should be EXTREMELY DIFFICULT.]]
 local nextpush = 1
---[[The button order will be random every time the script loads. Button order is set after all links have been activated, but hint items remains the same
-	between button re-order. The hint giveaway will currently spawn on top of the link base, but can, and probably should, be randomized.
-	On EE failure, ALL EE items (beside generators and music EE) will get randomized text, power is permanenetly disabled, and the game is on round infinity
-	until the players "escape" via opening the garage doors after a 30 second timer upon garage door activation. This should be DIFFICULT. Should the 
-	players successfully complete the buttons, they will eventually escape by running through the train tunnel (screen will fade to black and players who 
-	have faded to black	will be lose zombie aggro). The quest that remains is to figure out if there should be, or what should be the step between console and escaping.]] 
 function StartPuzzle()
-	print( "StartPuzzle has been called" )
-	print( "consolebuttons table:" )
-	PrintTable( consolebuttons )
-	print( "buttonorder table:" )
-	PrintTable( buttonorder )
-	print( "Start of \"for k, v in pairs( buttonorder ) do\"" )
-	for k, v in pairs( buttonorder ) do --At this point, buttonorder is a randomized table version of consolebuttons
-		print( k, v, v[ 1 ], v[ 2 ], nextpush )
+	for k, v in pairs( buttonorder ) do --At this point, buttonorder is a randomized table version of consolebuttons (which is all 5 console button entities)
 		local consolebutton = ents.GetMapCreatedEntity( v[ 1 ] )
 		consolebutton:SetNWString( "NZText", "Press E to activate button " .. v[ 1 ] ) -- consolebuttons[ table.KeyFromValue( buttonorder, v[ 1 ] ) ] )
 		consolebutton.OnUsed = function()
-			print( "console button " .. v[ 1 ] .. " pushed" )
 			if not nzElec:IsOn() then return end
-			consolebutton:EmitSound( "buttons/button9.wav" )--TO DO: find a button pushing sound in gmod/hl2
-			--//You can push a button more than once, and it can fail the EE. This is a "feature," not a bug.
+			consolebutton:EmitSound( "buttons/button9.wav" )
+			--//You can push a button more than once, and it can fail the EE. This is more a "feature," not a bug.
 			if k == nextpush then
-				print( "The correct button was pushed. Debug: ", k, nextpush )
 				nextpush = nextpush + 1
 			else
-				print( "The wrong button was pushed. Debug: ", k, nextpush )
 				FailPrimaryEE()
 				nextpush = 0
 			end
@@ -543,11 +539,14 @@ function StartPuzzle()
 	end
 end
 
+--//All the EE items that get randomized text from this table. I have purposefully added in some EE sayings from CoD to increase sp00kiness.
 local availabletext = { "A", "a", "B", "b", "C", "c", "D", "d", "E", "e", "F", "f", "G", "g", "H", "h", "I", "i", "J", "j", "K", "k", "L", "l", "M", "m",
 						"N", "n", "O", "o", "P", "p", "Q", "q", "R", "r", "S", "s", "T", "t", "U", "u", "V", "v", "W", "w", "X", "x", "Y", "y", "Z", "z",
 						"!", "%", "ERROR", "*", "&", "SELF-DESTRUCT", "ESCAPE", "#", "SYSTEM", "POWER", "OFF", "ON", "HUMANOID", "METRO", " ", "ENTER", "EXIT",
-						"ASCEND_FROM_DARKNESS", "SAMANTHA", "FAILURE", "EVACUATE", "115", "ELEMENT", "CRITICAL", "-", "_" } --Can we add more Nazi Zombie easter egg sayings?
-local PermaOff
+						"ASCEND_FROM_DARKNESS", "SAMANTHA", "FAILURE", "EVACUATE", "115", "ELEMENT", "CRITICAL", "-", "_" } --Can we add more?
+
+--//Function that runs when the EE fails, also sets all the fun text
+local PermaOff = false
 function FailPrimaryEE()
 	nzElec:Reset()
 	PermaOff = true
@@ -581,7 +580,7 @@ function FailPrimaryEE()
 		end
 	end
 	for i = 1, 6 do
-	mixedtext = mixedtext .. table.Random( availabletext )
+		mixedtext = mixedtext .. table.Random( availabletext )
 	end
 	baselink:EmitSound( "ambient/energy/zap5.wav" )
 	baselink:SetNWString( "NZText", mixedtext )
@@ -589,6 +588,7 @@ function FailPrimaryEE()
 	baselink.OnUsed = function()
 		return false
 	end
+	
 end
 
 function mapscript.OnGameBegin()
@@ -766,6 +766,7 @@ function mapscript.OnGameBegin()
 		local effecttimer2 = 0
 	end
 
+	--//Creates the lights above the base link
 	for k, v in pairs( lights1 ) do
 		local light = ents.Create( "nz_script_prop" )
 		v.ent = light
@@ -774,6 +775,7 @@ function mapscript.OnGameBegin()
 		light:SetModel( "models/props_c17/light_cagelight02_off.mdl" )
 	end
 
+	--//Creates the lights in the control room
 	for k, v in pairs( lights2 ) do
 		local light = ents.Create( "nz_script_prop" )
 		v.ent = light
@@ -782,6 +784,7 @@ function mapscript.OnGameBegin()
 		light:SetModel( "models/props_c17/light_cagelight02_off.mdl" )
 	end
 
+	--//I wonder what this block of code creates...
 	soulcatcher = ents.Create( "nz_script_soulcatcher" )
 	soulcatcher:SetPos( Vector( -1013.565002, -1750.850830, -392.342163 ) )
 	soulcatcher:SetAngles( Angle( -0.000, -0.000, 0.000 ) )
@@ -820,7 +823,7 @@ function mapscript.OnGameBegin()
 	chargeddetonator:Reset()
 
 	--//Fixes the bugged doorways
-    local shittodelete = { 2169, 1858, 2959, 2465, 1921, 1918, 1939, 2209, 1976, 1973, 2373 } --, 2518 } the culprit
+    local shittodelete = { 2169, 1858, 2959, 2465, 1921, 1918, 1939, 2209, 1976, 1973, 2373 } --, 2518 } This door, which is a door, bugs the :Fire() function
 	for k, v in pairs( shittodelete ) do
 		ents.GetMapCreatedEntity( v ):Fire( "Open" )
 		timer.Simple( 0.2, function()
@@ -829,23 +832,24 @@ function mapscript.OnGameBegin()
 	end
 end
 
-local initialactivation = false
+--//When the electricity first turns on, we want to turn on the lights
+local initialactivation = false --This may need to be set in GameStart function
 function mapscript.ElectricityOn()
-	--//Because this function will run whenever the power is turned back on, we have to run checks
 	SetTexts()
-	--//Only run this the first time; logic for 2nd activation and onward is done below
-	if initialactivation then return end
-	for k, v in pairs( lights1 ) do
-		v.ent:SetModel( "models/props_c17/light_cagelight01_on.mdl" )
+	--//Only run this the first time as this just turns the models to the "on" model - only to be done initially
+	if not initialactivation then
+		for k, v in pairs( lights1 ) do
+			v.ent:SetModel( "models/props_c17/light_cagelight01_on.mdl" )
+		end
+		for k, v in pairs( lights2 ) do
+			v.ent:SetModel( "models/props_c17/light_cagelight01_on.mdl" )
+		end
+		initialactivation = true
 	end
-	for k, v in pairs( lights2 ) do
-		v.ent:SetModel( "models/props_c17/light_cagelight01_on.mdl" )
-	end
-	initialactivation = true
 end
 
+--//Of course, when the electricity turns off, the lights must turn off
 function mapscript.ElectricityOff()
-	--//Of course, when the electricity turns off, the lights must turn off
 	for k, v in pairs( lights1 ) do
 		v.ent:SetModel( "models/props_c17/light_cagelight02_off.mdl" )
 	end
@@ -854,18 +858,21 @@ function mapscript.ElectricityOff()
 	end
 end
 
+--[[Here we goooooooo,
+	The chance for power to turn off is pseudo-random. After it is initially turn on, it is gauranteed to turn off once every 5 rounds, but may happen sooner.
+	By default, there is a 1 and 5 chance (20%) the power will turn off (or stay off) for any given round. For every round the power DOESN'T turn off, 
+	the chance increases by an additional 20% until the power WILL turn off (So 20 - 40 - 60 - 80 - 100). This can be easily adjusted if an increase in 20%
+	is too much, and a 1 in 6+ chance is perceived to be better.]]
 local chance, turnoff, propinfo = math.Clamp( 1, 1, 5 ), { }, { }
 function mapscript.OnRoundStart()
-	if PermaOff then
+	if PermaOff then --EE has been failed
 		if nzElec:IsOn() then
 			nzElec:Reset()
-			return
 		end
+		return
 	end
-	if initialactivation then --Only if power has been activated once, and the EE hasn't failed, should we check to turn power on or off
-		--[[By default, there is a 1 and 5 chance (20%) the power will turn off (or stay off) for any given round AFTER the electricity has been turn on. For every round the power DOESN'T
-		turn off, the chance increases by an additional 20% until the power WILL turn off. This is some form of pseudo-randomness. I might make the chance smaller if it's too obtrusive.]]
-		for i = 1, 5 - chance do 
+	if initialactivation then --If power has been initially turned on
+		for i = 1, 5 - chance do
 			turnoff[ i ] = false
 		end
 		for i = 6 - chance, 5 do
@@ -902,4 +909,5 @@ function mapscript.OnRoundStart()
 	end
 end
 
+--//Return that shit, yo.
 return mapscript
