@@ -4,10 +4,7 @@
 --[[
 TO-DO:	- Garage Side-Room to have nitroamine powder. Have door open via power first then shooting something w/ a PaP weapon
 			- What do we shoot? Gas Generators? Thumpers?
-		- Fix zombie spawning in the boiler room
-		- Spawn blasting cap in Warden's Office, along with a dead Combine soldier and an SMG
 		- Get lock model from de_cherno, get pos/ang for later use
-		- Get Counter Strike: Source C4 stuff, such as spawnicons
 		- Check door locking is working as intended (in the warehouse and such)
 		- Disallow returning power after failing the EE
 		- Add final step in EE steps where player builds bomb to destroy fence to escape, can be created before console buttons, but only used after
@@ -15,17 +12,6 @@ TO-DO:	- Garage Side-Room to have nitroamine powder. Have door open via power fi
 
 lua_run print( player.GetAll()[1]:GetEyeTrace().Entity:GetPos() )
 lua_run print( player.GetAll()[1]:GetEyeTrace().Entity:GetAngles() )
-
-Nitroamine pos: -1817.329224 1417.655273 -177.375412
-Nitroamine ang: -0.696 -45.993 -0.042
-Nitroamine model: models/props_lab/jar01a.mdl
-
-Possible Blasting Cap model: models/Items/grenadeAmmo.mdl --HL2 grenade
-Possible Blasting Cap model: models/Items/AR2_Grenade.mdl --HL2 SMG grenade - this is probably the best of the two
-
-EE failure door IDs: 5238, 5243
-
-Train horn sound: ambient/alarms/train_horn2.wav
 ]]
 local mapscript = {}
 
@@ -178,18 +164,18 @@ local prophints = { }
 
 --//Build Table Information
 local buildabletbl = {
-	model = "", --insert C4 world model here
-	pos = Vector(  ), --C4 Position relative to the table
-	ang = Angle(  ), --C4 Angles
+	model = "models/weapons/w_c4.mdl",
+	pos = Vector( 0, 0, 60 ), --C4 Position relative to the table
+	ang = Angle( 0, 0, 0 ), --C4 Angles
 	parts = {
 		[ "charged_detonator" ] = { 0, 1 },
 		[ "tire" ] = { 2 },
-		[ "nitroamine" ] = { 3 }, --Nitroamine
-		[ "blastcap" ] = { 4 } --Blasting Caps
+		[ "nitroamine" ] = { 3 },
+		[ "blastcap" ] = { 4 }
 	},
 	usefunc = function( self, ply ) -- When it's completed and a player presses E
-		if !ply:HasWeapon("nz_zombieshield") then
-			ply:GiveCarryItem( "" )
+		if !ply:HasCarryItem( "c4" ) then
+			ply:GiveCarryItem( "c4" )
 		end
 	end,
 	text = "Press E to pick up the plastic explosive."
@@ -369,11 +355,9 @@ rubber:SetResetFunction( function( self )
 	rbr:SetPos( Vector( -1889.828125, -1512.047974, -384.140137 ) )
 	rbr:SetAngles( Angle( 17.772, -19.848, -49.948 ) )
 	rbr:Spawn()
-	rbr:SetNoDraw( true )
 	self:RegisterEntity( rbr )
 end )
 rubber:SetPickupFunction( function(self, ply, ent)
-	if not ent.CanPickup then return end
 	ply:GiveCarryItem( self.id )
 	ent:Remove()
 end )
@@ -401,11 +385,9 @@ powder:SetResetFunction( function( self )
 	pwdr:SetPos( Vector( -1817.329224, 1417.655273, -177.375412 ) )
 	pwdr:SetAngles( Angle( -0.696, -45.993, -0.042 ) )
 	pwdr:Spawn()
-	ply:RemoveCarryItem( "nitroamine" )
 	self:RegisterEntity( pwdr )
 end )
 powder:SetPickupFunction( function( self, ply, ent )
-	if not ent.CanPickup then return end
 	ply:GiveCarryItem( self.id )
 	ent:Remove()
 end )
@@ -418,17 +400,38 @@ blast:SetText( "Press E to pick up the impact grenade." )
 blast:SetDropOnDowned( true )
 blast:SetShowNotification( true )
 blast:SetDropFunction( function( self, ply )
-
+	local cap = ents.Create( "nz_script_prop" )
+	cap:SetModel( "models/Items/AR2_Grenade.mdl" )
+	cap:SetPos( ply:GetPos() )
+	cap:SetAngles( Angle( 0, 0, 0 ) )
+	cap:Spawn()
+	cap:DropToFloor()
+	ply:RemoveCarryItem( "blastcap" )
+	self:RegisterEntity( cap )
 end )
 blast:SetResetFunction( function( self )
-
+	local cap = ents.Create( "nz_script_prop" )
+	cap:SetModel( "models/Items/AR2_Grenade.mdl" )
+	cap:SetPos( Vector( 271.141052, -1687.194580, -148.408340 ) )
+	cap:SetAngles( Angle( 0.000, -71.610, 0.000 ) )
+	cap:Spawn()
+	self:RegisterEntity( cap )
 end )
 blast:SetPickupFunction( function( self, ply, ent )
-	if not ent.CanPickup then return end
 	ply:GiveCarryItem( self.id )
 	ent:Remove()
 end )
 blast:Update()
+
+--//The actual C4
+local actualc4 = nzItemCarry:CreateCategory( "c4" )
+actualc4:SetIcon( "spawnicons/models/weapons/w_c4.png" )
+actualc4:SetDropOnDowned( false )
+actualc4:SetShowNotification( true )
+actualc4:SetResetFunction( function( self )
+	ply:RemoveCarryItem( "c4" )
+end )
+actualc4:Update()
 
 --//Function to be used to check for establishedlinks' or poweredgenerators' validity
 function CheckTable( tbl )
@@ -462,7 +465,7 @@ function SetTexts()
 				end
 			else
 				print( "Link's room generator is on, and the outlier link has been connect to the base link." )
-				v.ent:SetNWString( "" )
+				v.ent:SetNWString( "NZText", "" )
 			end 
 		end
 		print( "End of For k, v in pairs( links )" )
@@ -470,7 +473,7 @@ function SetTexts()
 			print( "All links have not yet been established." )
 			if linkstarted then
 				print( "Linking has already been started." )
-				baselink:SetNWString( "" )
+				baselink:SetNWString( "NZText", "" )
 			else
 				print( "Linking has not yet been started." )
 				baselink:SetNWString( "NZText", "Press E to begin linking." )
@@ -491,7 +494,7 @@ function SetTexts()
 				v.ent:SetNWString( "NZText", "The power must be turned on before linking." )
 			else
 				print( "The link has already been established." )
-				v.ent:SetNWString( "" )
+				v.ent:SetNWString( "NZText", "" )
 			end 
 		end
 		if not CheckTable( establishedlinks ) then
@@ -512,6 +515,7 @@ end
 	This way of escaping the map should be EXTREMELY DIFFICULT.]]
 local nextpush = 1
 function StartPuzzle()
+	PrintTable( buttonorder )
 	for k, v in pairs( buttonorder ) do --At this point, buttonorder is a randomized table version of consolebuttons (which is all 5 console button entities)
 		local consolebutton = ents.GetMapCreatedEntity( v[ 1 ] )
 		consolebutton:SetNWString( "NZText", "Press E to activate button " .. v[ 1 ] ) -- consolebuttons[ table.KeyFromValue( buttonorder, v[ 1 ] ) ] )
@@ -521,6 +525,14 @@ function StartPuzzle()
 			--//You can push a button more than once, and it can fail the EE. This is more a "feature," not a bug.
 			if k == nextpush then
 				nextpush = nextpush + 1
+			elseif k == 5 then
+				timer.Simple( 1, function()
+					for k, v in pairs( player.GetAll() ) do
+						v:SendLua( "surface.PlaySound( \"ambient/alarms/train_horn2.wav\" ) " )
+					end
+				end )
+				thefence.Allow = true
+				ents.GetMapCreatedEntity( "2205" ):Remove() --Maybe move it then delete it?
 			else
 				FailPrimaryEE()
 				nextpush = 0
@@ -550,6 +562,7 @@ local PermaOff = false
 function FailPrimaryEE()
 	nzElec:Reset()
 	PermaOff = true
+
 	local mixedtext = ""
 	for k, v in pairs( player.GetAll() ) do
 		v:SendLua( "surface.PlaySound( \"ambient/levels/labs/electric_explosion4.wav\" ) " )
@@ -588,10 +601,63 @@ function FailPrimaryEE()
 	baselink.OnUsed = function()
 		return false
 	end
-	
+	local bossSpawns = {
+		{ pos = Vector( 178.379028, -1902.926025, -391.968750 ) },
+		{ pos = Vector( 180.650421, -1782.478638, -391.968750 ) },
+		{ pos = Vector( 182.273560, -1696.408691, -391.968750 ) },
+		{ pos = Vector( 184.300781, -1588.911377, -391.968750 ) }
+	}
+	for k, v in pairs( bossSpawns ) do
+		local zombie = ents.Create( "nz_zombie_boss_panzer" ) --This should be a boss zombie
+		zombie:SetPos( v.pos )
+		zombie:Spawn()
+	end
+	nzDoors:OpenLinkedDoors( "20" ) --This enables the 15 bajillion extra zombie spawns
+	nzRound:RoundInfinity()
+	local pressed
+	function samefunc( self, ply )
+		if not PermaOff or pressed then return end
+		pressed = true
+		ents.GetMapCreatedEntity( "1771" ):SetPlaybackRate( 0.5 )
+		ents.GetMapCreatedEntity( "1772" ):SetPlaybackRate( 0.5 )
+		ents.GetMapCreatedEntity( "5238" ):SetNWString( "NZHasText", "" )
+		ents.GetMapCreatedEntity( "5243" ):SetNWString( "NZHasText", "" )
+		timer.Simple( 60, function() 
+		ents.GetMapCreatedEntity( "5238" ):Fire( "Unlock" )
+		ents.GetMapCreatedEntity( "5243" ):Fire( "Unlock" )
+		if not self == ents.GetMapCreatedEntity( "5238" ) then
+			ents.GetMapCreatedEntity( "5238" ):Fire( "Use" )
+		elseif not self == ents.GetMapCreatedEntity( "5243" ) then
+			ents.GetMapCreatedEntity( "5243" ):Fire( "Use" )
+		end
+		ents.GetMapCreatedEntity( "5238" ):Fire( "Lock" )
+		ents.GetMapCreatedEntity( "5243" ):Fire( "Lock" )
+		end )
+	end
+	ents.GetMapCreatedEntity( "5238" ).OnUsed = samefunc()
+	ents.GetMapCreatedEntity( "5243" ).OnUsed = samefunc()
+	ents.GetMapCreatedEntity( "5238" ):SetNWString( "NZHasText", "Press E to open the garage doors." )
+	ents.GetMapCreatedEntity( "5243" ):SetNWString( "NZHasText", "Press E to open the garage doors." )
+	--[[ TO-DO
+	- Garage Door opens after 60 seconds ( Entity:SetPlaybackRate( 0.5 ) to slow the animation down )
+		- Button IDs: 5238, 5243
+		- Garage door IDs: 1771, 1772
+	- Create "escape" area where players screens turn back and lose control 
+		- This should probably be done outside of this function ]]
 end
 
 function mapscript.OnGameBegin()
+	gascans:Reset()
+	lever:Reset()
+	detonator:Reset()
+	chargeddetonator:Reset()
+	rubber:Reset()
+	powder:Reset()
+	blast:Reset()
+
+	ents.GetMapCreatedEntity( "5238" ):Fire( "Lock" )
+	ents.GetMapCreatedEntity( "5243" ):Fire( "Lock" )
+
 	--//Generates the random list of console buttons and their prop hint entity
 	local fakelist = table.Copy( consolebuttons )
 	for i = 1, #fakelist do
@@ -619,17 +685,15 @@ function mapscript.OnGameBegin()
 	powerswitch:Activate()
 	powerswitch.OnUsed = function( self, ply )
 		if not ply:HasCarryItem( "lever" ) then return end
-		local actualpowerswitch, initialstart, effecttimer2 = ents.Create( "power_box" ), false, 0
+		local actualpowerswitch, effecttimer2 = ents.Create( "power_box" ), 0
 		actualpowerswitch:SetPos( self:GetPos() )
 		actualpowerswitch:SetAngles( self:GetAngles() )
 		actualpowerswitch.OnUsed = function( self, ply )
 			if initialstart then
 				return false
 			end
-			initialstart = true
-			--The power switch should only be used once, and un-reactivatable, so power remains off during rounds it turns off
+			local initialstart = true
 		end
-		--//If the power is off after being turned on, play the lightning aura effect to indicate power shortaging
 		actualpowerswitch.Think = function( )
 			if initialstart and CurTime() > effecttimer2 and not nzElec.IsOn() then
 				local effect = EffectData()
@@ -647,7 +711,7 @@ function mapscript.OnGameBegin()
 		end )
 	end
 
-	--//The base link the must be pushed before pushing an outlying link
+	--//The base link the must be activated before activated an outlying link
 	baselink = ents.Create( "nz_script_prop" )
 	baselink:SetPos( Vector( -580.019531, -1488.002930, 143.345886 ) )
 	baselink:SetAngles( Angle( 0.008, -85.925, -0.133 ) )
@@ -751,7 +815,7 @@ function mapscript.OnGameBegin()
 		link:Spawn()
 		link:Activate()
 		link.OnUsed = function( self, ply )
-			if not linkstarted or establishedlinks[ k ] or not poweredgenerators[ k ] or not nzElec.IsOn() then return end --If linkstarted is true, the link hasn't yet been established, and it's respective generator is on
+			if not linkstarted or establishedlinks[ k ] or not poweredgenerators[ k ] or not nzElec.IsOn() then return end
 			PrintMessage( HUD_PRINTTALK, "Link " .. k .. " has been activated." )
 			linkstarted = false
 			establishedlinks[ k ] = true
@@ -794,36 +858,84 @@ function mapscript.OnGameBegin()
 	soulcatcher:SetNWString( "NZHasText", "Press E to place and charge the console box battery." )
 	soulcatcher:Spawn()
 	soulcatcher:Activate()
-	soulcatcher:SetRange( 500 )
+	soulcatcher:SetRange( 800 )
 	soulcatcher:SetTargetAmount( 30 )
 	soulcatcher:SetCondition( function( self, z, dmg )
     	return soulcatcher.AllowSouls
 	end)
-	soulcatcher:Reset()
 	chrgddtntr:SetNWString( "NZText", "" )
 	soulcatcher.OnUsed = function( self, ply )
+		print( "Soul Catcher OnUsed called" )
 		if ply:HasCarryItem( "detonator" ) then
 			soulcatcher.AllowSouls = true
 			ply:RemoveCarryItem( "detonator" )
 			chrgddtntr:SetNoDraw( false )
-			chrgddtntr:SetNWString( "NZText", "" )
+			chrgddtntr:SetNWString( "NZText", "Kill zombies near this generator to charge the console box battery." )
 			soulcatcher:SetNWString( "NZText", "Kill zombies near this generator to charge the console box battery." )
 			soulcatcher:SetNWString( "NZHasText", "Kill zombies near this generator to charge the console box battery." )
 		end
 	end
-	soulcatcher:SetCompleteFunction( function( self )
+	--[[soulcatcher:SetCompleteFunction( function( self )
 		soulcatcher.AllowSouls = false
 		chrgddtntr.CanPickup = true
 		chrgddtntr:SetNWString( "NZText", "Press E to pick up the charged console box." )
-	end )
+		soulcatcher:SetNWString( "NZText", "" )
+	end )]]
+	soulcatcher:SetReleaseOverride( function(self, z)
+		print( "Soul Catcher SetReleaseOverride called" )
+		if self.CurrentAmount >= self.TargetAmount then return end
+			
+		local e = EffectData()
+		e:SetOrigin(self:GetPos())
+		e:SetStart(z:GetPos())
+		e:SetMagnitude(0.3)
+		util.Effect("lightning_strike", e)
+		self.CurrentAmount = self.CurrentAmount + 1
+		self:CollectSoul()
+	end)
+	soulcatcher:SetCompleteFunction( function(self)
+		print( "Soul Catcher SetCompleteFunction called" )
+		soulcatcher.AllowSouls = false
+		chrgddtntr.CanPickup = true
+		chrgddtntr:SetNWString( "NZText", "Press E to pick up the charged console box." )
+		soulcatcher:SetNWString( "NZText", "" )
+		chrgddtntr.CanPickup = true
+		chrgddtntr:SetNWString( "NZText", "Press E to pick up the charged console box." )
+	end)
 
-	gascans:Reset()
-	lever:Reset()
-	detonator:Reset()
-	chargeddetonator:Reset()
+	thefence = ents.Create( "nz_script_prop" )
+	thefence:SetPos( Vector( -925.481079, -509.393311, -337.414886 ) )
+	thefence:SetAngles( Angle( 0.000, 0.000, 0.000 ) )
+	thefence:SetModel( "models/props_c17/fence01b.mdl" )
+	thefence:SetNWString( "NZText", "This piece of fence looks oddly destructable." )
+	thefence:SetNWString( "NZRequiredItem", "c4" )
+	thefence:SetNWString( "NZHasText", "Press E to place the timed C4." )
+	thefence:Spawn()
+	thefence:Activate()
+	thefence.OnUsed = function( self, ply )
+		if not ply:HasCarryItem( "c4" ) or not thefence.Allow then return end
+		ply:RemoveCarryItem( "c4" )
+		fakec4 = ents.Create( "nz_script_prop" )
+		fakec4:SetPos( Vector( -924.632385, -509.546448, -333.140533 ) )
+		fakec4:SetAngles( Angle( -90.000, 0.000, 180.000 ) )
+		fakec4:SetModel( "models/weapons/w_c4.mdl" )
+		timer.Create( "initial5", 1, 5, function() fakec4:EmitSound( "weapons/c4/c4_beep1.wav" ) end )
+		timer.Simple( 5, function() timer.Create( "final5", 0.5, 8, function() fakec4:EmitSound( "weapons/c4/c4_beep1.wav" ) end ) end )
+		timer.Simple( 10, function() 
+			local effect = EffectData()
+			effect:SetEntity( fakec4 )
+			effect:SetScale( 2 )
+			util.Effect( "Explosion", effect, true, true )
+			thefence:Remove()
+			fakec4:Remove()
+		end )
+	end
+	thefence.Allow = false
+
+	soulcatcher:Reset() --is this required?
 
 	--//Fixes the bugged doorways
-    local shittodelete = { 2169, 1858, 2959, 2465, 1921, 1918, 1939, 2209, 1976, 1973, 2373 } --, 2518 } This door, which is a door, bugs the :Fire() function
+    local shittodelete = { 2169, 1858, 2959, 2465, 1921, 1918, 1939, 2209, 1976, 1973, 2373, 2959, 2372 } --, 2518 } This door, which is a door, bugs the :Fire() function
 	for k, v in pairs( shittodelete ) do
 		ents.GetMapCreatedEntity( v ):Fire( "Open" )
 		timer.Simple( 0.2, function()
@@ -911,3 +1023,40 @@ end
 
 --//Return that shit, yo.
 return mapscript
+
+--[[
+	local roundwegotto
+	roundwegotto = nzRound:GetNumber()
+	nzRound:RoundInfinity()
+	nzEE.Major:AddStep( function() -- Step 5, You win :D
+	nzEE.Cam:QueueView(5, nil, nil, nil, true)
+	nzEE.Cam:Text("You blew up the core after "..roundwegotto.." rounds!")
+	nzEE.Cam:Function( function()
+		game.SetTimeScale(0.2)
+		nzRound:Freeze(true) -- Prevents switching and spawning
+	end)
+	nzEE.Cam:Music("nz/easteregg/motd_standard.wav")
+	nzEE.Cam:QueueView(15, Vector(1623, -1257, 187), Vector(1623, -1382, 227), nil, true)
+	nzEE.Cam:Text("You blew up the core after "..roundwegotto.." rounds!")
+	nzEE.Cam:Function( function()
+		nzRound.Number = roundwegotto or 0
+		game.SetTimeScale(1)
+		for k,v in pairs(player.GetAll()) do
+			v:SetTargetPriority(TARGET_PRIORITY_NONE)
+			v:Freeze(true)
+		end
+	end)
+	nzEE.Cam:QueueView(1)
+	nzEE.Cam:Function( function()
+		nzPowerUps:Nuke(nil, true, false)
+		nzRound:Freeze(false)
+		nzRound:Prepare() -- We continue now with perma perks :D
+		for k,v in pairs(player.GetAll()) do
+			v:GivePermaPerks()
+			v:SetTargetPriority(TARGET_PRIORITY_PLAYER)
+			v:Freeze(false)
+		end
+	end)
+	nzEE.Cam:Begin()
+end)
+]]
