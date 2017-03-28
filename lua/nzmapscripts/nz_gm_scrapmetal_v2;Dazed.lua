@@ -181,6 +181,26 @@ local buildabletbl = {
 	text = "Press E to pick up the plastic explosive."
 }
 
+local escapeDetector = ents.Create( "nz_script_prop" )
+escapeDetector:SetPos( Vector( 0, 0, 0 ) )
+escapeDetector:SetAngles( Angle( 0, 0, 0 ) )
+escapeDetector:SetModel( "" )
+escapeDetector:SetTrigger( true )
+escapeDetector:Spawn()
+--If a player touches this entity, they have "escaped" the map. Turn their screen black, force loss of aggro
+escapeDetector.StartTouch somethingsomething
+local function ENT:StartTouch( ply )
+	if not ply:IsPlayer() and not ply:Alive() then return end
+	ply:GodEnable() --Because cheeky nandos will try to break immersion by throwing explosives into the end area
+	ply:SetTargetPriority( TARGET_PRIORITY_NONE )
+	nzEE.Cam
+	for k, v in pairs( player.GetAll() ) do
+		if v.Escaped then return end
+	end
+	PrintMessage( HUD_PRINTTALK, ply:Nick() .. " has escaped the map! All players have 30 seconds to follow them!" )
+	ply.Escaped = true
+end
+
 --//Console buttons, from left to right
 local consolebuttons = { 2335, 2337, 2338, 2339, 2340 }
 
@@ -438,7 +458,7 @@ end )
 actualc4:Update()
 
 --//Function to be used to check for establishedlinks' or poweredgenerators' validity
-function CheckTable( tbl )
+local function CheckTable( tbl )
 	if #tbl == 0 then return false end
 	for k, v in pairs( tbl ) do
 		if not v then
@@ -449,63 +469,43 @@ function CheckTable( tbl )
 end
 
 --//I use this to check and set text for the base link and the outlying links. Maybe not super efficient, but it should be 100% consistent, whereas it wasn't before
-function SetTexts()
-	print( "function SetTexts called")
+local function SetTexts()
 	if nzElec:IsOn() then
-		print( "Electricity is on.")
 		for k, v in pairs( links ) do
-			print( "For k, v in pairs( links ), ", k, v )
 			if not poweredgenerators[ k ] then
-				print( "Link's room generator is not on." )
 				v.ent:SetNWString( "NZText", "You must turn on the room's generator first." )
 			elseif not establishedlinks[ k ] then
-				print( "Link's room generator is on, outlier link has not been connected to base link." )
 				if linkstarted then
-					print( "Linking has been started on base link." )
 					v.ent:SetNWString( "NZText", "Press E to establish a link with the home receiver." )
 				else
-					print( "Linking has not been started on base link." )
 					v.ent:SetNWString( "NZText", "You must activate the home link first." )
 				end
 			else
-				print( "Link's room generator is on, and the outlier link has been connect to the base link." )
 				v.ent:SetNWString( "NZText", "" )
 			end 
 		end
-		print( "End of For k, v in pairs( links )" )
 		if not CheckTable( establishedlinks ) then
-			print( "All links have not yet been established." )
 			if linkstarted then
-				print( "Linking has already been started." )
 				baselink:SetNWString( "NZText", "" )
 			else
-				print( "Linking has not yet been started." )
 				baselink:SetNWString( "NZText", "Press E to begin linking." )
 			end
 		else
-			print( "All receivers have been linked." )
 			baselink:SetNWString( "NZText", "All receivers have been linked." )
 		end
 	else
-		print( "Electricity is off.")
 		for k, v in pairs( links ) do
-			print( "For k, v in pairs( links ), ", k, v )
 			if not poweredgenerators[ k ] then
-				print( "Link's room generator is not on." )
 				v.ent:SetNWString( "NZText", "You must turn on the room's generator first." )
 			elseif not establishedlinks[ k ] then
-				print( "Link's room generator is on, but the power is off." )
 				v.ent:SetNWString( "NZText", "The power must be turned on before linking." )
 			else
-				print( "The link has already been established." )
 				v.ent:SetNWString( "NZText", "" )
 			end 
 		end
 		if not CheckTable( establishedlinks ) then
-			print( "All outlier links have not been established." )
 			baselink:SetNWString( "NZText", "The power must be turned on before beginning linking." )
 		else
-			print( "All outlier links have been established." )
 			baselink:SetNWString( "NZText", "All receivers have been linked." )
 		end
 	end
@@ -519,6 +519,7 @@ end
 	This way of escaping the map should be EXTREMELY DIFFICULT.]]
 local nextpush = 1
 function StartPuzzle()
+	print( "DEBUG StartPuzzle()" )
 	PrintTable( buttonorder )
 	for k, v in pairs( buttonorder ) do --At this point, buttonorder is a randomized table version of consolebuttons (which is all 5 console button entities)
 		local consolebutton = ents.GetMapCreatedEntity( v[ 1 ] )
@@ -529,7 +530,7 @@ function StartPuzzle()
 			--//You can push a button more than once, and it can fail the EE. This is more a "feature," not a bug.
 			if k == nextpush then
 				nextpush = nextpush + 1
-			elseif k == 5 then
+			elseif nextpush == 6 then
 				timer.Simple( 1, function()
 					for k, v in pairs( player.GetAll() ) do
 						v:SendLua( "surface.PlaySound( \"ambient/alarms/train_horn2.wav\" ) " )
@@ -869,7 +870,6 @@ function mapscript.OnGameBegin()
 	end)
 	chrgddtntr:SetNWString( "NZText", "" )
 	soulcatcher.OnUsed = function( self, ply )
-		print( "Soul Catcher OnUsed called" )
 		if ply:HasCarryItem( "detonator" ) then
 			soulcatcher.AllowSouls = true
 			ply:RemoveCarryItem( "detonator" )
@@ -886,7 +886,6 @@ function mapscript.OnGameBegin()
 		soulcatcher:SetNWString( "NZText", "" )
 	end )]]
 	soulcatcher:SetReleaseOverride( function(self, z)
-		print( "Soul Catcher SetReleaseOverride called" )
 		if self.CurrentAmount >= self.TargetAmount then return end
 			
 		local e = EffectData()
@@ -898,7 +897,6 @@ function mapscript.OnGameBegin()
 		self:CollectSoul()
 	end)
 	soulcatcher:SetCompleteFunction( function(self)
-		print( "Soul Catcher SetCompleteFunction called" )
 		soulcatcher.AllowSouls = false
 		chrgddtntr.CanPickup = true
 		chrgddtntr:SetNWString( "NZText", "Press E to pick up the charged console box." )
