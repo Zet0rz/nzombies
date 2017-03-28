@@ -429,7 +429,11 @@ actualc4:SetIcon( "spawnicons/models/weapons/w_c4.png" )
 actualc4:SetDropOnDowned( false )
 actualc4:SetShowNotification( true )
 actualc4:SetResetFunction( function( self )
-	ply:RemoveCarryItem( "c4" )
+	for k, v in pairs( player.GetAll() ) do
+		if v:HasCarryItem( "c4" ) then
+			ply:RemoveCarryItem( "c4" )
+		end
+	end
 end )
 actualc4:Update()
 
