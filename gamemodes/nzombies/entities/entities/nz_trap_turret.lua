@@ -75,7 +75,7 @@ function ENT:Think()
 					Src = muzzlePos,
 					Dir = self:GetForward(),
 					Distance = self:GetAttackRange() * 2,
-					Spread = Vector(0.5,0.8,0),
+					Spread = Vector(0.2,0.2,0),
 					AmmoType = "Pistol",
 					Tracer = 1,
 					TracerName
@@ -100,7 +100,7 @@ function ENT:GetTarget()
 end
 
 function ENT:HasValidTarget()
-	return IsValid(self:GetTarget()) and self:GetTarget():IsValidZombie() and self:GetPos():Distance(self.eTarget:GetPos()) < self:GetAttackRange() and self.eTarget:Health() > 0
+	return IsValid(self:GetTarget()) and self:GetTarget():IsValidZombie() and self:GetPos():Distance(self.eTarget:GetPos()) < self:GetAttackRange() and self.eTarget:Health() > 0 and self.eTarget:Visible(self)
 end
 
 --Targetfinding
@@ -113,7 +113,7 @@ function ENT:GetPriorityTarget()
 	local zombies = {}
 
 	for _, ent in pairs(possibleTargets) do
-		if ent:IsValidZombie() then
+		if ent:IsValidZombie() and ent:Visible(self) then
 			table.insert(zombies, ent)
 		end
 	end

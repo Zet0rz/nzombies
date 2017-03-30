@@ -17,7 +17,7 @@ function ENT:SetupDataTables()
 end
 
 function ENT:BodyUpdate()
-    if self:GetActivity() != ACT_HL2MP_SIT_PISTOL then self:StartActivity( ACT_HL2MP_SIT_PISTOL ) end
+	if self:GetActivity() != ACT_HL2MP_SIT_PISTOL then self:StartActivity( ACT_HL2MP_SIT_PISTOL ) end
 end
 
 function ENT:Use( act, call, type, value )

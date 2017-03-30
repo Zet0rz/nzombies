@@ -1,8 +1,8 @@
-//Client Server Syncing
+-- Client Server Syncing
 
 if SERVER then
 
-	//Server to client (Server)
+	-- Server to client (Server)
 	util.AddNetworkString( "nzPowerUps.Sync" )
 	util.AddNetworkString( "nzPowerUps.SyncPlayer" )
 	util.AddNetworkString( "nzPowerUps.SyncPlayerFull" )
@@ -43,7 +43,7 @@ end
 
 if CLIENT then
 	
-	//Server to client (Client)
+	-- Server to client (Client)
 	local function ReceivePowerupSync( length )
 		--print("Received PowerUps Sync")
 		nzPowerUps.ActivePowerUps = net.ReadTable()
@@ -84,7 +84,7 @@ if CLIENT then
 		end)
 	end
 	
-	//Receivers 
+	-- Receivers 
 	net.Receive( "nzPowerUps.Sync", ReceivePowerupSync )
 	net.Receive( "nzPowerUps.SyncPlayer", ReceivePowerupPlayerSync )
 	net.Receive( "nzPowerUps.SyncPlayerFull", ReceivePowerupPlayerSyncFull )

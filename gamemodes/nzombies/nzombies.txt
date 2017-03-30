@@ -38,6 +38,7 @@
 			"help"		"How often a special round should occur."
 			"type"		"Numeric"
 			"default"	"6"
+			"singleplayer"	"1"
 		}
 		4
 		{
@@ -46,6 +47,7 @@
 			"help"		"The duration of a round's preperation phase.."
 			"type"		"Numeric"
 			"default"	"10"
+			"singleplayer"	"1"
 		}
 		5
 		{
@@ -118,6 +120,7 @@
 			"help"		"The max perks you can BUY (You can get more in other ways)"
 			"type"		"Numeric"
 			"default"	"4"
+			"singleplayer"	"1"
 		}
 		14
 		{

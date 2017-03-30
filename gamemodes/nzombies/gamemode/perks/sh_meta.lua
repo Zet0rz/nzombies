@@ -8,21 +8,16 @@ if SERVER then
 		local perkData = nzPerks:Get(id)
 		if !perkData or !perkData.func then return false end
 		
-		local given = perkData.func(id, self, machine)
+		perkData.func(id, self, machine)
 		
-		-- Blockget blocks the networking and storing of the perk
-		if given and !perkData.blockget then
+		-- Specialmachine blocks the networking and storing of the perk
+		if !perkData.specialmachine then
 			if nzPerks.Players[self] == nil then nzPerks.Players[self] = {} end
-			table.insert(nzPerks.Players[self], id)
 			
+			table.insert(nzPerks.Players[self], id)
 			nzPerks:SendSync(self)
 			hook.Call("OnPlayerGetPerk", nil, self, id, machine)
-		else
-			//We didn't want to give them the perk for some reason, so lets back out and refund them.
-			--self:GivePoints(perkData.price)
 		end
-		
-		return given
 	end
 	
 	local exceptionperks = {
@@ -69,7 +64,7 @@ if SERVER then
 	function playerMeta:GiveRandomPerk(maponly)
 		local tbl = {}
 		for k,v in pairs(nzPerks.Data) do
-			if !self:HasPerk(k) and !v.blockget and k != "pap" then
+			if !self:HasPerk(k) and !v.specialmachine then
 				if maponly then
 					for k2,v2 in pairs(ents.FindByClass("perk_machine")) do
 						if v2:GetPerkID() == k then
@@ -95,7 +90,7 @@ if SERVER then
 	function playerMeta:GivePermaPerks()
 		self:SetPreventPerkLoss(true)
 		for k,v in pairs(nzPerks:GetList()) do
-			if !nzPerks:Get(k).blockget then
+			if !nzPerks:Get(k).specialmachine then
 				self:GivePerk(k)
 			end
 		end

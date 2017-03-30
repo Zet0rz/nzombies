@@ -100,29 +100,57 @@ local function GunHud()
 	if GetConVar("cl_drawhud"):GetBool() then
 		if !LocalPlayer():IsNZMenuOpen() then
 			local wep = LocalPlayer():GetActiveWeapon()
-			local scale = ((ScrW()/1920)+1)/2
+			local w,h = ScrW(), ScrH()
+			local scale = ((w/1920)+1)/2
 
 			surface.SetMaterial(bloodline_gun)
 			surface.SetDrawColor(200,200,200)
-			surface.DrawTexturedRect(ScrW() - 630*scale, ScrH() - 225*scale, 600*scale, 225*scale)
+			surface.DrawTexturedRect(w - 630*scale, h - 225*scale, 600*scale, 225*scale)
 			if IsValid(wep) then
 				if wep:GetClass() == "nz_multi_tool" then
-					draw.SimpleTextOutlined(nzTools.ToolData[wep.ToolMode].displayname or wep.ToolMode, "nz.display.hud.small", ScrW() - 240*scale, ScrH() - 125*scale, Color(255,255,255,255), TEXT_ALIGN_RIGHT, TEXT_ALIGN_BOTTOM, 2, Color(0,0,0))
-					draw.SimpleTextOutlined(nzTools.ToolData[wep.ToolMode].desc or "", "nz.display.hud.smaller", ScrW() - 240*scale, ScrH() - 90*scale, Color(255,255,255,255), TEXT_ALIGN_RIGHT, TEXT_ALIGN_TOP, 2, Color(0,0,0))
+					draw.SimpleTextOutlined(nzTools.ToolData[wep.ToolMode].displayname or wep.ToolMode, "nz.display.hud.small", w - 240*scale, h - 125*scale, color_white, TEXT_ALIGN_RIGHT, TEXT_ALIGN_BOTTOM, 2, color_black)
+					draw.SimpleTextOutlined(nzTools.ToolData[wep.ToolMode].desc or "", "nz.display.hud.smaller", w - 240*scale, h - 90*scale, color_white, TEXT_ALIGN_RIGHT, TEXT_ALIGN_TOP, 2, color_black)
 				else
-					local name = wep:GetPrintName()
-					local clip = wep:Clip1()
-					if !name or name == "" then name = wep:GetClass() end
-					if wep:HasNZModifier("pap") then
-						name = wep.NZPaPName or nz.Display_PaPNames[wep:GetClass()] or nz.Display_PaPNames[name] or "Upgraded "..name
+					local name = wep:GetPrintName()					
+					local x = 250
+					local y = 165
+					if wep:GetPrimaryAmmoType() != -1 then
+						local clip
+						if wep.Primary.ClipSize and wep.Primary.ClipSize != -1 then
+							draw.SimpleTextOutlined("/"..wep:Ammo1(), "nz.display.hud.ammo2", ScrW() - 310*scale, ScrH() - 120*scale, color_white, TEXT_ALIGN_LEFT, TEXT_ALIGN_BOTTOM, 2, color_black)
+							clip = wep:Clip1()
+							x = 315
+							y = 155
+						else
+							clip = wep:Ammo1()
+						end
+						draw.SimpleTextOutlined(clip, "nz.display.hud.ammo", ScrW() - x*scale, ScrH() - 115*scale, color_white, TEXT_ALIGN_RIGHT, TEXT_ALIGN_BOTTOM, 2, color_black)
+						x = x + 80
 					end
-					if clip >= 0 then
+					
+					draw.SimpleTextOutlined(name, "nz.display.hud.small", ScrW() - x*scale, ScrH() - 120*scale, color_white, TEXT_ALIGN_RIGHT, TEXT_ALIGN_BOTTOM, 2, color_black)
+					
+					x = 270
+					if wep:GetSecondaryAmmoType() != -1 then
+						local clip
+						if wep.Secondary.ClipSize and wep.Secondary.ClipSize != -1 then
+							draw.SimpleTextOutlined("/"..wep:Ammo2(), "nz.display.hud.ammo4", ScrW() - x*scale, ScrH() - y*scale, color_white, TEXT_ALIGN_LEFT, TEXT_ALIGN_BOTTOM, 2, color_black)
+							clip = wep:Clip2()
+							x = x + 3
+						else
+							clip = wep:Ammo2()
+						end
+						draw.SimpleTextOutlined(clip, "nz.display.hud.ammo3", ScrW() - x*scale, ScrH() - y*scale, color_white, TEXT_ALIGN_RIGHT, TEXT_ALIGN_BOTTOM, 2, color_black)
+						x = x + 80
+					end
+					
+					--[[if clip >= 0 then
 						draw.SimpleTextOutlined(name, "nz.display.hud.small", ScrW() - 390*scale, ScrH() - 120*scale, Color(255,255,255,255), TEXT_ALIGN_RIGHT, TEXT_ALIGN_BOTTOM, 2, Color(0,0,0))
 						draw.SimpleTextOutlined(clip, "nz.display.hud.ammo", ScrW() - 315*scale, ScrH() - 115*scale, Color(255,255,255,255), TEXT_ALIGN_RIGHT, TEXT_ALIGN_BOTTOM, 2, Color(0,0,0))
-						draw.SimpleTextOutlined("/"..LocalPlayer():GetAmmoCount(wep:GetPrimaryAmmoType()), "nz.display.hud.ammo2", ScrW() - 310*scale, ScrH() - 120*scale, Color(255,255,255,255), TEXT_ALIGN_LEFT, TEXT_ALIGN_BOTTOM, 2, Color(0,0,0))
+						draw.SimpleTextOutlined("/"..wep:Ammo1(), "nz.display.hud.ammo2", ScrW() - 310*scale, ScrH() - 120*scale, Color(255,255,255,255), TEXT_ALIGN_LEFT, TEXT_ALIGN_BOTTOM, 2, Color(0,0,0))
 					else
-						draw.SimpleTextOutlined(name, "nz.display.hud.small", ScrW() - 250*scale, ScrH() - 120*scale, Color(255,255,255,255), TEXT_ALIGN_RIGHT, TEXT_ALIGN_BOTTOM, 2, Color(0,0,0))
-					end
+						draw.SimpleTextOutlined(name, "nz.display.hud.small", ScrW() - 250*scale, ScrH() - 120*scale, color_white, TEXT_ALIGN_RIGHT, TEXT_ALIGN_BOTTOM, 2, color_black)
+					end]]
 				end
 			end
 		end
@@ -485,27 +513,35 @@ function GM:HUDWeaponPickedUp( wep )
 
 end
 
-function GM:HUDAmmoPickedUp( itemname, amount )
-	if ( !IsValid( LocalPlayer() ) || !LocalPlayer():Alive() ) then return end
-	
-	-- If we pick up special nz ammo, then we need to find and display the old ammo type
-	if string.sub(itemname, 1, 14) == "nz_weapon_ammo" then
-		local slot = tonumber(string.sub(itemname, 16, #itemname))
+local function ParseAmmoName(str)
+	local pattern = "nz_weapon_ammo_(%d)"
+	local slot = tonumber(string.match(str, pattern))
+	if slot then
 		for k,v in pairs(LocalPlayer():GetWeapons()) do
 			if v:GetNWInt("SwitchSlot", -1) == slot then
-				local wep = weapons.Get(v:GetClass())
-				if wep and wep.Primary then
-					itemname = wep.Primary.Ammo or itemname
+				if v.Primary and wep.Primary.OldAmmo then
+					return "#"..wep.Primary.OldAmmo.."_ammo"
 				end
-				break
+				local wep = weapons.Get(v:GetClass())
+				if wep and wep.Primary and wep.Primary.Ammo then
+					return "#"..wep.Primary.Ammo.."_ammo"
+				end
+				return v:GetPrintName() .. " Ammo"
 			end
 		end
 	end
+	return str
+end
+
+function GM:HUDAmmoPickedUp( itemname, amount )
+	if ( !IsValid( LocalPlayer() ) || !LocalPlayer():Alive() ) then return end
+	
+	itemname = ParseAmmoName(itemname)
 	
 	-- Try to tack it onto an exisiting ammo pickup
 	if ( self.PickupHistory ) then
 		for k, v in pairs( self.PickupHistory ) do
-			if ( v.name == "#" .. itemname .. "_ammo" ) then
+			if ( v.name == itemname ) then
 				v.amount = tostring( tonumber( v.amount ) + amount )
 				v.time = CurTime() - v.fadein
 				return
@@ -515,7 +551,7 @@ function GM:HUDAmmoPickedUp( itemname, amount )
 	
 	local pickup = {}
 	pickup.time			= CurTime()
-	pickup.name			= "#" .. itemname .. "_ammo"
+	pickup.name			= itemname
 	pickup.holdtime		= 5
 	pickup.font			= "DermaDefaultBold"
 	pickup.fadein		= 0.04

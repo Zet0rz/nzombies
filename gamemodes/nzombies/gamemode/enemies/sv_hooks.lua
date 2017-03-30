@@ -1,3 +1,9 @@
+local meleetypes = {
+	[DMG_CLUB] = true,
+	[DMG_SLASH] = true,
+	[DMG_CRUSH] = true,
+}
+
 function nzEnemies:OnEnemyKilled(enemy, attacker, dmginfo, hitgroup)
 	--  Prevent multiple "dyings" by making sure the zombie has not already been "killed"
 	if enemy.MarkedForDeath then return end
@@ -18,7 +24,7 @@ function nzEnemies:OnEnemyKilled(enemy, attacker, dmginfo, hitgroup)
 	if !hook.Call("OnZombieKilled", nil, enemy, attacker, dmginfo, hitgroup) then
 		if enemy:IsValidZombie() then
 			if attacker:IsPlayer() and attacker:GetNotDowned() then
-				if dmginfo:GetDamageType() == DMG_CLUB then
+				if meleetypes[dmginfo:GetDamageType()] then
 					attacker:GivePoints(130)
 				elseif hitgroup == HITGROUP_HEAD then
 					attacker:GivePoints(100)

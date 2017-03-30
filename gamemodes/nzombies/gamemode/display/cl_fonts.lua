@@ -41,6 +41,20 @@ surface.CreateFont( "nz.display.hud.ammo2", {
 	antialias = true,
 } )
 
+surface.CreateFont( "nz.display.hud.ammo3", {
+	font = "Calibri",
+	size = 20,
+	weight = 50,
+	antialias = true,
+} )
+
+surface.CreateFont( "nz.display.hud.ammo4", {
+	font = "Calibri",
+	size = 15,
+	weight = 50,
+	antialias = true,
+} )
+
 surface.CreateFont( "nz.display.hud.smaller", {
 	font = "DK Umbilical Noose", //Avenir Next
 	size = 18,

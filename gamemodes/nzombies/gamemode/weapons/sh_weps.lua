@@ -35,7 +35,7 @@ function wepMeta:IsCW2()
 end
 
 function wepMeta:IsTFA()
-	if self.Category == "TFA" or self.Base == "tfa_gun_base" then
+	if self.Category == "TFA" or self.Base == "tfa_gun_base" or string.sub(self:GetClass(), 1, 3) == "tfa" then
 		return true
 	else
 		local base = weapons.Get(self.Base)
@@ -45,4 +45,18 @@ function wepMeta:IsTFA()
 	end
 
 	return false
+end
+
+function wepMeta:CanRerollPaP()
+	return (self.OnRePaP or (self.Attachments and ((self:IsCW2() and CustomizableWeaponry) or self:IsTFA()) or self:IsFAS2()))
+end
+
+local old = wepMeta.GetPrintName
+function wepMeta:GetPrintName()
+	local name = old(self)
+	if !name or name == "" then name = self:GetClass() end
+	if self:HasNZModifier("pap") then
+		name = self.NZPaPName or nz.Display_PaPNames[self:GetClass()] or nz.Display_PaPNames[name] or "Upgraded "..name
+	end
+	return name
 end

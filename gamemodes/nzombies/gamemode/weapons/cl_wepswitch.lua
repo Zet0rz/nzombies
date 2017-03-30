@@ -8,12 +8,13 @@ function plyMeta:SelectWeapon( class )
 end
 
 function GM:CreateMove( cmd )
-	if ( IsValid( LocalPlayer().DoWeaponSwitch ) ) then
-		cmd:SelectWeapon( LocalPlayer().DoWeaponSwitch )
+	local ply = LocalPlayer()
+	if ( IsValid( ply.DoWeaponSwitch ) ) then
+		cmd:SelectWeapon( ply.DoWeaponSwitch )
 
-		if ( LocalPlayer():GetActiveWeapon() == LocalPlayer().DoWeaponSwitch ) then
-			LocalPlayer():SetCurrentWeaponSlot(LocalPlayer():GetActiveWeapon():GetNWInt("SwitchSlot", 1))
-			LocalPlayer().DoWeaponSwitch = nil
+		if ( LocalPlayer():GetActiveWeapon() == ply.DoWeaponSwitch ) then
+			ply:SetCurrentWeaponSlot(ply:GetActiveWeapon():GetNWInt("SwitchSlot", 1))
+			ply.DoWeaponSwitch = nil
 		end
 	end
 end

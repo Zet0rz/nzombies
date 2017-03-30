@@ -1,8 +1,8 @@
-//Client Server Syncing
+-- Client Server Syncing
 
 if SERVER then
 
-	//Server to client (Server)
+	-- Server to client (Server)
 	util.AddNetworkString( "nz.nzElec.Sync" )
 	util.AddNetworkString( "nz.nzElec.Sound" )
 	
@@ -20,7 +20,7 @@ end
 
 if CLIENT then
 	
-	//Server to client (Client)
+	-- Server to client (Client)
 	local function ReceiveSync( length )
 		local active = net.ReadBool()
 		nzElec.Active = active
@@ -36,7 +36,7 @@ if CLIENT then
 		end
 	end
 	
-	//Receivers 
+	-- Receivers 
 	net.Receive( "nz.nzElec.Sync", ReceiveSync )
 	net.Receive( "nz.nzElec.Sound", RecievePowerSound )
 

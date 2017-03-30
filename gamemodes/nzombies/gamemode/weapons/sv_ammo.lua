@@ -1,6 +1,6 @@
 -- Functions
 function nzWeps:CalculateMaxAmmo(class, pap)
-	local wep = weapons.Get(class)
+	local wep = isentity(class) and class:IsWeapon() and class or weapons.Get(class)
 	local clip = wep.Primary.ClipSize
 	
 	if pap then

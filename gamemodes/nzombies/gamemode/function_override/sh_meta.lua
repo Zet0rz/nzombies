@@ -3,7 +3,9 @@ local wepMeta = FindMetaTable("Weapon")
 
 if SERVER then
 	
-	function ReplaceReloadFunction(wep)
+	-- Now handled in default weapon modifiers
+	
+	--[[function ReplaceReloadFunction(wep)
 		-- Either not a weapon, doesn't have a reload function, or is FAS2
 		if wep:NZPerkSpecialTreatment() then return end
 		local oldreload = wep.Reload
@@ -73,7 +75,7 @@ if SERVER then
 			end
 		end
 	end
-	hook.Add("WeaponEquip", "nzModifyWeaponNextFires", ReplacePrimaryFireCooldown)
+	hook.Add("WeaponEquip", "nzModifyWeaponNextFires", ReplacePrimaryFireCooldown)]]
 	
 	function ReplaceAimDownSight(wep)
 		local oldfire = wep.SecondaryAttack
@@ -205,16 +207,19 @@ function GM:EntityFireBullets(ent, data)
 
 	-- Fire the PaP shooting sound if the weapon is PaP'd
 	--print(wep, wep:HasNZModifier("pap"))
-	if ent:IsPlayer() and IsValid(ent:GetActiveWeapon()) and ent:GetActiveWeapon():HasNZModifier("pap") then
-		ent:EmitSound("nz/effects/pap_shoot_glock20.wav", 60, 100, 0.7)
+	if ent:IsPlayer() then
+		local wep = ent:GetActiveWeapon()
+		if IsValid(wep) and wep:HasNZModifier("pap") and !wep.IsMelee and !wep.IsKnife then
+			ent:EmitSound("nz/effects/pap_shoot_glock20.wav", 60, 100, 0.7)
+		end
 	end
 
 	-- Perform a trace that filters out entities from the table above
 	local tr = util.TraceLine({
 		start = data.Src,
 		endpos = data.Src + (data.Dir*data.Distance),
-		filter = function(ent) 
-			if ghosttraceentities[ent:GetClass()] then
+		filter = function(ent2) 
+			if ghosttraceentities[ent2:GetClass()] then
 				return false
 			else
 				return true
@@ -225,15 +230,12 @@ function GM:EntityFireBullets(ent, data)
 	--PrintTable(tr)
 	
 	-- If we hit anything, move the source of the bullets up to that point
-	if tr.Hit and tr.HitPos then
-		data.Src = tr.HitPos - data.Dir*5
-		if ent:IsPlayer() and ent:HasPerk("dtap2") then
-			data.Num = data.Num * 2
-		end
+	if IsValid(tr.Entity) and tr.Fraction < 1 then
+		data.Src = tr.HitPos - data.Dir * 5
 		return true
-	elseif ent:IsPlayer() and ent:HasPerk("dtap2") then
-		data.Num = data.Num * 2
 	end
+
+	if ent:IsPlayer() and ent:HasPerk("dtap2") then return true end
 end
 
 -- This is so awkward ._.

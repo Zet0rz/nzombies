@@ -31,7 +31,7 @@ end
 -- Hooks
 if SERVER then
 	local function commandListenerSV( ply, text, public )
-		print("Here", text, ply)
+		--print("Here", text, ply)
 		if text[1] == "/" then
 			text = string.lower(text)
 			for k,v in pairs(nzChatCommand.commands) do
@@ -101,6 +101,7 @@ if CLIENT then
 	
 	-- Console command nz_chatcommand in case another addon blocks the hooks (works just like chat, "nz_chatcommand [chat commands]")
 	local function nz_chatcommand(ply, cmd, args, argstr)
+		if !argstr then return end
 		argstr = string.Trim(argstr, " ") -- Trim spaces
 		if string.sub(argstr, 1, 1) == "\"" and string.sub(argstr, #argstr, #argstr) == "\"" then
 			argstr = string.sub(argstr, 2, #argstr-1) -- Trim quotation marks but only if they are around the WHOLE string

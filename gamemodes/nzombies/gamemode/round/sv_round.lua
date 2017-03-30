@@ -493,6 +493,7 @@ function nzRound:Create(on)
 				end
 			end
 			
+			self:SetZombieHealth(100)
 		else
 			PrintMessage( HUD_PRINTTALK, "Can only go in Creative Mode from Waiting state." )
 		end

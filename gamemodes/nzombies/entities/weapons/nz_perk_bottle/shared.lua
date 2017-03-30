@@ -14,9 +14,11 @@ SWEP.UseHands 			= true
 SWEP.Primary.ClipSize		= -1
 SWEP.Primary.DefaultClip	= -1
 SWEP.Primary.Delay = 1
+SWEP.Primary.Ammo = -1
 SWEP.ViewModelFOV = 75
 SWEP.Secondary.ClipSize		= -1
 SWEP.Secondary.DefaultClip	= -1
+SWEP.Secondary.Ammo			= -1
 
 SWEP.Weight				= 5
 SWEP.AutoSwitchTo		= true
@@ -64,6 +66,7 @@ function SWEP:Initialize()
 	if CLIENT then
 		if self.Owner == LocalPlayer() then
 			local vm = LocalPlayer():GetViewModel()
+			print(self:GetPerk())
 			local mat = nzPerks:Get(self:GetPerk()).material --perk_materials[self:GetPerk()]
 			oldmat = vm:GetMaterial() or ""
 			vm:SetMaterial(mat)

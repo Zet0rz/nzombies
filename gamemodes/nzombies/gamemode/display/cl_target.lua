@@ -62,7 +62,7 @@ local traceents = {
 				if wep:HasNZModifier("pap") then
 					if wep.NZRePaPText then
 						text = "Press E to "..wep.NZRePaPText.." for 2000 points."
-					elseif wep.Attachments and ((wep:IsCW2() and CustomizableWeaponry) or wep:IsFAS2()) then
+					elseif wep:CanRerollPaP() then
 						text = "Press E to reroll attachments for 2000 points."
 					else
 						text = "This weapon is already upgraded."

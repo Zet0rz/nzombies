@@ -86,21 +86,37 @@ function ENT:Use(activator, caller)
 		if #activator:GetPerks() < GetConVar("nz_difficulty_perks_max"):GetInt() or self:GetPerkID() == "pap" then
 			-- If they have enough money
 			local func = function()
-				if !activator:HasPerk(self:GetPerkID()) then
-					local given = activator:GivePerk(self:GetPerkID(), self)
+				local id = self:GetPerkID()
+				if !activator:HasPerk(id) then
+					local given = true
+					
+					if PerkData.condition then
+						given = PerkData.condition(id, activator, self)
+					end
+					
+					-- Call a hook for it
+					local hookblock = hook.Call("OnPlayerBuyPerkMachine", nil, activator, self)
+					if hookblock != nil then -- Only if the hook returned true/false
+						given = hookblock
+					end
+					
 					if given then
-						--activator:TakePoints(price)
-						if !MachinesNoDrink[self:GetPerkID()] then
+						if !PerkData.specialmachine then
 							local wep = activator:Give("nz_perk_bottle")
-							wep:SetPerk(self:GetPerkID())
+							wep:SetPerk(id)
+							timer.Simple(3, function()
+								if IsValid(activator) and activator:GetNotDowned() then
+									activator:GivePerk(id, self)
+								end
+							end)
 						else
-							activator:Give("nz_packapunch_arms")
+							activator:GivePerk(id, self)
 						end
-						self:EmitSound("nz/machines/jingle/"..self:GetPerkID().."_get.wav", 75)
+						self:EmitSound("nz/machines/jingle/"..id.."_get.wav", 75)
 						return true
 					end
 				else
-					print("already have perk")
+					print("Already have perk")
 					return false
 				end
 			end

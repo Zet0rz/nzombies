@@ -88,7 +88,7 @@ function ENT:Think()
 						if self:GetTesla() then
 							if !v.LightningAura or v.LightningAura < ct then
 								e:SetEntity(v)
-								util.Effect("lightning_aura", e)
+								util.Effect("lightning_aura", e, false, true)
 							end
 							if islocal then
 								surface.PlaySound("weapons/physcannon/superphys_small_zap" .. math.random(1,4) .. ".wav")

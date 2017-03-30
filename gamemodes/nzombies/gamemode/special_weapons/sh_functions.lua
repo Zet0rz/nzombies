@@ -61,6 +61,12 @@ nzSpecialWeapons:RegisterModifier("knife", function(wep, data)
 				self.nzCanAttack = true
 				self.nzHolsterTime = ct + attackholstertime
 				self:SendWeaponAnim(ACT_VM_IDLE)
+				self:SetNextPrimaryFire(0)
+				
+				if self.SetStatus then
+					self:SetStatus(TFA.Enum.STATUS_IDLE)
+				end
+				
 				self:PrimaryAttack()
 			else
 				self.nzHolsterTime = ct + drawholstertime
@@ -77,7 +83,7 @@ nzSpecialWeapons:RegisterModifier("knife", function(wep, data)
 				self.nzAttackTime = nil
 			end]]
 			
-			if self.nzHolsterTime and ct > self.nzHolsterTime then
+			if self.nzHolsterTime and ct > self.nzHolsterTime and !self.Owner.nzSpecialButtonDown then
 				self:Holster()
 				self.Owner:SetUsingSpecialWeapon(false)
 				self.Owner:EquipPreviousWeapon()
@@ -467,6 +473,7 @@ end
 
 -- Players switching to special weapons can then no longer switch away until its action has been completed
 function GM:PlayerSwitchWeapon(ply, oldwep, newwep)
+	print(ply, oldwep, newwep)
 	if IsValid(oldwep) and IsValid(newwep) then
 	
 		if !oldwep:IsSpecial() then

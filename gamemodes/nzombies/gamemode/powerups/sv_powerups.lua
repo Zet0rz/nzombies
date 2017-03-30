@@ -104,7 +104,7 @@ function nzPowerUps:FireSale()
 	local all = ents.FindByClass("random_box_spawns")
 	
 	for k,v in pairs(all) do
-		if !v.HasBox then
+		if !IsValid(v.Box) then
 			local box = ents.Create( "random_box" )
 			local pos = v:GetPos()
 			local ang = v:GetAngles()

@@ -141,11 +141,7 @@ function ENT:Use(activator, caller)
 		elseif self:GetUser() == activator and !self.Bottle:GetWinding() and !self:GetIsTeddy() then
 			local perk = self:GetPerkID()
 			local wep = activator:Give("nz_perk_bottle")
-			timer.Simple(0, function()
-				if IsValid(wep) then
-					wep:SetPerk(perk)
-				end
-			end)
+			wep:SetPerk(perk)
 			activator:GivePerk(perk)
 			self:SetBeingUsed(false)
 			self:SetPerkID("")

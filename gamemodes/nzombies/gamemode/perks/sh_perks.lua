@@ -63,7 +63,6 @@ nzPerks:NewPerk("jugg", {
 	func = function(self, ply, machine)
 			ply:SetMaxHealth(250)
 			ply:SetHealth(250)
-			return true
 	end,
 	lostfunc = function(self, ply)
 		ply:SetMaxHealth(100)
@@ -91,7 +90,6 @@ nzPerks:NewPerk("dtap", {
 				v:ApplyNZModifier("dtap")
 			end
 		end
-		return true
 	end,
 	lostfunc = function(self, ply)
 		if !ply:HasPerk("dtap2") then
@@ -127,8 +125,6 @@ nzPerks:NewPerk("revive", {
 					return false
 				end
 			end
-			--ply:PrintMessage( HUD_PRINTTALK, "You've got Quick Revive!")
-			return true
 	end,
 	lostfunc = function(self, ply)
 
@@ -157,7 +153,6 @@ nzPerks:NewPerk("speed", {
 				--str = str .. v.ClassName .. ", "
 			end
 		end
-		return true
 	end,
 	lostfunc = function(self, ply)
 		local tbl = {}
@@ -179,129 +174,140 @@ nzPerks:NewPerk("pap", {
 	off_model = "models/alig96/perks/packapunch/packapunch.mdl", //Find a new model.
 	on_model = "models/alig96/perks/packapunch/packapunch.mdl",
 	price = 0,
-	blockget = true, -- Prevents players from getting the perk when they buy it
+	specialmachine = true, -- Prevents players from getting the perk when they buy it
 	nobuy = true, -- A "Buy" event won't run when this is used (we do that ourselves in its function)
 	-- We don't use materials
 	icon = Material("vulture_icons/pap.png", "smooth unlitgeneric"),
 	color = Color(200, 220, 220),
-	func = function(self, ply, machine)
+	condition = function(self, ply, machine)
 		local wep = ply:GetActiveWeapon()
-		if (!wep:HasNZModifier("pap") or wep.OnRePaP or (wep:IsCW2() and CustomizableWeaponry)) and !machine:GetBeingUsed() then
-			--local reroll = (wep:HasNZModifier("pap") and wep.OnRePaP or wep.Attachments and ((wep:IsCW2() and CustomizableWeaponry) or wep:IsFAS2()) and true or false)
+		if (!wep:HasNZModifier("pap") or wep:CanRerollPaP()) and !machine:GetBeingUsed() then
 			local reroll = false
-			if wep:HasNZModifier("pap") and (wep.OnRePaP or (wep.Attachments and (wep:IsCW2() and CustomizableWeaponry) or wep:IsFAS2())) then
+			if wep:HasNZModifier("pap") and wep:CanRerollPaP() then
 				reroll = true
 			end
 			local cost = reroll and 2000 or 5000
-
-			return ply:Buy(cost, machine, function()
-				--ply:TakePoints(cost)
-
-				machine:SetBeingUsed(true)
-				machine:EmitSound("nz/machines/pap_up.wav")
-				local class = wep:GetClass()
-				
-				local e = EffectData()
-				e:SetEntity(machine)
-				local ang = machine:GetAngles()
-				e:SetOrigin(machine:GetPos() + ang:Up()*35 + ang:Forward()*20 - ang:Right()*2)
-				e:SetMagnitude(3)
-				util.Effect("pap_glow", e)
-
-				wep:Remove()
-				local wep = ents.Create("pap_weapon_fly")
-				local startpos = machine:GetPos() + ang:Forward()*30 + ang:Up()*25 + ang:Right()*-3
-				wep:SetPos(startpos)
-				wep:SetAngles(ang + Angle(0,90,0))
-				wep.WepClass = class
-				wep:Spawn()
-				local weapon = weapons.Get(class)
-				local model = (weapon and weapon.WM or weapon.WorldModel) or "models/weapons/w_rif_ak47.mdl"
-				if !util.IsValidModel(model) then model = "models/weapons/w_rif_ak47.mdl" end
-				wep:SetModel(model)
-				wep.machine = machine
-				wep.Owner = ply
-				wep:SetMoveType( MOVETYPE_FLY )
-
-				--wep:SetNotSolid(true)
-				--wep:SetGravity(0.000001)
-				--wep:SetCollisionBounds(Vector(0,0,0), Vector(0,0,0))
-				timer.Simple(0.5, function()
-					if IsValid(wep) then
-						wep:SetLocalVelocity(ang:Forward()*-30)
-					end
-				end)
-				timer.Simple(1.8, function()
-					if IsValid(wep) then
-						wep:SetMoveType(MOVETYPE_NONE)
-						wep:SetLocalVelocity(Vector(0,0,0))
-					end
-				end)
-				timer.Simple(3, function()
-					if IsValid(wep) and IsValid(machine) then
-						local weapon = weapons.Get(class)
-						if weapon and weapon.NZPaPReplacement and weapons.Get(weapon.NZPaPReplacement) then
-							local pos, ang = wep:GetPos(), wep:GetAngles()
-							wep:Remove()
-							wep = ents.Create("pap_weapon_fly") -- Recreate a new entity with the replacement class instead
-							wep:SetPos(pos)
-							wep:SetAngles(ang)
-							wep.WepClass = weapon.NZPaPReplacement
-							wep:Spawn()
-							wep.TriggerPos = startpos
-							
-							local replacewep = weapons.Get(weapon.NZPaPReplacement)
-							local model = (replacewep and replacewep.WM or replacewep.WorldModel) or "models/weapons/w_rif_ak47.mdl"
-							if !util.IsValidModel(model) then model = "models/weapons/w_rif_ak47.mdl" end
-							wep:SetModel(model) -- Changing the model and name
-							wep.machine = machine
-							wep.Owner = ply
-							wep:SetMoveType( MOVETYPE_FLY )
-						end
-						
-						--print(wep, wep.WepClass, wep:GetModel())
-					
-						machine:EmitSound("nz/machines/pap_ready.wav")
-						wep:SetCollisionBounds(Vector(0,0,0), Vector(0,0,0))
-						wep:SetMoveType(MOVETYPE_FLY)
-						wep:SetGravity(0.000001)
-						wep:SetLocalVelocity(ang:Forward()*30)
-						--print(ang:Forward()*30, wep:GetVelocity())
-						wep:CreateTriggerZone(reroll)
-						--print(reroll)
-					end
-				end)
-				timer.Simple(4.2, function()
-					if IsValid(wep) then
-						--print("YDA")
-						--print(wep:GetMoveType())
-						--print(ang:Forward()*30, wep:GetVelocity())
-						wep:SetMoveType(MOVETYPE_NONE)
-						wep:SetLocalVelocity(Vector(0,0,0))
-					end
-				end)
-				timer.Simple(10, function()
-					if IsValid(wep) then
-						wep:SetMoveType(MOVETYPE_FLY)
-						wep:SetLocalVelocity(ang:Forward()*-2)
-					end
-				end)
-				timer.Simple(25, function()
-					if IsValid(wep) then
-						wep:Remove()
-						if IsValid(machine) then
-							machine:SetBeingUsed(false)
-						end
-					end
-				end)
-
-				timer.Simple(2, function() ply:RemovePerk("pap") end)
-				return true
-			end)
+			return ply:GetPoints() >= cost
 		else
 			ply:PrintMessage( HUD_PRINTTALK, "This weapon is already Pack-a-Punched")
 			return false
 		end
+	end,
+	func = function(self, ply, machine)
+		local wep = ply:GetActiveWeapon()
+	
+		local reroll = false
+		if wep:HasNZModifier("pap") and wep:CanRerollPaP() then
+			reroll = true
+		end
+		local cost = reroll and 2000 or 5000
+
+		ply:Buy(cost, machine, function()
+			hook.Call("OnPlayerBuyPackAPunch", nil, ply, wep, machine)
+		
+			ply:Give("nz_packapunch_arms")
+
+			machine:SetBeingUsed(true)
+			machine:EmitSound("nz/machines/pap_up.wav")
+			local class = wep:GetClass()
+			
+			local e = EffectData()
+			e:SetEntity(machine)
+			local ang = machine:GetAngles()
+			e:SetOrigin(machine:GetPos() + ang:Up()*35 + ang:Forward()*20 - ang:Right()*2)
+			e:SetMagnitude(3)
+			util.Effect("pap_glow", e, true, true)
+
+			wep:Remove()
+			local wep = ents.Create("pap_weapon_fly")
+			local startpos = machine:GetPos() + ang:Forward()*30 + ang:Up()*25 + ang:Right()*-3
+			wep:SetPos(startpos)
+			wep:SetAngles(ang + Angle(0,90,0))
+			wep.WepClass = class
+			wep:Spawn()
+			local weapon = weapons.Get(class)
+			local model = (weapon and weapon.WM or weapon.WorldModel) or "models/weapons/w_rif_ak47.mdl"
+			if !util.IsValidModel(model) then model = "models/weapons/w_rif_ak47.mdl" end
+			wep:SetModel(model)
+			wep.machine = machine
+			wep.Owner = ply
+			wep:SetMoveType( MOVETYPE_FLY )
+
+			--wep:SetNotSolid(true)
+			--wep:SetGravity(0.000001)
+			--wep:SetCollisionBounds(Vector(0,0,0), Vector(0,0,0))
+			timer.Simple(0.5, function()
+				if IsValid(wep) then
+					wep:SetLocalVelocity(ang:Forward()*-30)
+				end
+			end)
+			timer.Simple(1.8, function()
+				if IsValid(wep) then
+					wep:SetMoveType(MOVETYPE_NONE)
+					wep:SetLocalVelocity(Vector(0,0,0))
+				end
+			end)
+			timer.Simple(3, function()
+				if IsValid(wep) and IsValid(machine) then
+					local weapon = weapons.Get(class)
+					if weapon and weapon.NZPaPReplacement and weapons.Get(weapon.NZPaPReplacement) then
+						local pos, ang = wep:GetPos(), wep:GetAngles()
+						wep:Remove()
+						wep = ents.Create("pap_weapon_fly") -- Recreate a new entity with the replacement class instead
+						wep:SetPos(pos)
+						wep:SetAngles(ang)
+						wep.WepClass = weapon.NZPaPReplacement
+						wep:Spawn()
+						wep.TriggerPos = startpos
+						
+						local replacewep = weapons.Get(weapon.NZPaPReplacement)
+						local model = (replacewep and replacewep.WM or replacewep.WorldModel) or "models/weapons/w_rif_ak47.mdl"
+						if !util.IsValidModel(model) then model = "models/weapons/w_rif_ak47.mdl" end
+						wep:SetModel(model) -- Changing the model and name
+						wep.machine = machine
+						wep.Owner = ply
+						wep:SetMoveType( MOVETYPE_FLY )
+					end
+					
+					--print(wep, wep.WepClass, wep:GetModel())
+				
+					machine:EmitSound("nz/machines/pap_ready.wav")
+					wep:SetCollisionBounds(Vector(0,0,0), Vector(0,0,0))
+					wep:SetMoveType(MOVETYPE_FLY)
+					wep:SetGravity(0.000001)
+					wep:SetLocalVelocity(ang:Forward()*30)
+					--print(ang:Forward()*30, wep:GetVelocity())
+					wep:CreateTriggerZone(reroll)
+					--print(reroll)
+				end
+			end)
+			timer.Simple(4.2, function()
+				if IsValid(wep) then
+					--print("YDA")
+					--print(wep:GetMoveType())
+					--print(ang:Forward()*30, wep:GetVelocity())
+					wep:SetMoveType(MOVETYPE_NONE)
+					wep:SetLocalVelocity(Vector(0,0,0))
+				end
+			end)
+			timer.Simple(10, function()
+				if IsValid(wep) then
+					wep:SetMoveType(MOVETYPE_FLY)
+					wep:SetLocalVelocity(ang:Forward()*-2)
+				end
+			end)
+			timer.Simple(25, function()
+				if IsValid(wep) then
+					wep:Remove()
+					if IsValid(machine) then
+						machine:SetBeingUsed(false)
+					end
+				end
+			end)
+
+			timer.Simple(2, function() ply:RemovePerk("pap") end)
+			return true
+		end)
 	end,
 	lostfunc = function(self, ply)
 
@@ -328,7 +334,6 @@ nzPerks:NewPerk("dtap2", {
 				v:ApplyNZModifier("dtap")
 			end
 		end
-		return true
 	end,
 	lostfunc = function(self, ply)
 		if !ply:HasPerk("dtap") then
@@ -360,7 +365,6 @@ nzPerks:NewPerk("staminup", {
 		ply:SetMaxRunSpeed( 350 )
 		ply:SetStamina( 200 )
 		ply:SetMaxStamina( 200 )
-		return true
 	end,
 	lostfunc = function(self, ply)
 		ply:SetRunSpeed(300)
@@ -379,7 +383,6 @@ nzPerks:NewPerk("phd", {
 	icon = Material("perk_icons/phd.png", "smooth unlitgeneric"),
 	color = Color(255, 50, 255),
 	func = function(self, ply, machine)
-		return true
 	end,
 	lostfunc = function(self, ply)
 	end,
@@ -394,7 +397,6 @@ nzPerks:NewPerk("deadshot", {
 	icon = Material("perk_icons/deadshot.png", "smooth unlitgeneric"),
 	color = Color(150, 200, 150),
 	func = function(self, ply, machine)
-		return true
 	end,
 	lostfunc = function(self, ply)
 	end,
@@ -409,7 +411,6 @@ nzPerks:NewPerk("mulekick", {
 	icon = Material("perk_icons/mulekick.png", "smooth unlitgeneric"),
 	color = Color(100, 200, 100),
 	func = function(self, ply, machine)
-		return true
 	end,
 	lostfunc = function(self, ply)
 		for k,v in pairs(ply:GetWeapons()) do
@@ -429,7 +430,6 @@ nzPerks:NewPerk("tombstone", {
 	icon = Material("perk_icons/tombstone.png", "smooth unlitgeneric"),
 	color = Color(100, 100, 100),
 	func = function(self, ply, machine)
-		return true
 	end,
 	lostfunc = function(self, ply)
 	end,
@@ -444,7 +444,6 @@ nzPerks:NewPerk("whoswho", {
 	icon = Material("perk_icons/whoswho.png", "smooth unlitgeneric"),
 	color = Color(100, 100, 255),
 	func = function(self, ply, machine)
-		return true
 	end,
 	lostfunc = function(self, ply)
 	end,
@@ -459,7 +458,6 @@ nzPerks:NewPerk("cherry", {
 	icon = Material("perk_icons/cherry.png", "smooth unlitgeneric"),
 	color = Color(50, 50, 200),
 	func = function(self, ply, machine)
-		return true
 	end,
 	lostfunc = function(self, ply)
 	end,
@@ -474,7 +472,6 @@ nzPerks:NewPerk("vulture", {
 	icon = Material("perk_icons/vulture.png", "smooth unlitgeneric"),
 	color = Color(255, 100, 100),
 	func = function(self, ply, machine)
-		return true
 	end,
 	lostfunc = function(self, ply)
 	end,
@@ -482,7 +479,7 @@ nzPerks:NewPerk("vulture", {
 
 nzPerks:NewPerk("wunderfizz", {
 	name = "Der Wunderfizz", -- Nothing more is needed, it is specially handled
-	blockget = true,
+	specialmachine = true,
 })
 
 nzPerks:NewPerk("widowswine", {
@@ -495,7 +492,6 @@ nzPerks:NewPerk("widowswine", {
 	icon = Material("perk_icons/widows_wine.png", "smooth unlitgeneric"),
 	color = Color(255, 50, 200),
 	func = function(self, ply, machine)
-		return true
 	end,
 	lostfunc = function(self, ply)
 	end,

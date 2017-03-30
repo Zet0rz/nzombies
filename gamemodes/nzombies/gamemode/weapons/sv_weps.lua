@@ -50,9 +50,11 @@ local function OnWeaponAdded( weapon )
 				if IsValid(exists) then ply:StripWeapon( exists:GetClass() ) end
 				
 				weapon:SetNWInt( "SwitchSlot", slot )
+				local oldammo = weapon.Primary.Ammo
 				local newammo = weapon:GetPrimaryAmmoType() -- Get the ammo ID used for this weapon slot
-				ply:SetAmmo(weapon:CalculateMaxAmmo(), newammo) -- Set ammo to max ammo for this weapon
 				weapon.Primary.Ammo = game.GetAmmoName(newammo) -- Set ammo type to the ammo type designated by this slot!
+				weapon.Primary.OldAmmo = oldammo -- Save the old ammo (just in case)
+				--weapon:GiveMaxAmmo() We can't do this! PaP should NOT give ammo when rerolling!
 				
 				weapon.Weight = 10000
 				ply:SelectWeapon(weapon:GetClass())
@@ -64,6 +66,9 @@ local function OnWeaponAdded( weapon )
 						if ply:HasPerk("dtap") or ply:HasPerk("dtap2") then
 							weapon:ApplyNZModifier("dtap")
 						end
+						if !weapon.NoSpawnAmmo then
+							weapon:GiveMaxAmmo()
+						end
 						ply:SelectWeapon(weapon:GetClass())
 					end
 					weapon.Weight = 0
@@ -71,6 +76,8 @@ local function OnWeaponAdded( weapon )
 			end
 			if weapon.NearWallEnabled then weapon.NearWallEnabled = false end
 			if weapon:IsFAS2() then weapon.NoNearWall = true end
+			
+			weapon:ApplyNZModifier("equip")
 		end)
 	end
 	
@@ -82,3 +89,11 @@ hook.Add("WeaponEquip", "nzOnWeaponAdded", OnWeaponAdded)
 hook.Add("PlayerCanPickupWeapon", "PreventWhosWhoWeapons", function(ply, wep)
 	if IsValid(wep:GetOwner()) and wep:GetOwner():GetClass() == "whoswho_downed_clone" then return false end
 end)
+
+-- Meta stuff
+local meta = FindMetaTable("Player")
+function meta:GiveNoAmmo(class)
+	local wep = self:Give(class)
+	if IsValid(wep) then wep.NoSpawnAmmo = true end
+	return wep
+end

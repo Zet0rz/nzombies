@@ -260,3 +260,11 @@ nzChatCommand.Add("/tools", SERVER, function(ply, text)
 		ply:Give("nz_multi_tool")
 	end
 end, true, "Give creative mode tools to yourself if in Creative.")
+
+nzChatCommand.Add("/maxammo", SERVER, function(ply, text)
+	nzNotifications:PlaySound("nz/powerups/max_ammo.mp3", 2)
+	-- Give everyone ammo
+	for k,v in pairs(player.GetAll()) do
+		v:GiveMaxAmmo()
+	end
+end, false, "Gives all players max ammo.")

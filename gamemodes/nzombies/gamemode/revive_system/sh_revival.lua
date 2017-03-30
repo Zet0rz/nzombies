@@ -113,7 +113,7 @@ function nzRevive:CreateWhosWhoClone(ply, pos)
 	local wep = IsValid(ply:GetActiveWeapon()) and ply:GetActiveWeapon():GetClass() != "nz_perk_bottle" and ply:GetActiveWeapon():GetClass() or ply.oldwep or nil
 
 	local who = ents.Create("whoswho_downed_clone")
-	who:SetPos(pos)
+	who:SetPos(pos + Vector(0,0,10))
 	who:SetAngles(ply:GetAngles())
 	who:Spawn()
 	who:GiveWeapon(wep)
@@ -177,20 +177,28 @@ function nzRevive:RespawnWithWhosWho(ply, pos)
 			end
 			if !IsValid(spawns[1]) then -- Still no open linked ones?! Spawn at a random player spawnpoint
 				local pspawns = ents.FindByClass("player_spawns")
-				pos = pspawns[math.random(#pspawns)]:GetPos()
+				if !IsValid(pspawns[1]) then
+					ply:Spawn()
+				else
+					pos = pspawns[math.random(#pspawns)]:GetPos()
+				end
 			else
 				pos = spawns[math.random(#spawns)]:GetPos()
 			end
 		else
 			-- There exists no special spawnpoints - Use regular player spawns
 			local pspawns = ents.FindByClass("player_spawns")
-			pos = pspawns[math.random(#pspawns)]:GetPos()
+			if !IsValid(pspawns[1]) then
+				ply:Spawn()
+			else
+				pos = pspawns[math.random(#pspawns)]:GetPos()
+			end
 		end
 	end
 	ply:RevivePlayer()
 	ply:StripWeapons()
 	player_manager.RunClass(ply, "Loadout") -- Rearm them
 
-	ply:SetPos(pos)
+	if pos then ply:SetPos(pos) end
 
 end

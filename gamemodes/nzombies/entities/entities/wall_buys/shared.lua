@@ -18,7 +18,7 @@ end
 local flipscale = Vector(1.5, 0.01, 1.5) 	-- Decides on which axis it flattens the outline
 local normalscale = Vector(0.01, 1.5, 1.5) 	-- based on the bool self:GetFlipped()
 
-CreateClientConVar("nz_outlinedetail", "4") -- Controls the outline creation
+CreateClientConVar("nz_outlinedetail", "4", true) -- Controls the outline creation
 
 chalkmaterial = Material("chalk.png", "unlitgeneric smooth")
 
@@ -224,20 +224,17 @@ if SERVER then
 
 		if !activator:HasWeapon( self.WeaponGive ) then
 			activator:Buy(price, self, function()
-				--activator:TakePoints(price)
-				activator:Give(self.WeaponGive)
-				nzWeps:GiveMaxAmmoWep(activator, self.WeaponGive)
+				local wep = activator:Give(self.WeaponGive)
+				timer.Simple(0, function() if IsValid(wep) then wep:GiveMaxAmmo() end end)
 				self:SetBought(true)
 				return true
-				--activator:EmitSound("nz/effects/buy.wav")
 			end)
 		elseif string.lower(ammo_type) != "none" and ammo_type != -1 then
-			if activator:GetWeapon(self.WeaponGive):HasNZModifier("pap") then
+			local wep = activator:GetWeapon(self.WeaponGive)
+			if wep:HasNZModifier("pap") then
 				activator:Buy(ammo_price_pap, self, function()
 					if give_ammo != 0 then
-						--activator:TakePoints(ammo_price_pap)
-						nzWeps:GiveMaxAmmoWep(activator, self.WeaponGive)
-						--activator:EmitSound("nz/effects/buy.wav")
+						wep:GiveMaxAmmo()
 						return true
 					else
 						print("Max Clip!")
@@ -247,9 +244,7 @@ if SERVER then
 			else	-- Refill ammo
 				activator:Buy(ammo_price, self, function()
 					if give_ammo != 0 then
-						--activator:TakePoints(ammo_price)
-						nzWeps:GiveMaxAmmoWep(activator, self.WeaponGive)
-						--activator:EmitSound("nz/effects/buy.wav")
+						wep:GiveMaxAmmo()
 						return true
 					else
 						print("Max Clip!")
