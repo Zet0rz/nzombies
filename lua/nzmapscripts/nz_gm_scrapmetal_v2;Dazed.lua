@@ -7,8 +7,9 @@ TO-DO:	- Garage Side-Room to have nitroamine powder. Have door open via power fi
 		- Get lock model from de_cherno, get pos/ang for later use
 		- Check door locking is working as intended (in the warehouse and such)
 		- Disallow returning power after failing the EE
-		- Add final step in EE steps where player builds bomb to destroy fence to escape, can be created before console buttons, but only used after
-		- Finalize navmesh (and fix that one zombie spawn after first door buy)
+		- Find remaining navmesh bugs and finalize navmesh
+		- Add more zombie spawns at every point
+		- Find and block cheat areas
 
 lua_run print( player.GetAll()[1]:GetEyeTrace().Entity:GetPos() )
 lua_run print( player.GetAll()[1]:GetEyeTrace().Entity:GetAngles() )
@@ -190,12 +191,15 @@ local function MyStartTouch( self, ply )
 	ply:SetTargetPriority( TARGET_PRIORITY_NONE )
 	ply:Freeze( true )
 	if #player.GetAllPlayingAndAlive() == 1 then
+		nzEE.Cam:QueueView( 1, nil, nil, nil, true, nil, ply ) --Fade for aesthetics
 		nzEE.Cam:QueueView( 15, Vector( -400.915161, -1325.068115, -380.741180 ), nil, Angle( 0.000, 91.500, 0.000 ), nil, nil, ply ) ---1290.283813 881.448975 601.329468 - 0.000 -97.950 0.000
 		nzEE.Cam:Music( "nz/easteregg/motd_good.wav", ply )
 		nzEE.Cam:Text( "You escaped after ".. finalround .." rounds!", ply )
-		timer.Simple( 14, function()
-			nzRound:Win( "", false )
+		--nzEE.Cam:QueueView( 0, Vector(  ), nil, Angle(  ), nil, nil, ply ) --Final Scene
+		timer.Simple( 16, function()
+			nzRound:Win( "Congratulations on escaping!", false )
 			if ply:Alive() then ply:KillSilent() end
+			ply:Freeze( false )
 			ply:SetTargetPriority( TARGET_PRIORITY_PLAYER )
 		end )
 		nzEE.Cam:Begin()
@@ -204,21 +208,26 @@ local function MyStartTouch( self, ply )
 	if not timer.Exists( "EscapeTimer" ) then
 		timer.Create( "EscapeTimer", 30, 1, function()
 			nzRound:Freeze( true )
-			for k, v in pairs( player.GetAllPlayingAndAlive() ) do
+			for k, v in pairs( player.GetAll() ) do
 				v:Freeze( true )
 				v:SetTargetPriority( TARGET_PRIORITY_NONE )
+				nzEE.Cam:QueueView( 1, nil, nil, nil, true, nil, ply ) --Fade for aesthetics
+				nzEE.Cam:QueueView( 15, Vector( -1243.480469, 668.968994, -176.465607 ), Vector( -1250.941895, -1273.481445, -164.941498 ), Angle( 0.000, -89.560, 0.000 ), true, nil, ply )
 				if not escaped[ ply ] then
-					nzEE.Cam:QueueView( 15, Vector( -1243.480469, 668.968994, -176.465607 ), Vector( -1250.941895, -1273.481445, -164.941498 ), Angle( 0.000, -89.560, 0.000 ), nil, nil, ply )
 					nzEE.Cam:Music( "nz/easteregg/motd_bad.wav", ply )
 					nzEE.Cam:Text( "You did not escape the facility...", ply )
 				else
-					nzEE.Cam:QueueView( 15, Vector( -1243.480469, 668.968994, -176.465607 ), Vector( -1250.941895, -1273.481445, -164.941498 ), Angle( 0.000, -89.560, 0.000 ), nil, nil, ply )
 					nzEE.Cam:Music( "nz/easteregg/motd_good.wav", ply )
 					nzEE.Cam:Text( "You escaped after ".. finalround .." rounds!", ply )
 				end
+				--[[nzEE.Cam:QueueView( 15, Vector(  ), Vector(  ), Angle(  ), true, nil, ply ) --Pan 1
+				nzEE.Cam:Text( "Escapees: " .. table.concat( escapednames, ", " ) .. ".", ply ) 
+				nzEE.Cam:QueueView( 15, Vector(  ), Vector(  ), Angle(  ), true, nil, ply ) --Pan 2
+				nzEE.Cam:Text( "Thank you for playing!", ply )
+				nzEE.Cam:QueueView( 0, Vector(  ), Vector(  ), Angle(  ), true, nil, ply ) --Final Scene]]
 			end
-			timer.Simple( 20, function() --After 20 more seconds, actually end the game
-				nzRound:Win( table.concat( escapednames, ", " ) .. " have/has escaped the facility and won the game!", false )
+			timer.Simple( 46, function() --After 20 more seconds, actually end the game
+				nzRound:Win( "Congratulations to everyone who escaped!", false )
 				for k, v in pairs( player.GetAllPlayingAndAlive() ) do
 					v:Freeze( false )
 					v:SetTargetPriority( TARGET_PRIORITY_PLAYER )
@@ -658,7 +667,7 @@ function FailPrimaryEE()
 		v.ent:SetNWString( "NZText", mixedtext )
 		mixedtext = ""
 		v.ent.OnUsed = function()
-			return false
+			return true
 		end
 		SetPermaElectrify( v.ent )
 	end
@@ -672,7 +681,7 @@ function FailPrimaryEE()
 		consolebutton:SetNWString( "NZText", mixedtext )
 		mixedtext = ""
 		consolebutton.OnUsed = function()
-			return false
+			return true
 		end
 		SetPermaElectrify( consolebutton )
 	end
@@ -683,7 +692,7 @@ function FailPrimaryEE()
 	baselink:SetNWString( "NZText", mixedtext )
 	mixedtext = ""
 	baselink.OnUsed = function()
-		return false
+		return true
 	end
 	SetPermaElectrify( baselink )
 	for k, v in pairs( ents.FindByClass( "perk_machine" ) ) do
@@ -823,8 +832,9 @@ function mapscript.OnGameBegin()
 		actualpowerswitch:SetPos( self:GetPos() )
 		actualpowerswitch:SetAngles( self:GetAngles() )
 		actualpowerswitch.OnUsed = function( self, ply )
+			--IDK if "return false" or "return nil" will screw anything up, so I'll leave it like this
 			if initialstart then
-				return false
+				return true
 			end
 			local initialstart = true
 		end
