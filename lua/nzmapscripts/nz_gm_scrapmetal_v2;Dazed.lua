@@ -165,7 +165,7 @@ local prophints = { }
 --//Build Table Information
 local buildabletbl = {
 	model = "models/weapons/w_c4.mdl",
-	pos = Vector( 0, 0, 60 ), --C4 Position relative to the table
+	pos = Vector( 0, 0, 0 ), --C4 Position relative to the table
 	ang = Angle( 0, 0, 0 ), --C4 Angles
 	parts = {
 		[ "charged_detonator" ] = { 0, 1 },
@@ -181,25 +181,81 @@ local buildabletbl = {
 	text = "Press E to pick up the plastic explosive."
 }
 
-local escapeDetector = ents.Create( "nz_script_prop" )
-escapeDetector:SetPos( Vector( 0, 0, 0 ) )
-escapeDetector:SetAngles( Angle( 0, 0, 0 ) )
-escapeDetector:SetModel( "" )
-escapeDetector:SetTrigger( true )
-escapeDetector:Spawn()
---If a player touches this entity, they have "escaped" the map. Turn their screen black, force loss of aggro
-escapeDetector.StartTouch somethingsomething
-local function ENT:StartTouch( ply )
+local finalround = 0
+local function MyStartTouch( self, ply )
 	if not ply:IsPlayer() and not ply:Alive() then return end
+	finalround = nzRound:GetNumber()
+	local escaped, escapednames = {}, {}
 	ply:GodEnable() --Because cheeky nandos will try to break immersion by throwing explosives into the end area
 	ply:SetTargetPriority( TARGET_PRIORITY_NONE )
-	nzEE.Cam
-	for k, v in pairs( player.GetAll() ) do
-		if v.Escaped then return end
+	ply:Freeze( true )
+	if #player.GetAllPlayingAndAlive() == 1 then
+		nzEE.Cam:QueueView( 15, Vector( -400.915161, -1325.068115, -380.741180 ), nil, Angle( 0.000, 91.500, 0.000 ), nil, nil, ply ) ---1290.283813 881.448975 601.329468 - 0.000 -97.950 0.000
+		nzEE.Cam:Music( "nz/easteregg/motd_good.wav", ply )
+		nzEE.Cam:Text( "You escaped after ".. finalround .." rounds!", ply )
+		timer.Simple( 14, function()
+			nzRound:Win( "", false )
+			if ply:Alive() then ply:KillSilent() end
+			ply:SetTargetPriority( TARGET_PRIORITY_PLAYER )
+		end )
+		nzEE.Cam:Begin()
+		return
 	end
-	PrintMessage( HUD_PRINTTALK, ply:Nick() .. " has escaped the map! All players have 30 seconds to follow them!" )
-	ply.Escaped = true
+	if not timer.Exists( "EscapeTimer" ) then
+		timer.Create( "EscapeTimer", 30, 1, function()
+			nzRound:Freeze( true )
+			for k, v in pairs( player.GetAllPlayingAndAlive() ) do
+				v:Freeze( true )
+				v:SetTargetPriority( TARGET_PRIORITY_NONE )
+				if not escaped[ ply ] then
+					nzEE.Cam:QueueView( 15, Vector( -1243.480469, 668.968994, -176.465607 ), Vector( -1250.941895, -1273.481445, -164.941498 ), Angle( 0.000, -89.560, 0.000 ), nil, nil, ply )
+					nzEE.Cam:Music( "nz/easteregg/motd_bad.wav", ply )
+					nzEE.Cam:Text( "You did not escape the facility...", ply )
+				else
+					nzEE.Cam:QueueView( 15, Vector( -1243.480469, 668.968994, -176.465607 ), Vector( -1250.941895, -1273.481445, -164.941498 ), Angle( 0.000, -89.560, 0.000 ), nil, nil, ply )
+					nzEE.Cam:Music( "nz/easteregg/motd_good.wav", ply )
+					nzEE.Cam:Text( "You escaped after ".. finalround .." rounds!", ply )
+				end
+			end
+			timer.Simple( 20, function() --After 20 more seconds, actually end the game
+				nzRound:Win( table.concat( escapednames, ", " ) .. " have/has escaped the facility and won the game!", false )
+				for k, v in pairs( player.GetAllPlayingAndAlive() ) do
+					v:Freeze( false )
+					v:SetTargetPriority( TARGET_PRIORITY_PLAYER )
+					if v:Alive() then v:KillSilent() end
+				end
+			end )
+			timer.Destroy( "EscapeTimer" )
+		end )
+	end
+
+	nzEE.Cam:QueueView( timer.TimeLeft( "EscapeTimer" ), Vector( -400.915161, -1325.068115, -380.741180 ), nil, Angle( 0.000, 91.500, 0.000 ), true, nil, ply )
+	nzEE.Cam:Text( "Waiting for the rest of the players...", ply )
+	PrintMessage( HUD_PRINTTALK, ply:Nick() .. " has escaped the map! All remaining players have " .. timer.TimeLeft( "EscapeTimer" ) .. " seconds to follow suit!" ) --This should always be 30 the first time
+	escaped[ ply ] = true --Used for logic
+	table.insert( escapednames, ply:Nick() ) --Used for the end message
+	nzEE.Cam:Begin()
 end
+
+local escapeDetector = ents.Create( "nz_script_prop" )
+escapeDetector:SetPos( Vector( -1060.883667, 848.851624, -393.830139 ) )
+--escapeDetector:SetAngles( Angle( 0, 0, 0 ) )
+escapeDetector:SetModel( "models/hunter/blocks/cube2x2x2.mdl" )
+escapeDetector:SetTrigger( true ) --Required for an entity to make use of StartTouch
+escapeDetector:SetNoDraw( true )
+escapeDetector:SetNotSolid( true )
+escapeDetector:Spawn()
+escapeDetector.StartTouch = MyStartTouch
+
+local escapeDetector2 = ents.Create( "nz_script_prop" )
+escapeDetector2:SetPos( Vector( 362.214935, -1753.718994, -359.844818 ) )
+--escapeDetector2:SetAngles( Angle( 0, 0, 0 ) )
+escapeDetector2:SetModel( "models/hunter/blocks/cube1x8x1.mdl" )
+escapeDetector2:SetTrigger( true ) --Required for an entity to make use of StartTouch
+escapeDetector2:SetNoDraw( true )
+escapeDetector2:Spawn()
+escapeDetector2:SetNotSolid( true )
+escapeDetector2.StartTouch = MyStartTouch
 
 --//Console buttons, from left to right
 local consolebuttons = { 2335, 2337, 2338, 2339, 2340 }
@@ -512,37 +568,61 @@ local function SetTexts()
 end
 
 --[[Here I try to explain the logic to make it easier for others looking for it -/-
-	This function starts the end-game of the script. Nextpush is used as the logic for the the next button to be pushed, an integer seperate from buttonorder.
+	This function starts the end-game of the script. "nextpush" is used as the logic for the the next button to be pushed, an integer seperate from buttonorder.
 	The button order will be random every time the script loads. Button order is set after all links have been activated, but hint items remains the same
-	between button re-order. On EE failure, ALL EE items (beside generators and music EE) will get randomized text, power is permanenetly disabled, 
+	between button re-order. On EE failure, ALL EE items (beside generators and music EE) will get randomized text, power is permanently disabled, 
 	and the game is on round infinity until the players "escape" via opening the garage doors after a timer upon garage door activation. 
 	This way of escaping the map should be EXTREMELY DIFFICULT.]]
 local nextpush = 1
 function StartPuzzle()
-	print( "DEBUG StartPuzzle()" )
-	PrintTable( buttonorder )
+	local onemiss = false
 	for k, v in pairs( buttonorder ) do --At this point, buttonorder is a randomized table version of consolebuttons (which is all 5 console button entities)
 		local consolebutton = ents.GetMapCreatedEntity( v[ 1 ] )
 		consolebutton:SetNWString( "NZText", "Press E to activate button " .. v[ 1 ] ) -- consolebuttons[ table.KeyFromValue( buttonorder, v[ 1 ] ) ] )
 		consolebutton.OnUsed = function()
+			print( "consolebutton.OnUsed called", k, nextpush )
 			if not nzElec:IsOn() then return end
 			consolebutton:EmitSound( "buttons/button9.wav" )
 			--//You can push a button more than once, and it can fail the EE. This is more a "feature," not a bug.
 			if k == nextpush then
 				nextpush = nextpush + 1
-			elseif nextpush == 6 then
-				timer.Simple( 1, function()
-					for k, v in pairs( player.GetAll() ) do
-						v:SendLua( "surface.PlaySound( \"ambient/alarms/train_horn2.wav\" ) " )
-					end
-				end )
-				thefence.Allow = true
-				ents.GetMapCreatedEntity( "2205" ):Remove() --Maybe move it then delete it?
+				if nextpush == 6 then --Nextpush is only 6 if button 5 has been pushed
+					timer.Simple( 1, function()
+						for k, v in pairs( player.GetAll() ) do
+							v:SendLua( "surface.PlaySound( \"ambient/alarms/train_horn2.wav\" ) " )
+						end
+					end )
+					thefence.Allow = true
+					ents.GetMapCreatedEntity( "2205" ):Remove() --Maybe move it then delete it?
+				end
+			elseif not onemiss then
+				--This was originally played when the EE failed, but there are effects already implemented for the start of Round Infinity
+				for k, v in pairs( player.GetAll() ) do
+					v:SendLua( "surface.PlaySound( \"ambient/levels/labs/electric_explosion4.wav\" ) " )
+				end
+				--Create the lightning aura across all EE-related and power-related props, minus the gas generators and anything related to the C4
+				for k, v in pairs( buttonorder ) do
+					local ent = ents.GetMapCreatedEntity( v[ 1 ] )
+					Electrify( ent )
+				end
+				for k, v in pairs( links ) do
+					local linkprop = v.ent
+					Electrify( linkprop )
+				end
+				for k, v in pairs( ents.FindByClass( "perk_machine" ) ) do
+					Electrify( v )
+				end
+				Electrify( ents.FindByClass( "power_box" )[ 1 ] )
+				--Electrify( ents.FindByClass( "" )[ 1 ] )
+				Electrify( baselink )
+				--Electrify( )
+				onemiss = true
 			else
 				FailPrimaryEE()
 				nextpush = 0
 			end
 		end
+		--//This is for the hint props
 		local effecttimer = 0
 		v[ 2 ].Think = function()
 			if k == nextpush and effecttimer < CurTime() then
@@ -569,9 +649,6 @@ function FailPrimaryEE()
 	PermaOff = true
 
 	local mixedtext = ""
-	for k, v in pairs( player.GetAll() ) do
-		v:SendLua( "surface.PlaySound( \"ambient/levels/labs/electric_explosion4.wav\" ) " )
-	end
 	--//All link outliers
 	for k, v in pairs( links ) do
 		for i = 1, 6 do
@@ -583,6 +660,7 @@ function FailPrimaryEE()
 		v.ent.OnUsed = function()
 			return false
 		end
+		SetPermaElectrify( v.ent )
 	end
 	--//All console buttons
 	for k, v in pairs( consolebuttons ) do
@@ -596,6 +674,7 @@ function FailPrimaryEE()
 		consolebutton.OnUsed = function()
 			return false
 		end
+		SetPermaElectrify( consolebutton )
 	end
 	for i = 1, 6 do
 		mixedtext = mixedtext .. table.Random( availabletext )
@@ -606,6 +685,11 @@ function FailPrimaryEE()
 	baselink.OnUsed = function()
 		return false
 	end
+	SetPermaElectrify( baselink )
+	for k, v in pairs( ents.FindByClass( "perk_machine" ) ) do
+		SetPermaElectrify( v )
+	end
+	SetPermaElectrify( ents.FindByClass( "power_box" )[ 1 ] )
 	local bossSpawns = {
 		{ pos = Vector( 178.379028, -1902.926025, -391.968750 ) },
 		{ pos = Vector( 180.650421, -1782.478638, -391.968750 ) },
@@ -617,16 +701,18 @@ function FailPrimaryEE()
 		zombie:SetPos( v.pos )
 		zombie:Spawn()
 	end
+	finalround = nzRound:GetNumber()
 	nzDoors:OpenLinkedDoors( "20" ) --This enables the 15 bajillion extra zombie spawns
 	nzRound:RoundInfinity()
-	local pressed
+	local pressed --samefunc is not designed to be self-contained
 	function samefunc( self, ply )
 		if not PermaOff or pressed then return end
+		PrintMessage( HUD_PRINTTALK, "The garage doors are opening in 60 seconds!" )
 		pressed = true
 		ents.GetMapCreatedEntity( "1771" ):SetPlaybackRate( 0.5 )
 		ents.GetMapCreatedEntity( "1772" ):SetPlaybackRate( 0.5 )
-		ents.GetMapCreatedEntity( "5238" ):SetNWString( "NZHasText", "" )
-		ents.GetMapCreatedEntity( "5243" ):SetNWString( "NZHasText", "" )
+		ents.GetMapCreatedEntity( "1771" ):SetNWString( "NZHasText", "" )
+		ents.GetMapCreatedEntity( "1772" ):SetNWString( "NZHasText", "" )
 		timer.Simple( 60, function() 
 		ents.GetMapCreatedEntity( "5238" ):Fire( "Unlock" )
 		ents.GetMapCreatedEntity( "5243" ):Fire( "Unlock" )
@@ -639,16 +725,39 @@ function FailPrimaryEE()
 		ents.GetMapCreatedEntity( "5243" ):Fire( "Lock" )
 		end )
 	end
-	ents.GetMapCreatedEntity( "5238" ).OnUsed = samefunc()
-	ents.GetMapCreatedEntity( "5243" ).OnUsed = samefunc()
-	ents.GetMapCreatedEntity( "5238" ):SetNWString( "NZHasText", "Press E to open the garage doors." )
-	ents.GetMapCreatedEntity( "5243" ):SetNWString( "NZHasText", "Press E to open the garage doors." )
+	ents.GetMapCreatedEntity( "5238" ).OnUsed = samefunc
+	ents.GetMapCreatedEntity( "5243" ).OnUsed = samefunc
+	ents.GetMapCreatedEntity( "1771" ):SetNWString( "NZHasText", "Open the garage doors to escape!" )
+	ents.GetMapCreatedEntity( "1772" ):SetNWString( "NZHasText", "Open the garage doors to escape!" )
 	--[[ TO-DO
 	- Garage Door opens after 60 seconds ( Entity:SetPlaybackRate( 0.5 ) to slow the animation down )
 		- Button IDs: 5238, 5243
 		- Garage door IDs: 1771, 1772
 	- Create "escape" area where players screens turn back and lose control 
 		- This should probably be done outside of this function ]]
+end
+
+--//Creates the lightning aura once around the given ent
+function Electrify( ent )
+	local effect = EffectData()
+	effect:SetScale( 1 )
+	effect:SetEntity( ent )
+	util.Effect( "lightning_aura", effect )
+end
+
+--//Creates a never-ending lightning aura around the given ent
+function SetPermaElectrify( penis )
+	local function PermaElectrify( ent )
+		local effecttimer = 0
+		if effecttimer < CurTime() then
+			local effect = EffectData()
+			effect:SetScale( 1 )
+			effect:SetEntity( ent )
+			util.Effect( "lightning_aura", effect )
+			effecttimer = CurTime() + 0.5
+		end
+	end
+	penis.Think = PermaElectrify
 end
 
 function mapscript.OnGameBegin()
@@ -659,6 +768,26 @@ function mapscript.OnGameBegin()
 	rubber:Reset()
 	powder:Reset()
 	blast:Reset()
+
+	if buttonorder then
+		for k, v in pairs( buttonorder ) do
+			local ent = ents.GetMapCreatedEntity( v[ 1 ] )
+			ent.Think = nil
+		end
+	end
+	if links[ 1 ].ent then
+		for k, v in pairs( links ) do
+			local linkprop = v.ent
+			linkprop.Think = nil
+		end
+	end
+	for k, v in pairs( ents.FindByClass( "perk_machine" ) ) do
+		v.Think = nil
+	end
+	ents.FindByClass( "power_box" )[ 1 ].Think = nil
+	if baselink then
+		baselink.Think = nil
+	end
 
 	ents.GetMapCreatedEntity( "5238" ):Fire( "Lock" )
 	ents.GetMapCreatedEntity( "5243" ):Fire( "Lock" )
