@@ -6,20 +6,8 @@ TO-DO:	- Disallow returning power after failing the EE
 		- Find remaining navmesh bugs and finalize navmesh
 		- Find and block cheat areas
 		- Replace invisible walls once fix has been found
-		- Plug placements - models/props_lab/tpplugholder.mdl
-			- -2689.773682 -1538.550171 427.433868, 0.000 0.000 -0.000 - Left side
-				- Connected plug: -2685.263916 -1525.525757 437.388794, 0.000 0.440 0.000
-			- -2689.815186 -1384.584351 445.547668, -0.000 -0.000 180.000 - Right side
-				- Connected plug: -2684.125977 -1397.601318 435.448975, -0.000 -0.440 180.000
-			- outside plugs - models/props_lab/tpplug.mdl
-			- After activating all breen consoles, garage door opens on garage's breen console use - door ID: 2959
-		- Battery console placements - models/props_combine/breenconsole.mdl
-			- 99.254143 1312.770020 -0.181114, 0.000 0.000 0.000 - Computer room
-			- -1883.329346 -639.092712 -433.118835, -0.000 -90.000 -0.000 - Warehouse
-			- -916.903503 -1956.711060 -148.039734, 0.000 180.000 0.000 - Foreman's Room next to fire
-			- -2676.411865 -1543.952881 375.467041, -0.000 90.000 0.000 - On roof left side
-			- -2678.811523 -1392.534058 374.113800, -0.000 90.000 0.000 - On roof right side
-			- -294.531677 -1556.127808 -390.432404, 0.000 0.000 0.000 - In garage
+		- Find the right placement for C4 on the build table
+		- Find good spots for camera pans when game ends
 
 lua_run print( player.GetAll()[1]:GetEyeTrace().Entity:GetPos() )
 lua_run print( player.GetAll()[1]:GetEyeTrace().Entity:GetAngles() )
@@ -110,6 +98,7 @@ local plugoutletspawns = {
 	{ pos = Vector( -2689.815186, -1384.584351, 445.547668 ), ang = Angle( -0.000, -0.000, 180.000 ) }
 }
 
+--The plug's position when inserted onto the outlets
 local plugsonoutlets = {
 	{ pos = Vector( -2685.263916, -1525.525757, 437.388794 ), ang = Angle( 0.000, 0.440, 0.000 ) },
 	{ pos = Vector( -2684.125977, -1397.601318, 435.448975 ), ang = Angle( -0.000, -0.440, 180.000 ) }
@@ -117,11 +106,11 @@ local plugsonoutlets = {
 
 --//The combine consoles that must be pushed to open garage sideroom - the console in the garage is done seperately as it has it's own logic
 local breenconsolespawns = {
-	{ pos = Vector( 99.254143, 1312.770020, -0.181114 ), ang = Angle( 0.000, 0.000, 0.000 ) },
-	{ pos = Vector( -1883.329346, -639.092712, -433.118835 ), ang = Angle( -0.000, -90.000, -0.000 ) },
-	{ pos = Vector( -916.903503, -1956.711060, -148.039734 ), ang = Angle( 0.000, 180.000, 0.000 ) },
-	{ pos = Vector( -2676.411865, -1543.952881, 375.467041 ), ang = Angle( -0.000, 90.000, 0.000 ) },
-	{ pos = Vector( -2678.811523, -1392.534058, 374.113800 ), ang = Angle( -0.000, 90.000, 0.000 ) }
+	{ pos = Vector( -2676.411865, -1543.952881, 375.467041 ), ang = Angle( -0.000, 90.000, 0.000 ) }, --Roof left side (when facing both)
+	{ pos = Vector( -2678.811523, -1392.534058, 374.113800 ), ang = Angle( -0.000, 90.000, 0.000 ) } --Roof right side
+	{ pos = Vector( 99.254143, 1312.770020, -0.181114 ), ang = Angle( 0.000, 0.000, 0.000 ) }, --Computer room
+	{ pos = Vector( -1883.329346, -639.092712, -433.118835 ), ang = Angle( -0.000, -90.000, -0.000 ) }, --Warehouse
+	{ pos = Vector( -916.903503, -1956.711060, -148.039734 ), ang = Angle( 0.000, 180.000, 0.000 ) } --Foreman's floor
 }
 
 	--//These are the props used for the EE hinting with console buttons. Hint#a is the outlying prop w/ hint text, 
@@ -669,12 +658,7 @@ local function SetTexts()
 	end
 end
 
---[[Here I try to explain the logic to make it easier for others looking for it -/-
-	This function starts the end-game of the script. "nextpush" is used as the logic for the the next button to be pushed, an integer seperate from buttonorder.
-	The button order will be random every time the script loads. Button order is set after all links have been activated, but hint items remains the same
-	between button re-order. On EE failure, ALL EE items (beside generators and music EE) will get randomized text, power is permanently disabled, 
-	and the game is on round infinity until the players "escape" via opening the garage doors after a timer upon garage door activation. 
-	This way of escaping the map should be EXTREMELY DIFFICULT.]]
+--//Starts the puzzle, press the buttons in the right order or fail the EE
 local nextpush = 1
 function StartPuzzle()
 	local onemiss = false
@@ -845,6 +829,7 @@ function mapscript.OnGameBegin()
 	rubber:Reset()
 	powder:Reset()
 	blast:Reset()
+	plug:Reset()
 
 	ents.GetMapCreatedEntity( "3033" ):Fire( "Lock" ) 
 	ents.GetMapCreatedEntity( "2959" ):Fire( "Lock" )
@@ -1036,6 +1021,7 @@ function mapscript.OnGameBegin()
 		end
 	end
 
+	--Creates all of the links
 	for k, v in pairs( links ) do
 		establishedlinks[ k ] = false
 		local link = ents.Create( "nz_script_prop" )
@@ -1080,6 +1066,7 @@ function mapscript.OnGameBegin()
 		light:SetModel( "models/props_c17/light_cagelight02_off.mdl" )
 	end
 
+	--//Creates all the breen consoles
 	for k, v in pairs( breenconsolespawns ) do
 		local breen = ents.Create( "nz_script_prop" )
 		activatedconsoles[ k ] = false
@@ -1090,13 +1077,18 @@ function mapscript.OnGameBegin()
 		breen:Spawn()
 		breen:Activate()
 		breen.OnUsed = function()
+			--The first and second breen consoles (which are both on the roof) require the battery outlet be plugged in above it to operate
 			if ( k == 1 or k == 2 ) and not CheckTable( insertedplugs ) then return end
 			activatedconsoles[ k ] = true
 			breen:EmitSound( "buttons/combine_button1.wav" )
 			breen:SetNWString( "NZText", "" )
+			if CheckTable( activatedconsoles ) then
+				sideroomopener:SetNWString( "NZText", "" )
+			end
 		end
 	end
 
+	--//Creates all the plug outlets on the roof
 	for k, v in pairs( plugoutletspawns ) do
 		local outlet = ents.Create( "nz_script_prop" )
 		insertedplugs[ k ] = false
@@ -1121,8 +1113,29 @@ function mapscript.OnGameBegin()
 		end
 	end
 
+	--//This is the breen console by the garage sideroom, can only be activated once all others have
+	local sideroomopener = ents.Create( "nz_script_prop" ) ---294.531677 -1556.127808 -390.432404, 0.000 0.000 0.000
+	sideroomopener:SetPos( Vector( -294.531677, -1556.127808, -390.432404 ) )
+	sideroomopener:SetAngles( Angle( 0.000, 0.000, 0.000 ) )
+	sideroomopener:SetModel( "models/props_combine/breenconsole.mdl" )
+	sideroomopener:SetNWString( "NZText", "ERROR" )
+	sideroomopener.OnUsed = function( self, ply )
+		if not CheckTable( activatedconsoles ) then
+			sideroomopener:EmitSound( "buttons/combine_button_locked.wav" )
+			PrintMessage( HUD_PRINTTALK, "[COMBINE SECURITY] ERROR." )
+			timer.Simple( 2, function()
+				PrintMessage( HUD_PRINTTALK, "[COMBINE SECURITY] RE-ESTABLISH SYSTEM LINKS TO RESUME DOOR FUNCTIONS." )
+			end )
+			return
+		end
+		sideroomopener:EmitSound( "buttons/combine_button1.wav" )
+		ents.GetMapCreatedEntity( "2959" ):Fire( "Unlock" )
+		ents.GetMapCreatedEntity( "2959" ):Fire( "Use" )
+		ents.GetMapCreatedEntity( "2959" ):Fire( "Lock" )
+	end
+
 	--//I wonder what this block of code creates...
-	soulcatcher = ents.Create( "nz_script_soulcatcher" )
+	local soulcatcher = ents.Create( "nz_script_soulcatcher" )
 	soulcatcher:SetPos( Vector( -1013.565002, -1750.850830, -392.342163 ) )
 	soulcatcher:SetAngles( Angle( -0.000, -0.000, 0.000 ) )
 	soulcatcher:SetModel( "models/props_vehicles/generatortrailer01.mdl" )
