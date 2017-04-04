@@ -2,17 +2,28 @@
 --//This of course may be edited to work better, I ain't no great coder
 
 --[[
-TO-DO:	- Garage Side-Room to have nitroamine powder. Have door open via power first then shooting something w/ a PaP weapon
-			- What do we shoot? Gas Generators? Thumpers?
-		- Get lock model from de_cherno, get pos/ang for later use
-		- Check door locking is working as intended (in the warehouse and such)
-		- Disallow returning power after failing the EE
+TO-DO:	- Disallow returning power after failing the EE
 		- Find remaining navmesh bugs and finalize navmesh
-		- Add more zombie spawns at every point
 		- Find and block cheat areas
+		- Replace invisible walls once fix has been found
+		- Plug placements - models/props_lab/tpplugholder.mdl
+			- -2689.773682 -1538.550171 427.433868, 0.000 0.000 -0.000 - Left side
+				- Connected plug: -2685.263916 -1525.525757 437.388794, 0.000 0.440 0.000
+			- -2689.815186 -1384.584351 445.547668, -0.000 -0.000 180.000 - Right side
+				- Connected plug: -2684.125977 -1397.601318 435.448975, -0.000 -0.440 180.000
+			- outside plugs - models/props_lab/tpplug.mdl
+			- After activating all breen consoles, garage door opens on garage's breen console use - door ID: 2959
+		- Battery console placements - models/props_combine/breenconsole.mdl
+			- 99.254143 1312.770020 -0.181114, 0.000 0.000 0.000 - Computer room
+			- -1883.329346 -639.092712 -433.118835, -0.000 -90.000 -0.000 - Warehouse
+			- -916.903503 -1956.711060 -148.039734, 0.000 180.000 0.000 - Foreman's Room next to fire
+			- -2676.411865 -1543.952881 375.467041, -0.000 90.000 0.000 - On roof left side
+			- -2678.811523 -1392.534058 374.113800, -0.000 90.000 0.000 - On roof right side
+			- -294.531677 -1556.127808 -390.432404, 0.000 0.000 0.000 - In garage
 
 lua_run print( player.GetAll()[1]:GetEyeTrace().Entity:GetPos() )
 lua_run print( player.GetAll()[1]:GetEyeTrace().Entity:GetAngles() )
+lua_run print( player.GetAll()[1]:GetEyeTrace().HitPos )
 ]]
 local mapscript = {}
 
@@ -49,7 +60,7 @@ local gascanlist = { }
 local links = {
 	{ pos = Vector( -485.073120, 714.775635, 37.296597 ), ang = Angle( -2.823, -7.083, 0.082 ) }, --On desk
 	{ pos = Vector( -2060.613037, -2014.947021, 175.752914 ), ang = Angle( -8.780, 97.645, -1.173 ) }, --Steam room
-	{ pos = Vector( 190.453674, -1582.523315, -110.206749 ), ang = Angle( -0.665, -134.111, -0.199 ) }, --Warden
+	{ pos = Vector( 190.453674, -1582.523315, -110.206749 ), ang = Angle( -0.665, -134.111, -0.199 ) }, --Foreman
 	{ pos = Vector( -2342.335205, -239.686722, -386.362579 ), ang = Angle( -0.300, 42.795, 0.052 ) }, --Jugg
 	{ pos = Vector( -1885.892090, 1419.159180, -420.200226 ), ang = Angle( -0.446, -46.191, 0.104 ) } --Under radiation
 }
@@ -72,11 +83,45 @@ local lights2 = {
 	{ pos = Vector( -912.5, 60, -263 ), ang = Angle( 0, 0, 0 ) },
 }
 
---//The detonator to be charged can spawn in any of the 3 places randomly
+--//The detonator to be charged; can spawn in any of the 3 places randomly
 local detonatorspawn = {
 	{ pos = Vector( -2002.968750, -553.781860, -394.328888 ), ang = Angle( -0.025, 99.925, 0.077 ) },
 	{ pos = Vector( 187.443161, 1128.233643, 54.083485 ), ang = Angle( -0.233, 89.339, 0.178 ) },
 	{ pos = Vector( -724.184204, -237.450592, -354.308746 ), ang = Angle( -2.876, 169.066, -0.773 ) },
+}
+
+--//Possible spawns for the power lever
+local leverspawns = {
+	{ pos = Vector( -2674.851563, -1690.906860, 21.732672 ), ang = Angle( -0.000, 18.880, 0.000 ) },
+	{ pos = Vector( -2402.280762, -1964.696533, -378.522614 ), ang = Angle( -0.000, 176.260, 0.000 ) },
+	{ pos = Vector( -715.065002, 1163.287354, -386.674530 ), ang = Angle( -45.000, 0.880, 0.000 ) },
+	{ pos = Vector( -746.653564, -2736.561768, -18.268938 ), ang = Angle( -0.000, -142.120, 0.000 ) }
+}
+
+--//The 2 plugs that must be inserted into the outlets
+local plugspawns = {
+	{ pos = Vector( 22.798779, -1860.214111, -116.672722 ), ang = Angle( -88.753, -157.286, 141.505 ) }, --Foreman's office
+	{ pos = Vector( -644.315369, 1170.212524, -183.919693 ), ang = Angle( -90.000, -47.860, 180.000 ) } --Bottom of elevator shaft
+}
+
+--//The 2 plug outlets that spawn on the roof
+local plugoutletspawns = {
+	{ pos = Vector( -2689.773682, -1538.550171, 427.433868 ), ang = Angle( 0.000, 0.000, -0.000 ) },
+	{ pos = Vector( -2689.815186, -1384.584351, 445.547668 ), ang = Angle( -0.000, -0.000, 180.000 ) }
+}
+
+local plugsonoutlets = {
+	{ pos = Vector( -2685.263916, -1525.525757, 437.388794 ), ang = Angle( 0.000, 0.440, 0.000 ) },
+	{ pos = Vector( -2684.125977, -1397.601318, 435.448975 ), ang = Angle( -0.000, -0.440, 180.000 ) }
+}
+
+--//The combine consoles that must be pushed to open garage sideroom - the console in the garage is done seperately as it has it's own logic
+local breenconsolespawns = {
+	{ pos = Vector( 99.254143, 1312.770020, -0.181114 ), ang = Angle( 0.000, 0.000, 0.000 ) },
+	{ pos = Vector( -1883.329346, -639.092712, -433.118835 ), ang = Angle( -0.000, -90.000, -0.000 ) },
+	{ pos = Vector( -916.903503, -1956.711060, -148.039734 ), ang = Angle( 0.000, 180.000, 0.000 ) },
+	{ pos = Vector( -2676.411865, -1543.952881, 375.467041 ), ang = Angle( -0.000, 90.000, 0.000 ) },
+	{ pos = Vector( -2678.811523, -1392.534058, 374.113800 ), ang = Angle( -0.000, 90.000, 0.000 ) }
 }
 
 	--//These are the props used for the EE hinting with console buttons. Hint#a is the outlying prop w/ hint text, 
@@ -192,7 +237,7 @@ local function MyStartTouch( self, ply )
 	ply:Freeze( true )
 	if #player.GetAllPlayingAndAlive() == 1 then
 		nzEE.Cam:QueueView( 1, nil, nil, nil, true, nil, ply ) --Fade for aesthetics
-		nzEE.Cam:QueueView( 15, Vector( -400.915161, -1325.068115, -380.741180 ), nil, Angle( 0.000, 91.500, 0.000 ), nil, nil, ply ) ---1290.283813 881.448975 601.329468 - 0.000 -97.950 0.000
+		nzEE.Cam:QueueView( 15, Vector( -400.915161, -1325.068115, -380.741180 ), nil, Angle( 0.000, 91.500, 0.000 ), nil, nil, ply ) --Black screen
 		nzEE.Cam:Music( "nz/easteregg/motd_good.wav", ply )
 		nzEE.Cam:Text( "You escaped after ".. finalround .." rounds!", ply )
 		--nzEE.Cam:QueueView( 0, Vector(  ), nil, Angle(  ), nil, nil, ply ) --Final Scene
@@ -270,7 +315,55 @@ escapeDetector2.StartTouch = MyStartTouch
 local consolebuttons = { 2335, 2337, 2338, 2339, 2340 }
 
 --//Setting up some extra variables
-local poweredgenerators, establishedlinks, buttonorder = { }, { }, { }
+local poweredgenerators, establishedlinks, buttonorder, activatedconsoles, insertedplugs = { }, { }, { }, { }, { }
+
+local plug = nzItemCarry:CreateCategory( "plug" )
+plug:SetIcon( "spawnicons/models/props_lab/tpplug.png" )
+plug:SetText( "Press E to pick up the battery plug." )
+plug:SetDropOnDowned( true )
+plug:SetShowNotification( true )
+plug:SetResetFunction( function( self )
+	for k, v in pairs( plugspawns ) do
+		local ent = ents.Create( "nz_script_prop" )
+		ent:SetModel( "models/props_lab/tpplug.mdl" )
+		ent:SetPos( v.pos )
+		ent:SetAngles( v.ang )
+		ent:Spawn()
+		v.ent = ent
+		self:RegisterEntity( ent )
+	end
+end )
+plug:SetDropFunction( function( self, ply )
+	for k, v in pairs( plugspawns ) do
+		if v.held == ply then -- If this is the one we're carrying
+			local ent = ents.Create( "nz_script_prop" )
+			ent:SetModel( "models/props_lab/tpplug.mdl" )
+			ent:SetPos( ply:GetPos() )
+			ent:SetAngles( Angle( 0, 0, 0 ) )
+			ent:Spawn()
+			ent:DropToFloor()
+			ply:RemoveCarryItem( "plug" )
+			v.held = nil
+			ply.ent = nil
+			self:RegisterEntity( ent )
+			break
+		end
+	end
+end )
+plug:SetPickupFunction( function( self, ply, ent )
+	for k, v in pairs( plugspawns ) do
+		if v.ent == ent then
+			ply:GiveCarryItem( self.id )
+			ent:Remove()
+			ply.ent = ent 
+			break
+		end
+	end
+end )
+plug:SetCondition( function( self, ply )
+	return !ply:HasCarryItem( "plug" )
+end )
+plug:Update()
 
 --//Creates all of the gas cans
 local gascans = nzItemCarry:CreateCategory( "gascan" )
@@ -342,10 +435,10 @@ lever:SetDropFunction( function( self, ply )
 	self:RegisterEntity( lvr )
 end )
 lever:SetResetFunction( function( self )
-	local lvr = ents.Create("nz_script_prop")
+	local lvr, randomnumber = ents.Create("nz_script_prop"), math.random( 4 )
 	lvr:SetModel( "models/nzprops/zombies_power_lever_handle.mdl" )
-	lvr:SetPos( Vector( 13.191984, -1872.725342, -116.208336 ) )
-	lvr:SetAngles( Angle( -6.148, 33.658, 0.388 ) )
+	lvr:SetPos( Vector( leverspawns[ randomnumber ].pos ) )
+	lvr:SetAngles( Angle( leverspawns[ randomnumber ].ang ) )
 	lvr:Spawn()
 	self:RegisterEntity( lvr )
 end )
@@ -437,8 +530,8 @@ end )
 rubber:SetResetFunction( function( self )
 	local rbr = ents.Create( "nz_script_prop" )
 	rbr:SetModel( "models/props_vehicles/carparts_tire01a.mdl" )
-	rbr:SetPos( Vector( -1889.828125, -1512.047974, -384.140137 ) )
-	rbr:SetAngles( Angle( 17.772, -19.848, -49.948 ) )
+	rbr:SetPos( Vector( -2365.017578, -636.389343, 391.921906 ) )
+	rbr:SetAngles( Angle( -0.486, -44.491, 0.118 ) )
 	rbr:Spawn()
 	self:RegisterEntity( rbr )
 end )
@@ -467,8 +560,8 @@ end )
 powder:SetResetFunction( function( self )
 	local pwdr = ents.Create( "nz_script_prop" )
 	pwdr:SetModel( "models/props_lab/jar01a.mdl" )
-	pwdr:SetPos( Vector( -1817.329224, 1417.655273, -177.375412 ) )
-	pwdr:SetAngles( Angle( -0.696, -45.993, -0.042 ) )
+	pwdr:SetPos( Vector( -189.020172, -1453.000366, -392.523224 ) )
+	pwdr:SetAngles( Angle( -0.000, -139.400, 0.000 ) )
 	pwdr:Spawn()
 	self:RegisterEntity( pwdr )
 end )
@@ -713,31 +806,6 @@ function FailPrimaryEE()
 	finalround = nzRound:GetNumber()
 	nzDoors:OpenLinkedDoors( "20" ) --This enables the 15 bajillion extra zombie spawns
 	nzRound:RoundInfinity()
-	local pressed --samefunc is not designed to be self-contained
-	function samefunc( self, ply )
-		if not PermaOff or pressed then return end
-		PrintMessage( HUD_PRINTTALK, "The garage doors are opening in 60 seconds!" )
-		pressed = true
-		ents.GetMapCreatedEntity( "1771" ):SetPlaybackRate( 0.5 )
-		ents.GetMapCreatedEntity( "1772" ):SetPlaybackRate( 0.5 )
-		ents.GetMapCreatedEntity( "1771" ):SetNWString( "NZHasText", "" )
-		ents.GetMapCreatedEntity( "1772" ):SetNWString( "NZHasText", "" )
-		timer.Simple( 60, function() 
-		ents.GetMapCreatedEntity( "5238" ):Fire( "Unlock" )
-		ents.GetMapCreatedEntity( "5243" ):Fire( "Unlock" )
-		if not self == ents.GetMapCreatedEntity( "5238" ) then
-			ents.GetMapCreatedEntity( "5238" ):Fire( "Use" )
-		elseif not self == ents.GetMapCreatedEntity( "5243" ) then
-			ents.GetMapCreatedEntity( "5243" ):Fire( "Use" )
-		end
-		ents.GetMapCreatedEntity( "5238" ):Fire( "Lock" )
-		ents.GetMapCreatedEntity( "5243" ):Fire( "Lock" )
-		end )
-	end
-	ents.GetMapCreatedEntity( "5238" ).OnUsed = samefunc
-	ents.GetMapCreatedEntity( "5243" ).OnUsed = samefunc
-	ents.GetMapCreatedEntity( "1771" ):SetNWString( "NZHasText", "Open the garage doors to escape!" )
-	ents.GetMapCreatedEntity( "1772" ):SetNWString( "NZHasText", "Open the garage doors to escape!" )
 	--[[ TO-DO
 	- Garage Door opens after 60 seconds ( Entity:SetPlaybackRate( 0.5 ) to slow the animation down )
 		- Button IDs: 5238, 5243
@@ -778,6 +846,11 @@ function mapscript.OnGameBegin()
 	powder:Reset()
 	blast:Reset()
 
+	ents.GetMapCreatedEntity( "3033" ):Fire( "Lock" ) 
+	ents.GetMapCreatedEntity( "2959" ):Fire( "Lock" )
+	ents.GetMapCreatedEntity( "5238" ):Fire( "Lock" )
+	ents.GetMapCreatedEntity( "5243" ):Fire( "Lock" )
+
 	if buttonorder then
 		for k, v in pairs( buttonorder ) do
 			local ent = ents.GetMapCreatedEntity( v[ 1 ] )
@@ -798,15 +871,30 @@ function mapscript.OnGameBegin()
 		baselink.Think = nil
 	end
 
-	ents.GetMapCreatedEntity( "5238" ):Fire( "Lock" )
-	ents.GetMapCreatedEntity( "5243" ):Fire( "Lock" )
-
 	--//Generates the random list of console buttons and their prop hint entity
 	local fakelist = table.Copy( consolebuttons )
 	for i = 1, #fakelist do
 		local choice = table.Random( fakelist )
 		table.insert( buttonorder, { choice, prophints[ table.KeyFromValue( consolebuttons, choice ) ] } )
 		table.RemoveByValue( fakelist, choice )
+	end
+
+	--//The lock on Foreman's office - can be destroyed by shooting it w/ a PaPed weapon
+	local lock  = ents.Create( "nz_script_prop" )
+	lock:SetPos( Vector( -6.992205, -1775.884033, -107.849129 ) )
+	lock:SetAngles( Angle( -0.000, -0.000, -0.000 ) )
+	lock:SetModel( "models/props_wasteland/prison_padlock001a.mdl" )
+	lock:Spawn()
+	lock:SetNWString( "NZText", "A padlock, could probably be destroyed with a powerful enough weapon." )
+	lock.OnTakeDamage = function( self, dmginfo )
+		if not dmginfo or not dmginfo:GetAttacker():IsPlayer() then return end
+		local wep = dmginfo:GetAttacker():GetActiveWeapon()
+		if not IsValid( wep ) or not wep:HasNZModifier( "pap" ) then return end
+		lock:EmitSound( "" ) --idk what sound should go here
+		ents.GetMapCreatedEntity( "3033" ):Fire( "Unlock" )
+		lock:Remove()
+		--lock:SetNotSolid( true )
+		--lock:SetNoDraw( true )
 	end
 	
 	--//Build Table Info Continued
@@ -992,6 +1080,47 @@ function mapscript.OnGameBegin()
 		light:SetModel( "models/props_c17/light_cagelight02_off.mdl" )
 	end
 
+	for k, v in pairs( breenconsolespawns ) do
+		local breen = ents.Create( "nz_script_prop" )
+		activatedconsoles[ k ] = false
+		breen:SetPos( v.pos )
+		breen:SetAngles( v.ang )
+		breen:SetModel( "models/props_combine/breenconsole.mdl" )
+		breen:SetNWString( "NZText", "Press E to activate the combine power node." )
+		breen:Spawn()
+		breen:Activate()
+		breen.OnUsed = function()
+			if ( k == 1 or k == 2 ) and not CheckTable( insertedplugs ) then return end
+			activatedconsoles[ k ] = true
+			breen:EmitSound( "buttons/combine_button1.wav" )
+			breen:SetNWString( "NZText", "" )
+		end
+	end
+
+	for k, v in pairs( plugoutletspawns ) do
+		local outlet = ents.Create( "nz_script_prop" )
+		insertedplugs[ k ] = false
+		outlet:SetPos( v.pos )
+		outlet:SetAngles( v.ang )
+		outlet:SetModel( "models/props_lab/tpplugholder.mdl" )
+		outlet:SetNWString( "NZText", "You need a battery plug." )
+		outlet:SetNWString( "NZRequiredItem", "plug" )
+		outlet:SetNWString( "NZText", "Press E to insert the battery plug." )
+		outlet:Spawn()
+		outlet:Activate()
+		outlet.OnUsed = function( self, ply )
+			if not ply:HasCarryItem( "plug" ) then return end
+			insertedplugs[ k ] = true
+			outlet:SetNWString( "NZText", "" )
+			ply:RemoveCarryItem( "plug" )
+			local ent = ents.Create( "nz_script_prop" )
+			ent:SetModel( "models/props_lab/tpplug.mdl" )
+			ent:SetPos( plugsonoutlets[ k ].pos )
+			ent:SetAngles( plugsonoutlets[ k ].ang )
+			ent:Spawn()
+		end
+	end
+
 	--//I wonder what this block of code creates...
 	soulcatcher = ents.Create( "nz_script_soulcatcher" )
 	soulcatcher:SetPos( Vector( -1013.565002, -1750.850830, -392.342163 ) )
@@ -999,7 +1128,7 @@ function mapscript.OnGameBegin()
 	soulcatcher:SetModel( "models/props_vehicles/generatortrailer01.mdl" )
 	soulcatcher:SetNWString( "NZText", "Use this generator to charge something." )
 	soulcatcher:SetNWString( "NZRequiredItem", "detonator" )
-	soulcatcher:SetNWString( "NZHasText", "Press E to place and charge the console box battery." )
+	soulcatcher:SetNWString( "NZHasText", "Press E to place and begin charging the console box battery." )
 	soulcatcher:Spawn()
 	soulcatcher:Activate()
 	soulcatcher:SetRange( 800 )
@@ -1067,16 +1196,40 @@ function mapscript.OnGameBegin()
 			effect:SetEntity( fakec4 )
 			effect:SetScale( 2 )
 			util.Effect( "Explosion", effect, true, true )
-			thefence:Remove()
-			fakec4:Remove()
+			timer.Simple( 0, function() --It appears the fence and C4 are disappearing before the explosion has a chance to go off
+				thefence:Remove()
+				fakec4:Remove()
+			end )
 		end )
 	end
 	thefence.Allow = false
 
+	--//The button by garage doors to open on EE fail, used intead of the map "buttons"
+	local escapebutton = ents.Create( "nz_script_prop" )
+	escapebutton:SetPos( Vector( 305.845367, -1749.494995, -335.101746 ) )
+	escapebutton:SetAngles( Angle( -0.000, -180.000, -0.000 ) )
+	escapebutton:SetModel( "models/props_combine/combinebutton.mdl" )
+	escapebutton.OnUsed = function( self, ply )
+		if not PermaOff or pressed then return end
+		escapebutton:EmitSound( "buttons/combine_button1.wav" )
+		PrintMessage( HUD_PRINTTALK, "The garage doors are opening in 60 seconds!" )
+		pressed = true
+		ents.GetMapCreatedEntity( "1771" ):SetPlaybackRate( 0.5 )
+		ents.GetMapCreatedEntity( "1772" ):SetPlaybackRate( 0.5 )
+		timer.Simple( 60, function() 
+			ents.GetMapCreatedEntity( "5238" ):Fire( "Unlock" )
+			ents.GetMapCreatedEntity( "5243" ):Fire( "Unlock" )
+			ents.GetMapCreatedEntity( "5238" ):Fire( "Use" )
+			ents.GetMapCreatedEntity( "5243" ):Fire( "Use" )
+			ents.GetMapCreatedEntity( "5238" ):Fire( "Lock" )
+			ents.GetMapCreatedEntity( "5243" ):Fire( "Lock" )
+		end )
+	end
+
 	soulcatcher:Reset() --is this required?
 
 	--//Fixes the bugged doorways
-    local shittodelete = { 2169, 1858, 2959, 2465, 1921, 1918, 1939, 2209, 1976, 1973, 2373, 2959, 2372 } --, 2518 } This door, which is a door, bugs the :Fire() function
+    local shittodelete = { 1858, 2959, 2465, 1921, 1918, 1939, 2209, 1976, 1973, 2373, 2372, 2170, 2169, 1913, 2145 } --, 2518 } This door, which is a door, bugs the :Fire() function
 	for k, v in pairs( shittodelete ) do
 		ents.GetMapCreatedEntity( v ):Fire( "Open" )
 		timer.Simple( 0.2, function()
