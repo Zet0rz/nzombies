@@ -107,7 +107,7 @@ local plugsonoutlets = {
 --//The combine consoles that must be pushed to open garage sideroom - the console in the garage is done seperately as it has it's own logic
 local breenconsolespawns = {
 	{ pos = Vector( -2676.411865, -1543.952881, 375.467041 ), ang = Angle( -0.000, 90.000, 0.000 ) }, --Roof left side (when facing both)
-	{ pos = Vector( -2678.811523, -1392.534058, 374.113800 ), ang = Angle( -0.000, 90.000, 0.000 ) } --Roof right side
+	{ pos = Vector( -2678.811523, -1392.534058, 374.113800 ), ang = Angle( -0.000, 90.000, 0.000 ) }, --Roof right side
 	{ pos = Vector( 99.254143, 1312.770020, -0.181114 ), ang = Angle( 0.000, 0.000, 0.000 ) }, --Computer room
 	{ pos = Vector( -1883.329346, -639.092712, -433.118835 ), ang = Angle( -0.000, -90.000, -0.000 ) }, --Warehouse
 	{ pos = Vector( -916.903503, -1956.711060, -148.039734 ), ang = Angle( 0.000, 180.000, 0.000 ) } --Foreman's floor
@@ -1119,6 +1119,8 @@ function mapscript.OnGameBegin()
 	sideroomopener:SetAngles( Angle( 0.000, 0.000, 0.000 ) )
 	sideroomopener:SetModel( "models/props_combine/breenconsole.mdl" )
 	sideroomopener:SetNWString( "NZText", "ERROR" )
+	sideroomopener:Spawn()
+	sideroomopener:Activate()
 	sideroomopener.OnUsed = function( self, ply )
 		if not CheckTable( activatedconsoles ) then
 			sideroomopener:EmitSound( "buttons/combine_button_locked.wav" )
@@ -1242,7 +1244,7 @@ function mapscript.OnGameBegin()
 	soulcatcher:Reset() --is this required?
 
 	--//Fixes the bugged doorways
-    local shittodelete = { 1858, 2959, 2465, 1921, 1918, 1939, 2209, 1976, 1973, 2373, 2372, 2170, 2169, 1913, 2145 } --, 2518 } This door, which is a door, bugs the :Fire() function
+    local shittodelete = { 1858, 2465, 1921, 1918, 1939, 2209, 1976, 1973, 2373, 2372, 2170, 2169, 1913, 2145 } --, 2518 } This door, which is a door, bugs the :Fire() function
 	for k, v in pairs( shittodelete ) do
 		ents.GetMapCreatedEntity( v ):Fire( "Open" )
 		timer.Simple( 0.2, function()
@@ -1330,40 +1332,3 @@ end
 
 --//Return that shit, yo.
 return mapscript
-
---[[
-	local roundwegotto
-	roundwegotto = nzRound:GetNumber()
-	nzRound:RoundInfinity()
-	nzEE.Major:AddStep( function() -- Step 5, You win :D
-	nzEE.Cam:QueueView(5, nil, nil, nil, true)
-	nzEE.Cam:Text("You blew up the core after "..roundwegotto.." rounds!")
-	nzEE.Cam:Function( function()
-		game.SetTimeScale(0.2)
-		nzRound:Freeze(true) -- Prevents switching and spawning
-	end)
-	nzEE.Cam:Music("nz/easteregg/motd_standard.wav")
-	nzEE.Cam:QueueView(15, Vector(1623, -1257, 187), Vector(1623, -1382, 227), nil, true)
-	nzEE.Cam:Text("You blew up the core after "..roundwegotto.." rounds!")
-	nzEE.Cam:Function( function()
-		nzRound.Number = roundwegotto or 0
-		game.SetTimeScale(1)
-		for k,v in pairs(player.GetAll()) do
-			v:SetTargetPriority(TARGET_PRIORITY_NONE)
-			v:Freeze(true)
-		end
-	end)
-	nzEE.Cam:QueueView(1)
-	nzEE.Cam:Function( function()
-		nzPowerUps:Nuke(nil, true, false)
-		nzRound:Freeze(false)
-		nzRound:Prepare() -- We continue now with perma perks :D
-		for k,v in pairs(player.GetAll()) do
-			v:GivePermaPerks()
-			v:SetTargetPriority(TARGET_PRIORITY_PLAYER)
-			v:Freeze(false)
-		end
-	end)
-	nzEE.Cam:Begin()
-end)
-]]
