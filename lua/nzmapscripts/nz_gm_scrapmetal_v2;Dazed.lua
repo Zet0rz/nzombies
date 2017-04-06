@@ -224,7 +224,8 @@ local function MyStartTouch( self, ply )
 	ply:GodEnable() --Because cheeky nandos will try to break immersion by throwing explosives into the end area
 	ply:SetTargetPriority( TARGET_PRIORITY_NONE )
 	ply:Freeze( true )
-	if #player.GetAllPlayingAndAlive() == 1 then
+	--//It was suggested to use GetAllPlayingAndAlive, but I want to avoid spectators doing nothing waiting for game to end
+	if #player.GetAll() == 1 then
 		nzEE.Cam:QueueView( 1, nil, nil, nil, true, nil, ply ) --Fade for aesthetics
 		nzEE.Cam:QueueView( 15, Vector( -400.915161, -1325.068115, -380.741180 ), nil, Angle( 0.000, 91.500, 0.000 ), nil, nil, ply ) --Black screen
 		nzEE.Cam:Music( "nz/easteregg/motd_good.wav", ply )
@@ -242,6 +243,8 @@ local function MyStartTouch( self, ply )
 	if not timer.Exists( "EscapeTimer" ) then
 		timer.Create( "EscapeTimer", 30, 1, function()
 			nzRound:Freeze( true )
+			--//nzEE includes capability to target every player, but that leaves me without a way to target the players for Freezing and SetTargetPriority
+			--//I don't know if including every nzEE function within the k, v is more or less efficient than not
 			for k, v in pairs( player.GetAll() ) do
 				v:Freeze( true )
 				v:SetTargetPriority( TARGET_PRIORITY_NONE )
@@ -274,15 +277,15 @@ local function MyStartTouch( self, ply )
 
 	nzEE.Cam:QueueView( timer.TimeLeft( "EscapeTimer" ), Vector( -400.915161, -1325.068115, -380.741180 ), nil, Angle( 0.000, 91.500, 0.000 ), true, nil, ply )
 	nzEE.Cam:Text( "Waiting for the rest of the players...", ply )
-	PrintMessage( HUD_PRINTTALK, ply:Nick() .. " has escaped the map! All remaining players have " .. timer.TimeLeft( "EscapeTimer" ) .. " seconds to follow suit!" ) --This should always be 30 the first time
+	PrintMessage( HUD_PRINTTALK, ply:Nick() .. " has escaped the map! All remaining players have " .. math.Round( timer.TimeLeft( "EscapeTimer" ) ) .. " seconds to follow suit!" ) --This should always be 30 the first time
 	escaped[ ply ] = true --Used for logic
 	table.insert( escapednames, ply:Nick() ) --Used for the end message
 	nzEE.Cam:Begin()
 end
 
+--//Entity where train used to be
 local escapeDetector = ents.Create( "nz_script_prop" )
 escapeDetector:SetPos( Vector( -1060.883667, 848.851624, -393.830139 ) )
---escapeDetector:SetAngles( Angle( 0, 0, 0 ) )
 escapeDetector:SetModel( "models/hunter/blocks/cube2x2x2.mdl" )
 escapeDetector:SetTrigger( true ) --Required for an entity to make use of StartTouch
 escapeDetector:SetNoDraw( true )
@@ -290,9 +293,9 @@ escapeDetector:SetNotSolid( true )
 escapeDetector:Spawn()
 escapeDetector.StartTouch = MyStartTouch
 
+--//Entity outside of garage doors
 local escapeDetector2 = ents.Create( "nz_script_prop" )
 escapeDetector2:SetPos( Vector( 362.214935, -1753.718994, -359.844818 ) )
---escapeDetector2:SetAngles( Angle( 0, 0, 0 ) )
 escapeDetector2:SetModel( "models/hunter/blocks/cube1x8x1.mdl" )
 escapeDetector2:SetTrigger( true ) --Required for an entity to make use of StartTouch
 escapeDetector2:SetNoDraw( true )
@@ -306,6 +309,7 @@ local consolebuttons = { 2335, 2337, 2338, 2339, 2340 }
 --//Setting up some extra variables
 local poweredgenerators, establishedlinks, buttonorder, activatedconsoles, insertedplugs = { }, { }, { }, { }, { }
 
+--//Creates the plug used to activate the breen consoles on roof
 local plug = nzItemCarry:CreateCategory( "plug" )
 plug:SetIcon( "spawnicons/models/props_lab/tpplug.png" )
 plug:SetText( "Press E to pick up the battery plug." )
@@ -699,9 +703,7 @@ function StartPuzzle()
 					Electrify( v )
 				end
 				Electrify( ents.FindByClass( "power_box" )[ 1 ] )
-				--Electrify( ents.FindByClass( "" )[ 1 ] )
 				Electrify( baselink )
-				--Electrify( )
 				onemiss = true
 			else
 				FailPrimaryEE()
@@ -782,11 +784,13 @@ function FailPrimaryEE()
 		{ pos = Vector( 182.273560, -1696.408691, -391.968750 ) },
 		{ pos = Vector( 184.300781, -1588.911377, -391.968750 ) }
 	}
-	for k, v in pairs( bossSpawns ) do
-		local zombie = ents.Create( "nz_zombie_boss_panzer" ) --This should be a boss zombie
-		zombie:SetPos( v.pos )
-		zombie:Spawn()
-	end
+	timer.Simple( 10, function()
+		for k, v in pairs( bossSpawns ) do
+			local zombie = ents.Create( "nz_zombie_boss_panzer" ) --This should be a boss zombie
+			zombie:SetPos( v.pos )
+			zombie:Spawn()
+		end
+	end )
 	finalround = nzRound:GetNumber()
 	nzDoors:OpenLinkedDoors( "20" ) --This enables the 15 bajillion extra zombie spawns
 	nzRound:RoundInfinity()
@@ -1224,6 +1228,8 @@ function mapscript.OnGameBegin()
 	escapebutton:SetPos( Vector( 305.845367, -1749.494995, -335.101746 ) )
 	escapebutton:SetAngles( Angle( -0.000, -180.000, -0.000 ) )
 	escapebutton:SetModel( "models/props_combine/combinebutton.mdl" )
+	escapebutton:Spawn()
+	escapebutton:Activate()
 	escapebutton.OnUsed = function( self, ply )
 		if not PermaOff or pressed then return end
 		escapebutton:EmitSound( "buttons/combine_button1.wav" )
