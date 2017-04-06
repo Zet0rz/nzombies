@@ -318,7 +318,7 @@ if CLIENT then
 		local h = ScrH() / 2
 		local font = "DermaLarge"
 		
-		if startpos and endpos and time then
+		if endcam and startpos and endpos and time then
 			local dir = endpos - startpos
 			local ang = dir:Angle()
 			hook.Add("CalcView", "nzCalcEndCameraView", function(ply, origin, angles, fov, znear, zfar)

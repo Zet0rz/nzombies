@@ -98,7 +98,73 @@ nzEnemies:AddValidZombieType("nz_zombie_walker")
 nzEnemies:AddValidZombieType("nz_zombie_special_burning")
 nzEnemies:AddValidZombieType("nz_zombie_special_dog")
 
-
 function meta:ShouldPhysgunNoCollide()
 	return self.bPhysgunNoCollide
+end
+
+local base = "nz_zombiebase"
+--[[function nzEnemies:NZModNextbot(class, ignore)
+	local bclass = scripted_ents.get(base)
+	local tclass = scripted_ents.get(class)
+	if not tclass or not bclass then return end
+	
+	local old = tclass.RunBehaviour
+	tclass.RunBehaviour = function(self)
+		
+	end
+	
+	scripted_ents.Register(tclass, class)
+end]]
+
+if SERVER then
+	local Path = FindMetaTable("PathFollower")
+
+	-- Overwrite Update which moves the bot so that if it hits a barricade, it will attack it
+	--local update = Path.Update
+	--function Path:Update(bot)
+	--	update(self, bot)
+		
+	--end
+
+	-- Overwrite Compute so that it computes with nZombies pathfinding if a custom func is not given
+	local compute = Path.Compute
+	function Path:Compute(from, to, func)
+		compute(self, from, to, func or function( area, fromArea, ladder, elevator, length )
+			if ( !IsValid( fromArea ) ) then
+				return 0
+			else
+				if ( !self.loco:IsAreaTraversable( area ) ) then
+					return -1
+				end
+				-- Prevent movement through either locked navareas or areas with closed doors
+				if (nzNav.Locks[area:GetID()]) then
+					if nzNav.Locks[area:GetID()].link then
+						if !nzDoors:IsLinkOpened( nzNav.Locks[area:GetID()].link ) then
+							return -1
+						end
+					elseif nzNav.Locks[area:GetID()].locked then
+					return -1 end
+				end
+				-- Compute distance traveled along path so far
+				local dist = 0
+				local cost = dist + fromArea:GetCostSoFar()
+				--check height change
+				local deltaZ = fromArea:ComputeAdjacentConnectionHeightChange( area )
+				if ( deltaZ >= self.loco:GetStepHeight() ) then
+					-- use player default max jump height even thouh teh zombie will jump a bit higher
+					if ( deltaZ >= 64 ) then
+						--too high to reach
+						return -1
+					end
+					--jumping is slower than flat ground
+					local jumpPenalty = 1.1
+					cost = cost + jumpPenalty * dist
+				elseif ( deltaZ < -self.loco:GetDeathDropHeight() ) then
+					--too far to drop
+					return -1
+				end
+				return cost
+			end
+		end)
+	end
 end

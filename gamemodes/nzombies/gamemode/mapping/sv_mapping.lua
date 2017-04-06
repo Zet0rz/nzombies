@@ -174,7 +174,7 @@ function nzMapping:BlockSpawn(pos, ang, model, ply)
 	block:PhysicsInit( SOLID_VPHYSICS )
 
 	local phys = block:GetPhysicsObject()
-	if phys:IsValid() then
+	if IsValid(phys) then
 		phys:EnableMotion(false)
 	end
 

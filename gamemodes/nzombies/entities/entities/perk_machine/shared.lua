@@ -103,7 +103,7 @@ function ENT:Use(activator, caller)
 					if given then
 						if !PerkData.specialmachine then
 							local wep = activator:Give("nz_perk_bottle")
-							wep:SetPerk(id)
+							if IsValid(wep) then wep:SetPerk(id) end
 							timer.Simple(3, function()
 								if IsValid(activator) and activator:GetNotDowned() then
 									activator:GivePerk(id, self)

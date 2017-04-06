@@ -145,8 +145,9 @@ end
 function SWEP:OnRemove()
 
 	if CLIENT then
-		if self.Owner == LocalPlayer() then
-			local vm = LocalPlayer():GetViewModel()
+		local ply = LocalPlayer()
+		if IsValid(ply) and self.Owner == ply then
+			local vm = ply:GetViewModel()
 			vm:SetMaterial(oldmat)
 		end
 	end
@@ -157,11 +158,12 @@ end
 
 function SWEP:GetViewModelPosition( pos, ang )
  
- 	local newpos = LocalPlayer():EyePos()
-	local newang = LocalPlayer():EyeAngles()
+	local ply = LocalPlayer()
+ 	local newpos = ply:EyePos()
+	local newang = ply:EyeAngles()
 	local up = newang:Up()
 	
-	newpos = newpos + LocalPlayer():GetAimVector()*3 - up*65
+	newpos = newpos + ply:GetAimVector()*3 - up*65
 	
 	return newpos, newang
  

@@ -1,4 +1,5 @@
 --
+local revivefailtime = 0.2
 
 if SERVER then
 	hook.Add("Think", "CheckDownedPlayersTime", function()
@@ -29,6 +30,7 @@ function nzRevive.HandleRevive(ply, ent)
 
 		local tr = util.QuickTrace(ply:EyePos(), ply:GetAimVector()*100, ply)
 		local dply = tr.Entity
+		local ct = CurTime()
 		--print(dply)
 
 		if IsValid(dply) and (dply:IsPlayer() or dply:GetClass() == "whoswho_downed_clone") then
@@ -40,21 +42,20 @@ function nzRevive.HandleRevive(ply, ent)
 
 				-- print(CurTime() - nzRevive.Players[id].ReviveTime)
 
-				if ply:HasPerk("revive") and CurTime() - nzRevive.Players[id].ReviveTime >= 2 -- With quick-revive
-				or CurTime() - nzRevive.Players[id].ReviveTime >= 4 then	-- 4 is the time it takes to revive
+				if ply:HasPerk("revive") and ct - nzRevive.Players[id].ReviveTime >= 2 -- With quick-revive
+				or ct - nzRevive.Players[id].ReviveTime >= 4 then	-- 4 is the time it takes to revive
 					dply:RevivePlayer(ply)
 					ply.Reviving = nil
 				end
 			end
-		else
-			if IsValid(ply.Reviving) and ply.Reviving != dply then -- Holding E on another player or no player
-				local id = ply.Reviving:EntIndex()
-				if nzRevive.Players[id] then
-					if nzRevive.Players[id].ReviveTime then
-						--ply:SetMoveType(MOVETYPE_WALK)
-						ply.Reviving:StopRevive()
-						ply.Reviving = nil
-					end
+		elseif IsValid(ply.Reviving) and ply.Reviving != dply -- Holding E on another player or no player
+		and ct > ply.LastReviveTime + revivefailtime then -- and for longer than fail time window
+			local id = ply.Reviving:EntIndex()
+			if nzRevive.Players[id] then
+				if nzRevive.Players[id].ReviveTime then
+					--ply:SetMoveType(MOVETYPE_WALK)
+					ply.Reviving:StopRevive()
+					ply.Reviving = nil
 				end
 			end
 		end

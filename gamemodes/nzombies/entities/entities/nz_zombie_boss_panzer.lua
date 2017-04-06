@@ -606,6 +606,8 @@ function ENT:GrabPlayer(ply)
 	
 	self:SetBodygroup(2,0)
 	self:SetUsingClaw(false)
+	self:SetStop(false)
+	self.loco:SetDesiredSpeed(self:GetRunSpeed())
 	
 	if self:IsValidTarget(ply) then
 		self.GrabbedPlayer = ply
@@ -627,6 +629,8 @@ function ENT:GrabPlayer(ply)
 		self:SetSpecialAnimation(false)
 		self:SetBlockAttack(false)
 		self:SetStop(false)]]
+	else
+		
 	end
 end
 
@@ -641,6 +645,8 @@ function ENT:ReleasePlayer()
 		self:SetStop(false)
 	end
 	self:SetUsingClaw(false)
+	self:SetStop(false)
+	self.loco:SetDesiredSpeed(self:GetRunSpeed())
 end
 
 function ENT:OnBarricadeBlocking( barricade )

@@ -66,20 +66,20 @@ end
 local shootsound = Sound("nz/deathmachine/loop_l_.wav")
 function SWEP:PrimaryAttack()
 	
-	self:SetNextPrimaryFire(CurTime() + 0.1)
+	self:SetNextPrimaryFire(CurTime() + 0.05)
 	self:EmitSound( shootsound )
 	
 	local shootpos = self.Owner:GetShootPos()
 	local shootang = self.Owner:GetAimVector()
 	
 	local bullet = {}
-	bullet.Damage = 90
+	bullet.Damage = 9000
 	bullet.Force = 10
 	bullet.Tracer = 1
 	bullet.TracerName = "AirboatGunHeavyTracer"
 	bullet.Src = shootpos
-	bullet.Dir = shootang + Vector(math.Rand(-0.02,0.02), math.Rand(-0.02,0.02), math.Rand(-0.02,0.02))
-	bullet.Spread = Vector(0.1, 0.1, 0)
+	bullet.Dir = shootang + Vector(0,0,0)
+	bullet.Spread = Vector(0.02, 0.02, 0)
 	
 	--local fx = EffectData()
 	--fx:SetEntity(self)

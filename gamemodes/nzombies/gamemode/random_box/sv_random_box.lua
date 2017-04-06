@@ -55,7 +55,7 @@ function nzRandomBox.DecideWep(ply)
 	end
 
 	local guns = {}
-	local blacklist = nzConfig.WeaponBlackList
+	local blacklist = table.Copy(nzConfig.WeaponBlackList)
 
 	--Add all our current guns to the black list
 	if IsValid(ply) and ply:IsPlayer() then

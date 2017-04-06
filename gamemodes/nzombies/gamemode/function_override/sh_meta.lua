@@ -200,6 +200,7 @@ end
 local ghosttraceentities = {
 	["wall_block"] = true,
 	["invis_wall"] = true,
+	["invis_damage_wall"] = true,
 	["player"] = true,
 }
 
@@ -215,7 +216,7 @@ function GM:EntityFireBullets(ent, data)
 	end
 
 	-- Perform a trace that filters out entities from the table above
-	local tr = util.TraceLine({
+	--[[local tr = util.TraceLine({
 		start = data.Src,
 		endpos = data.Src + (data.Dir*data.Distance),
 		filter = function(ent2) 
@@ -233,10 +234,24 @@ function GM:EntityFireBullets(ent, data)
 	if IsValid(tr.Entity) and tr.Fraction < 1 then
 		data.Src = tr.HitPos - data.Dir * 5
 		return true
-	end
+	end]]
 
 	if ent:IsPlayer() and ent:HasPerk("dtap2") then return true end
 end
+
+-- Ghost invisible walls so nothing but players or NPCs collide with them
+local inviswalls = {
+	["invis_damage_wall"] = true,
+	["invis_wall"] = true,
+	["wall_block"] = true,
+}
+hook.Add("ShouldCollide", "nz_InvisibleBlockFilter", function(ent1, ent2)
+	if inviswalls[ent1:GetClass()] then
+		return ent2:IsPlayer() or ent2:IsNPC()
+	elseif inviswalls[ent2:GetClass()] then
+		return ent1:IsPlayer() or ent1:IsNPC()
+	end
+end)
 
 -- This is so awkward ._.
 -- game.AddAmmoType doesn't take duplicates into account and has a hardcoded limit of 128

@@ -390,6 +390,7 @@ function nzRound:End()
 				net.WriteBool(false)
 				net.WriteBool(false)
 				net.WriteString("You survived for "..timestr.." in Round Infinity")
+				net.WriteFloat(10)
 				net.WriteBool(false)
 			net.Broadcast()
 		end
@@ -407,9 +408,25 @@ function nzRound:End()
 	hook.Call( "OnRoundEnd", nzRound )
 end
 
-function nzRound:Win(message, keepplaying, time)
+function nzRound:Win(message, keepplaying, time, noautocam, camstart, camend)
 	if !message then message = "You survived after " .. self:GetNumber() .. " rounds!" end
 	local time = time or 10
+	
+	if not noautocam then
+		net.Start("nzMajorEEEndScreen")
+			net.WriteBool(false)
+			net.WriteBool(true)
+			net.WriteString(message)
+			net.WriteFloat(time)
+			if camstart and camend then
+				net.WriteBool(true)
+				net.WriteVector(camstart)
+				net.WriteVector(camend)
+			else
+				net.WriteBool(false)
+			end
+		net.Broadcast()
+	end
 	
 	-- Set round state to Game Over
 	if !keepplaying then
@@ -446,9 +463,25 @@ function nzRound:Win(message, keepplaying, time)
 
 end
 
-function nzRound:Lose(message, time, camstart, camend)
+function nzRound:Lose(message, time, noautocam, camstart, camend)
 	if !message then message = "You got overwhelmed after " .. self:GetNumber() .. " rounds!" end
 	local time = time or 10
+	
+	if not noautocam then
+		net.Start("nzMajorEEEndScreen")
+			net.WriteBool(false)
+			net.WriteBool(true)
+			net.WriteString(message)
+			net.WriteFloat(time)
+			if camstart and camend then
+				net.WriteBool(true)
+				net.WriteVector(camstart)
+				net.WriteVector(camend)
+			else
+				net.WriteBool(false)
+			end
+		net.Broadcast()
+	end
 	
 	-- Set round state to Game Over
 	nzRound:SetState( ROUND_GO )

@@ -519,8 +519,8 @@ local function ParseAmmoName(str)
 	if slot then
 		for k,v in pairs(LocalPlayer():GetWeapons()) do
 			if v:GetNWInt("SwitchSlot", -1) == slot then
-				if v.Primary and wep.Primary.OldAmmo then
-					return "#"..wep.Primary.OldAmmo.."_ammo"
+				if v.Primary and v.Primary.OldAmmo then
+					return "#"..v.Primary.OldAmmo.."_ammo"
 				end
 				local wep = weapons.Get(v:GetClass())
 				if wep and wep.Primary and wep.Primary.Ammo then

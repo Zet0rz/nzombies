@@ -131,7 +131,7 @@ if CLIENT then
 			local size = self:GetMaxBound()
 			local scale = math.abs(size.x * size.y * size.z)
 			
-			if !self.PoisonEmitter then
+			if !IsValid(self.PoisonEmitter) then
 				self.PoisonEmitter = ParticleEmitter(self:GetPos())
 			end
 			if self.NextPoisonCloud < CurTime() then

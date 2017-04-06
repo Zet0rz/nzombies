@@ -83,26 +83,28 @@ local WeaponModificationFunctionsDefaults = {
 				return true
 			end
 			
-			if !wep.PaPMats then -- Only if the weapon doesn't already have
-				wep.PaPMats = {} -- Generate PaP mats for this weapon
-				local modelstr = wep.VM or wep.ViewModel or wep:GetViewModel()
-				if modelstr then
-					local model = ClientsideModel(modelstr)
-					local mats = model:GetMaterials()
-					PrintTable(mats)
-					if table.Count(mats) >= 1 then
-						local num = 2
-						for k,v in pairs(mats) do
-							if IsGoodMaterial(v) then
-								if num%3 > 0 then
-									print("Modified", v)
-									wep.PaPMats[k - 1] = true
+			if !wep.PaPMats2 then -- Only if the weapon doesn't already have
+				if wep.PaPMats then wep.PaPMats2 = wep.PaPMats else
+					wep.PaPMats2 = {} -- Generate PaP mats for this weapon
+					local modelstr = wep.VM or wep.ViewModel or (wep.GetViewModel and wep:GetViewModel() or wep.ViewModel)
+					if modelstr then
+						local model = ClientsideModel(modelstr)
+						local mats = model:GetMaterials()
+						PrintTable(mats)
+						if table.Count(mats) >= 1 then
+							local num = 2
+							for k,v in pairs(mats) do
+								if IsGoodMaterial(v) then
+									if num%3 > 0 then
+										print("Modified", v)
+										wep.PaPMats2[k - 1] = true
+									end
+									num = num + 1
 								end
-								num = num + 1
 							end
 						end
+						model:Remove()
 					end
-					model:Remove()
 				end
 			end
 		end
@@ -111,7 +113,7 @@ local WeaponModificationFunctionsDefaults = {
 
 local WeaponModificationRevertDefaults = {
 	pap = function(wep)
-		if CLIENT then wep.PaPMats = nil end
+		if CLIENT then wep.PaPMats2 = nil end
 	end
 }
 
@@ -377,6 +379,7 @@ end
 
 local cond = function(wep) return SERVER and wep:IsFAS2() and GetConVar("nz_papattachments"):GetBool() end
 local atts = function(wep)
+	local ply = wep.Owner
 	if wep.Attachments then
 		for k,v in pairs(wep.Attachments) do
 			if string.lower(v.header) != "magazine" and string.lower(v.header) != "mag" then -- Mag can't be edited
@@ -608,9 +611,9 @@ if CLIENT then
 			if !GetConVar("nz_papcamo"):GetBool() then return end
 			if wep.PaPCamo then -- You can also use a function
 				wep:PaPCamo(view)
-			elseif wep.PaPMats then -- Will be generated if not defined in the weapon file
+			elseif wep.PaPMats2 then -- Will be generated if not defined in the weapon file
 				timer.Simple(0.01, function()
-					for k,v in pairs(wep.PaPMats) do
+					for k,v in pairs(wep.PaPMats2) do
 						view:SetSubMaterial(k, "models/XQM/LightLinesRed_tool.vtf")
 					end
 				end)

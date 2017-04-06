@@ -21,7 +21,7 @@ function ENT:Initialize()
 	if self.SetRenderBounds then
 		self:SetRenderBounds(Vector(0,0,0), self:GetMaxBound())
 	end
-	--self:SetCustomCollisionCheck(true)
+	self:SetCustomCollisionCheck(true)
 	--self:SetFilter(true, true)
 end
 
@@ -41,6 +41,11 @@ if CLIENT then
 		end
 	end
 end
+
+-- Causes collisions to completely disappear, not just traces :(
+--[[function ENT:TestCollision(start, delta, hulltrace, bounds)
+	return nil -- Traces pass through it!
+end]]
 
 hook.Add("PhysgunPickup", "nzInvisWallNotPickup", function(ply, wall)
 	if wall:GetClass() == "invis_wall" or wall:GetClass() == "invis_damage_wall" then return false end

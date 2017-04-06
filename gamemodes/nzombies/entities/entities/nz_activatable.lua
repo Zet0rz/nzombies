@@ -71,7 +71,7 @@ end
 
 function ENT:Use(act, caller, type, value )
 	if not nzElec:IsOn() and self:IsElectircityNeeded() then return end
-	if IsValid(caller) and caller:IsPlayer() and not self:IsRemoteActivated() and not self:IsCooldownActive() then
+	if IsValid(caller) and caller:IsPlayer() and not self:IsRemoteActivated() and not self:IsCooldownActive() and not self:IsActive() then
 		if caller:CanAfford(self:GetCost()) then
 			self:Activation(caller, self:GetDuration(), self:GetCooldown())
 			if SERVER then

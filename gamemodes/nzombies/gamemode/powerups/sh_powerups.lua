@@ -7,6 +7,7 @@ if SERVER then
 	function plyMeta:GivePowerUp(id, duration)
 		if duration > 0 then
 			if !nzPowerUps.ActivePlayerPowerUps[self] then nzPowerUps.ActivePlayerPowerUps[self] = {} end
+			
 			nzPowerUps.ActivePlayerPowerUps[self][id] = CurTime() + duration
 			nzPowerUps:SendPlayerSync(self) -- Sync this player's powerups
 		end
@@ -38,10 +39,18 @@ if SERVER then
 		local PowerupData = self:Get(id)
 
 		if !PowerupData.global then
-			if IsValid(ply) then ply:GivePowerUp(id, PowerupData.duration) end
+			if IsValid(ply) then
+				if not nzPowerUps.ActivePlayerPowerUps[ply][id] then -- If you don't have the powerup
+					PowerupData.func(id, ply)
+				end
+				ply:GivePowerUp(id, PowerupData.duration)
+			end
 		else
 			if PowerupData.duration != 0 then
 				-- Activate for a certain time
+				if not self.ActivePowerUps[id] then
+					PowerupData.func(id, ply)
+				end
 				self.ActivePowerUps[id] = CurTime() + PowerupData.duration
 			--else
 				-- Activate Once
@@ -49,11 +58,14 @@ if SERVER then
 			end
 			-- Sync to everyone
 			self:SendSync()
+			
 		end
 
 		-- Notify
 		if IsValid(ply) then ply:EmitSound("nz/powerups/power_up_grab.wav") end
-		PowerupData.func(id, ply)
+		if PowerupData.announcement then
+			nzNotifications:PlaySound(PowerupData.announcement, 1)
+		end
 	end
 
 	function nzPowerUps:SpawnPowerUp(pos, specific)
@@ -157,9 +169,9 @@ nzPowerUps:NewPowerUp("dp", {
 	scale = 1,
 	chance = 5,
 	duration = 30,
-	func = (function(self, ply)
-		nzNotifications:PlaySound("nz/powerups/double_points.mp3", 1)
-	end),
+	announcement = "nz/powerups/double_points.mp3",
+	func = function(self, ply)
+	end,
 })
 
 -- Max Ammo
@@ -189,9 +201,10 @@ nzPowerUps:NewPowerUp("insta", {
 	scale = 1,
 	chance = 5,
 	duration = 30,
-	func = (function(self, ply)
-		nzNotifications:PlaySound("nz/powerups/insta_kill.mp3", 1)
-	end),
+	announcement = "nz/powerups/insta_kill.mp3",
+	func = function(self, ply)
+		print("Called")
+	end,
 })
 
 -- Nuke
@@ -203,8 +216,8 @@ nzPowerUps:NewPowerUp("nuke", {
 	scale = 1,
 	chance = 5,
 	duration = 0,
+	announcement = "nz/powerups/nuke.wav",
 	func = (function(self, ply)
-		nzNotifications:PlaySound("nz/powerups/nuke.wav", 1)
 		nzPowerUps:Nuke(ply:GetPos())
 	end),
 })
@@ -218,8 +231,8 @@ nzPowerUps:NewPowerUp("firesale", {
 	scale = 0.75,
 	chance = 1,
 	duration = 30,
+	announcement = "nz/powerups/fire_sale_announcer.wav",
 	func = (function(self, ply)
-		nzNotifications:PlaySound("nz/powerups/fire_sale_announcer.wav", 1)
 		nzPowerUps:FireSale()
 	end),
 	expirefunc = function()
@@ -264,8 +277,8 @@ nzPowerUps:NewPowerUp("zombieblood", {
 	scale = 1,
 	chance = 2,
 	duration = 30,
+	announcement = "nz/powerups/zombie_blood.wav",
 	func = (function(self, ply)
-		nzNotifications:PlaySound("nz/powerups/zombie_blood.wav", 1)
 		ply:SetTargetPriority(TARGET_PRIORITY_NONE)
 	end),
 	expirefunc = function(self, ply) -- ply is only passed if the powerup is non-global
@@ -282,8 +295,8 @@ nzPowerUps:NewPowerUp("deathmachine", {
 	scale = 1,
 	chance = 2,
 	duration = 30,
+	announcement = "nz/powerups/deathmachine.mp3",
 	func = (function(self, ply)
-		nzNotifications:PlaySound("nz/powerups/deathmachine.mp3", 1)
 		ply:SetUsingSpecialWeapon(true)
 		ply:Give("nz_death_machine")
 		ply:SelectWeapon("nz_death_machine")

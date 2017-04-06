@@ -29,6 +29,7 @@ ENT.DamageHigh = 45
 
 -- important for ent:IsZombie()
 ENT.bIsZombie = true
+ENT.bSelfHandlePath = true -- PathFollower will not auto-check for barricades or navlocks
 
 --The Accessors will be partially shared, but should only be used serverside
 AccessorFunc( ENT, "fWalkSpeed", "WalkSpeed", FORCE_NUMBER)
@@ -441,11 +442,8 @@ function ENT:OnBarricadeBlocking( barricade, dir )
 	if (IsValid(barricade) and barricade:GetClass() == "breakable_entry" ) then
 		if barricade:GetNumPlanks() > 0 then
 			timer.Simple(0.3, function()
-
 				barricade:EmitSound("physics/wood/wood_plank_break" .. math.random(1, 4) .. ".wav", 100, math.random(90, 130))
-
 				barricade:RemovePlank()
-
 			end)
 
 			self:SetAngles(Angle(0,(barricade:GetPos()-self:GetPos()):Angle()[2],0))
