@@ -7,5 +7,7 @@
 		"*.psd",
 		"*.vcproj",
 		"*.svn*"
+		"*.tif"
+		"*.tiff"
 	]
 }
