@@ -13,10 +13,20 @@ function PLAYER:SetupDataTables()
 	self.Player:NetworkVar("Bool", 0, "UsingSpecialWeapon")
 end
 
+if not ConVarExists("nz_prevent_ply_collision" then )CreateConVar("nz_prevent_ply_collision", 1, {FCVAR_SERVER_CAN_EXECUTE, FCVAR_ARCHIVE, FCVAR_NOTIFY}) end
+
 function PLAYER:Init()
 	-- Don't forget Colours
 	-- This runs when the player is first brought into the game and when they die during a round and are brought back
-
+	function PreventPlayerCollision(ply1, ply2)
+		if !GetConVar("nz_prevent_ply_collision"):GetBool() then
+			if ply1:IsPlayer() and ply2:IsPlayer() then
+				return false
+			end
+		end
+	end
+	hook.Add("ShouldCollide", "p2c", PreventPlayerCollision)
+	
 end
 
 if not ConVarExists("nz_failsafe_preventgrenades") then CreateConVar("nz_failsafe_preventgrenades", 0, {FCVAR_SERVER_CAN_EXECUTE, FCVAR_ARCHIVE, FCVAR_NOTIFY}) end
