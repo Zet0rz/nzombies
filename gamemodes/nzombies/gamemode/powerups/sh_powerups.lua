@@ -234,6 +234,15 @@ nzPowerUps:NewPowerUp("firesale", {
 	announcement = "nz/powerups/fire_sale_announcer.wav",
 	func = (function(self, ply)
 		nzPowerUps:FireSale()
+		
+		-- Adding sound code so that you can turn it off
+		-- Putting it here because you need to be able to turn it off too.
+		FSaleLoopSound = CreateSound("random_box","nz/randombox/fire_sale.wav")				-- Creates CSoundPatch
+		FSaleLoopSound:SetSoundLevel(SNDLVL_NONE) 											-- Makes it play everywhere
+		if !FSaleLoopSound:IsPlaying() then 												-- Are we currently playing?
+			FSaleLoopSound:PlayEx(1,100) 													-- If not then play the sound with max (1) volume and normal (100) pitch.
+		end
+		
 	end),
 	expirefunc = function()
 		local tbl = ents.FindByClass("random_box_spawns")
@@ -249,6 +258,9 @@ nzPowerUps:NewPowerUp("firesale", {
 				end
 			end
 		end
+		
+		-- FSaleLoopSound:Stop()																-- Then we turn it off.
+		FSaleLoopSound:FadeOut()															-- Then we make it fade out.
 	end,
 })
 
