@@ -283,12 +283,12 @@ end
 
 local function PerksHud()
 	local scale = (ScrW()/1920 + 1)/2
-	local w = -20
+	local w = 175
 	local size = 50
 	for k,v in pairs(LocalPlayer():GetPerks()) do
 		surface.SetMaterial(nzPerks:Get(v).icon)
 		surface.SetDrawColor(255,255,255)
-		surface.DrawTexturedRect(w + k*(size*scale + 10), ScrH() - 200, size*scale, size*scale)
+		surface.DrawTexturedRect(w + k*(size*scale + 1), ScrH() - 85, size*scale, size*scale)
 	end
 end
 
@@ -333,7 +333,7 @@ local function RoundHud()
 
 	local text = ""
 	local font = "nz.display.hud.rounds"
-	local w = 70
+	local w = 40
 	local h = ScrH() - 30
 	local round = round_num
 	local col = Color(200 + round_white*55, round_white, round_white,round_alpha)
@@ -343,9 +343,9 @@ local function RoundHud()
 		surface.SetDrawColor(col.r,round_white,round_white,round_alpha)
 		surface.DrawTexturedRect(w - 25, h - 100, 200, 100)
 		return
-	elseif round < 11 then
+	elseif round < 6 then
 		for i = 1, round do
-			if i == 5 or i == 10 then
+			if i == 5 or i == 6 then
 				text = text.." "
 			else
 				text = text.."i"
@@ -362,216 +362,4 @@ local function RoundHud()
 	end
 	draw.SimpleText(text, font, w, h, col, TEXT_ALIGN_LEFT, TEXT_ALIGN_BOTTOM)
 
-end
-
-local roundchangeending = false
-local prevroundspecial = false
-local function StartChangeRound()
-
-	print(nzRound:GetNumber(), nzRound:IsSpecial())
-	
-	local lastround = nzRound:GetNumber()
-
-	if lastround >= 1 then
-		if prevroundspecial then
-			surface.PlaySound("nz/round/special_round_end.wav")
-		else
-			surface.PlaySound("nz/round/round_end.mp3")
-		end
-	elseif lastround == -2 then
-		surface.PlaySound("nz/round/round_-1_prepare.mp3")
-	else
-		round_num = 0
-	end
-
-	roundchangeending = false
-	round_white = 0
-	local round_charger = 0.25
-	local alphafading = false
-	local haschanged = false
-	hook.Add("HUDPaint", "nz_roundnumWhiteFade", function()
-		if !alphafading then
-			round_white = math.Approach(round_white, round_charger > 0 and 255 or 0, round_charger*350*FrameTime())
-			if round_white >= 255 and !roundchangeending then
-				alphafading = true
-				round_charger = -1
-			elseif round_white <= 0 and roundchangeending then
-				hook.Remove("HUDPaint", "nz_roundnumWhiteFade")
-			end
-		else
-			round_alpha = math.Approach(round_alpha, round_charger > 0 and 255 or 0, round_charger*350*FrameTime())
-			if round_alpha >= 255 then
-				if haschanged then
-					round_charger = -0.25
-					alphafading = false
-				else
-					round_charger = -1
-				end
-			elseif round_alpha <= 0 then
-				if roundchangeending then
-					round_num = nzRound:GetNumber()
-					round_charger = 0.5
-					if round_num == -1 then
-						--surface.PlaySound("nz/easteregg/motd_round-03.wav")
-					elseif nzRound:IsSpecial() then
-						surface.PlaySound("nz/round/special_round_start.wav")
-						prevroundspecial = true
-					else
-						surface.PlaySound("nz/round/round_start.mp3")
-						prevroundspecial = false
-					end
-					haschanged = true
-				else
-					round_charger = 1
-				end
-			end
-		end
-	end)
-
-end
-
-local function EndChangeRound()
-	roundchangeending = true
-end
-
-local grenade_icon = Material("grenade-256.png", "unlitgeneric smooth")
-local function DrawGrenadeHud()
-	local num = LocalPlayer():GetAmmoCount(GetNZAmmoID("grenade") or -1)
-	local numspecial = LocalPlayer():GetAmmoCount(GetNZAmmoID("specialgrenade") or -1)
-	local scale = (ScrW()/1920 + 1)/2
-
-	--print(num)
-	if num > 0 then
-		surface.SetMaterial(grenade_icon)
-		surface.SetDrawColor(255,255,255)
-		for i = num, 1, -1 do
-			--print(i)
-			surface.DrawTexturedRect(ScrW() - 250*scale - i*10*scale, ScrH() - 90*scale, 30*scale, 30*scale)
-		end
-	end
-	if numspecial > 0 then
-		surface.SetMaterial(grenade_icon)
-		surface.SetDrawColor(255,100,100)
-		for i = numspecial, 1, -1 do
-			--print(i)
-			surface.DrawTexturedRect(ScrW() - 300*scale - i*10*scale, ScrH() - 90*scale, 30*scale, 30*scale)
-		end
-	end
-	--surface.DrawTexturedRect(ScrW()/2, ScrH()/2, 100, 100)
-end
-
--- Hooks
-hook.Add("HUDPaint", "pointsNotifcationHUD", DrawPointsNotification )
-hook.Add("HUDPaint", "roundHUD", StatesHud )
-hook.Add("HUDPaint", "scoreHUD", ScoreHud )
-hook.Add("HUDPaint", "gunHUD", GunHud )
-hook.Add("HUDPaint", "powerupHUD", PowerUpsHud )
-hook.Add("HUDPaint", "perksHUD", PerksHud )
-hook.Add("HUDPaint", "vultureVision", VultureVision )
-hook.Add("HUDPaint", "roundnumHUD", RoundHud )
-hook.Add("HUDPaint", "grenadeHUD", DrawGrenadeHud )
-
-hook.Add("OnRoundPreparation", "BeginRoundHUDChange", StartChangeRound)
-hook.Add("OnRoundStart", "EndRoundHUDChange", EndChangeRound)
-
-local blockedweps = {
-	["nz_revive_morphine"] = true,
-	["nz_packapunch_arms"] = true,
-	["nz_perk_bottle"] = true,
-}
-
-function GM:HUDWeaponPickedUp( wep )
-
-	if ( !IsValid( LocalPlayer() ) || !LocalPlayer():Alive() ) then return end
-	if ( !IsValid( wep ) ) then return end
-	if ( !isfunction( wep.GetPrintName ) ) then return end
-	if blockedweps[wep:GetClass()] then return end
-
-	local pickup = {}
-	pickup.time			= CurTime()
-	pickup.name			= wep:GetPrintName()
-	pickup.holdtime		= 5
-	pickup.font			= "DermaDefaultBold"
-	pickup.fadein		= 0.04
-	pickup.fadeout		= 0.3
-	pickup.color		= Color( 255, 200, 50, 255 )
-
-	surface.SetFont( pickup.font )
-	local w, h = surface.GetTextSize( pickup.name )
-	pickup.height		= h
-	pickup.width		= w
-
-	if ( self.PickupHistoryLast >= pickup.time ) then
-		pickup.time = self.PickupHistoryLast + 0.05
-	end
-
-	table.insert( self.PickupHistory, pickup )
-	self.PickupHistoryLast = pickup.time
-	
-	if wep.NearWallEnabled then wep.NearWallEnabled = false end
-	if wep:IsFAS2() then wep.NoNearWall = true end
-
-end
-
-local function ParseAmmoName(str)
-	local pattern = "nz_weapon_ammo_(%d)"
-	local slot = tonumber(string.match(str, pattern))
-	if slot then
-		for k,v in pairs(LocalPlayer():GetWeapons()) do
-			if v:GetNWInt("SwitchSlot", -1) == slot then
-				if v.Primary and v.Primary.OldAmmo then
-					return "#"..v.Primary.OldAmmo.."_ammo"
-				end
-				local wep = weapons.Get(v:GetClass())
-				if wep and wep.Primary and wep.Primary.Ammo then
-					return "#"..wep.Primary.Ammo.."_ammo"
-				end
-				return v:GetPrintName() .. " Ammo"
-			end
-		end
-	end
-	return str
-end
-
-function GM:HUDAmmoPickedUp( itemname, amount )
-	if ( !IsValid( LocalPlayer() ) || !LocalPlayer():Alive() ) then return end
-	
-	itemname = ParseAmmoName(itemname)
-	
-	-- Try to tack it onto an exisiting ammo pickup
-	if ( self.PickupHistory ) then
-		for k, v in pairs( self.PickupHistory ) do
-			if ( v.name == itemname ) then
-				v.amount = tostring( tonumber( v.amount ) + amount )
-				v.time = CurTime() - v.fadein
-				return
-			end
-		end
-	end
-	
-	local pickup = {}
-	pickup.time			= CurTime()
-	pickup.name			= itemname
-	pickup.holdtime		= 5
-	pickup.font			= "DermaDefaultBold"
-	pickup.fadein		= 0.04
-	pickup.fadeout		= 0.3
-	pickup.color		= Color( 180, 200, 255, 255 )
-	pickup.amount		= tostring( amount )
-	
-	surface.SetFont( pickup.font )
-	local w, h = surface.GetTextSize( pickup.name )
-	pickup.height	= h
-	pickup.width	= w
-	
-	local w, h = surface.GetTextSize( pickup.amount )
-	pickup.xwidth	= w
-	pickup.width	= pickup.width + w + 16
-
-	if ( self.PickupHistoryLast >= pickup.time ) then
-		pickup.time = self.PickupHistoryLast + 0.05
-	end
-	
-	table.insert( self.PickupHistory, pickup )
-	self.PickupHistoryLast = pickup.time
 end
