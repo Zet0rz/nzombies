@@ -160,7 +160,7 @@ end
 nzRound:AddBossType("Panzer", "nz_zombie_boss_panzer", {
 	specialspawn = true,
 	initfunc = function()
-		nzRound:SetNextBossRound(math.random(8,8)) -- Randomly spawn in rounds 8-8
+		nzRound:SetNextBossRound(math.random(8,8)) -- Randomly spawn in rounds 8
 	end,
 	spawnfunc = function(panzer)
 		panzer:SetHealth(nzRound:GetNumber() * 50 + 750)
