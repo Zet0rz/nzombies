@@ -160,7 +160,7 @@ end
 nzRound:AddBossType("Panzer", "nz_zombie_boss_panzer", {
 	specialspawn = true,
 	initfunc = function()
-		nzRound:SetNextBossRound(math.random(8,8)) -- Randomly spawn in rounds 8
+		nzRound:SetNextBossRound(math.random(8,8)) -- Will spawn in round 8
 	end,
 	spawnfunc = function(panzer)
 		panzer:SetHealth(nzRound:GetNumber() * 50 + 750)
@@ -168,7 +168,7 @@ nzRound:AddBossType("Panzer", "nz_zombie_boss_panzer", {
 	deathfunc = function(panzer, killer, dmginfo, hitgroup)
 		nzRound:SetNextBossRound(nzRound:GetNumber() + math.random(3,4)) -- Delay further boss spawning by 3 rounds after its death
 		if IsValid(attacker) and attacker:IsPlayer() and attacker:GetNotDowned() then
-			attacker:GivePoints(1500) -- Give killer 1500 points if not downed
+			attacker:GivePoints(1500) -- Give killer 1500 points if not downed.
 		end
 	end,
-}) -- No onhit function, we don't give points on hit for this guy
+}) -- No onhit function.
