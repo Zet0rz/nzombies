@@ -11,28 +11,28 @@ local traceents = {
 		local text = ""
 
 		if !LocalPlayer():HasWeapon( wepclass ) then
-			text = "Press E to buy " .. name .." for " .. price .. " points."
+			text = "Press E to buy " .. name .." (Cost: " .. price .. ")"
 		elseif string.lower(wep.Primary.Ammo) != "none" then
 			if LocalPlayer():GetWeapon( wepclass ):HasNZModifier("pap") then
-				text = "Press E to buy " .. wep.Primary.Ammo .."  Ammo refill for " .. 4500 .. " points."
+				text = "Press E to refill upgraded " .. wep.Primary.Ammo .." ammunition (Cost: " .. 4500 .. ")"
 			else
-				text = "Press E to buy " .. wep.Primary.Ammo .."  Ammo refill for " .. ammo_price .. " points."
+				text = "Press E to refill " .. wep.Primary.Ammo .." ammunition (Cost: " .. ammo_price .. ")"
 			end
 		else
-			text = "You already have this weapon."
+			text = "You already have this weapon"
 		end
 
 		return text
 	end,
 	["breakable_entry"] = function(ent)
 		if ent:GetHasPlanks() and ent:GetNumPlanks() < GetConVar("nz_difficulty_barricade_planks_max"):GetInt() then
-			local text = "Hold E to rebuild the barricade."
+			local text = "Press and hold E to rebuild this barrier"
 			return text
 		end
 	end,
 	["random_box"] = function(ent)
 		if !ent:GetOpen() then
-			local text = nzPowerUps:IsPowerupActive("firesale") and "Press E to buy a random weapon for 10 points." or "Press E to buy a random weapon for 950 points."
+			local text = nzPowerUps:IsPowerupActive("firesale") and "Press E to use Mystery Box (Cost: 10)" or "Press E to use Mystery Box (Cost: 950)"
 			return text
 		end
 	end,
@@ -45,7 +45,7 @@ local traceents = {
 				name = wep.PrintName
 			end
 			if name == nil then name = wepclass end
-			name = "Press E to take " .. name .. " from the box."
+			name = "Press E to take " .. name .. ""
 
 			return name
 		end
@@ -53,7 +53,7 @@ local traceents = {
 	["perk_machine"] = function(ent)
 		local text = ""
 		if !ent:IsOn() then
-			text = "No Power."
+			text = "You must turn on the electricity first!"
 		elseif ent:GetBeingUsed() then
 			text = "Currently in use."
 		else
@@ -61,22 +61,22 @@ local traceents = {
 				local wep = LocalPlayer():GetActiveWeapon()
 				if wep:HasNZModifier("pap") then
 					if wep.NZRePaPText then
-						text = "Press E to "..wep.NZRePaPText.." for 2000 points."
+						text = "Press E to "..wep.NZRePaPText.." (Cost: 2000)"
 					elseif wep:CanRerollPaP() then
-						text = "Press E to reroll attachments for 2000 points."
+						text = "Press E to repack (Cost: 2000)"
 					else
-						text = "This weapon is already upgraded."
+						text = "Your weapon is fully upgraded!"
 					end
 				else
-					text = "Press E to buy Pack-a-Punch for 5000 points."
+					text = "Press E to Pack-a-Punch your weapon (Cost: 5000)"
 				end
 			else
 				local perkData = nzPerks:Get(ent:GetPerkID())
 				-- Its on
-				text = "Press E to buy " .. perkData.name .. " for " .. ent:GetPrice() .. " points."
+				text = "Press E to buy " .. perkData.name .. " (Cost: " .. ent:GetPrice() .. ")"
 				-- Check if they already own it
 				if LocalPlayer():HasPerk(ent:GetPerkID()) then
-					text = "You already own this perk."
+					text = "You already have this perk"
 				end
 			end
 		end
@@ -93,25 +93,25 @@ local traceents = {
 		if wep != nil then
 			name = nz.Display_PaPNames[wepclass] or nz.Display_PaPNames[wep.PrintName] or "Upgraded "..wep.PrintName
 		end
-		name = "Press E to take " .. name .. " from the machine."
+		name = "Press E to take " .. name .. ""
 
 		return name
 	end,
 	["wunderfizz_machine"] = function(ent)
 		local text = ""
 		if !ent:IsOn() then
-			text = "The Wunderfizz Orb is currently at another location."
+			text = "The Wunderfizz Orb is currently at another location"
 		elseif ent:GetBeingUsed() then
 			if ent:GetUser() == LocalPlayer() and ent:GetPerkID() != "" and !ent:GetIsTeddy() then
-				text = "Press E to take "..nzPerks:Get(ent:GetPerkID()).name.." from Der Wunderfizz."
+				text = "Press E to take "..nzPerks:Get(ent:GetPerkID()).name.."from the Wunderfizz"
 			else
-				text = "Currently in use."
+				text = "Currently in use"
 			end
 		else
 			if #LocalPlayer():GetPerks() >= GetConVar("nz_difficulty_perks_max"):GetInt() then
-				text = "You cannot have more perks."
+				text = "You cannot have more perks"
 			else
-				text = "Press E to buy Der Wunderfizz for " .. ent:GetPrice() .. " points."
+				text = "Press E for a random Perk (Cost: " .. ent:GetPrice() .. ")"
 			end
 		end
 
@@ -155,7 +155,7 @@ local function GetDoorText( ent )
 				text = door_data.text
 			elseif price != 0 then
 				--print("Still here", nz.nzDoors.Data.OpenedLinks[tonumber(link)])
-				text = "Press E to open for " .. price .. " points."
+				text = "Press E to open (Cost: " .. price .. ")"
 			end
 		end
 	elseif door_data and tonumber(door_data.buyable) != 1 and nzRound:InState( ROUND_CREATE ) then
@@ -241,7 +241,7 @@ local function DrawTargetID( text )
 	local y = MouseY
 
 	x = x - w / 2
-	y = y + 30
+	y = y + 115
 
 	-- The fonts internal drop shadow looks lousy with AA on
 	draw.SimpleText( text, font, x+1, y+1, Color(255,255,255,255) )
