@@ -163,7 +163,7 @@ nzRound:AddBossType("Panzer", "nz_zombie_boss_panzer", {
 		nzRound:SetNextBossRound(math.random(8,8)) -- Will spawn in round 8
 	end,
 	spawnfunc = function(panzer)
-		panzer:SetHealth(nzRound:GetNumber() * 50 + 750)
+		panzer:SetHealth(nzRound:GetNumber() * 250 + 1500)
 	end,
 	deathfunc = function(panzer, killer, dmginfo, hitgroup)
 		nzRound:SetNextBossRound(nzRound:GetNumber() + math.random(3,4)) -- Delay further boss spawning by 3 rounds after its death
