@@ -1,17 +1,17 @@
-surface.CreateFont( "pier_large", {
-	font = "PierSans-Regular",
+surface.CreateFont( "score_large", {
+	font = "ScoreboardDefault",
 	size = 48,
 	antialias = true,
 } )
 
-surface.CreateFont( "pier_medium", {
-	font = "PierSans-Regular",
+surface.CreateFont( "score_medium", {
+	font = "ScoreboardDefault",
 	size = 24,
 	antialias = true,
 } )
 
-surface.CreateFont( "pier_small", {
-	font = "PierSans-Regular",
+surface.CreateFont( "score_small", {
+	font = "ScoreboardDefault",
 	size = 16,
 	antialias = true,
 } )
@@ -184,11 +184,11 @@ end]]
 function MenuToolBar:AddEntry( lbl, fontSize, cmd, args )
 	local entry = vgui.Create( "NZMainMenuToolBarEntry", self )
 	if fontSize == "large" then
-		entry:SetFont( "pier_large" )
+		entry:SetFont( "score_large" )
 	elseif fontSize == "medium" then
-		entry:SetFont( "pier_medium" )
+		entry:SetFont( "score_medium" )
 	else
-		entry:SetFont( "pier_small" )
+		entry:SetFont( "score_small" )
 	end
 	local nextPos = 300
 	for _, v in pairs( self.Entries ) do
@@ -217,7 +217,7 @@ local MenuToolBarEntry = {}
 
 function MenuToolBarEntry:Init()
 	self:SetSize( 260, 60 )
-	self:SetFont( "pier_large" )
+	self:SetFont( "score_large" )
 	self:SetContentAlignment( 5 )
 	self:SetTextColor( Color( 255, 255, 255 ) )
 end
@@ -294,7 +294,7 @@ function MenuSettingsList:AddButton( lbl, cmd, args )
 		button:SetConsoleCommand( cmd, args )
 	end
 	button:SetText( lbl )
-	button:SetFont( "pier_small" )
+	button:SetFont( "score_small" )
 	button:SetTall( 42 )
 
 	function button:Paint( w, h )
