@@ -164,7 +164,7 @@ if SERVER then
 		if IsValid(oldwep) and !oldwep:IsSpecial() then
 			self.NZPrevWep = oldwep
 		end
-		oldsetwep(self, wep)
+		oldsetwep(self, oldwep)
 	end
 	
 else
